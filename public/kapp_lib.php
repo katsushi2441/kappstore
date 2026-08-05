@@ -240,10 +240,10 @@ function kapp_has_paid($user, $app_id) {
     return false;
 }
 
-function kapp_create_order($user, $app, $billing, $contact, $method) {
+function kapp_create_order($user, $app, $billing, $contact, $method, $email = '') {
     $price = kapp_price_parts(isset($app['price']) ? $app['price'] : 0);
     return kapp_ledger_update(KAPP_ORDERS, 'orders',
-        function (&$data) use ($user, $app, $billing, $contact, $method, $price) {
+        function (&$data) use ($user, $app, $billing, $contact, $method, $email, $price) {
             $data['seq'] = (int)$data['seq'] + 1;
             $order = array(
                 'id'           => kapp_random_hex(8),
@@ -254,6 +254,8 @@ function kapp_create_order($user, $app, $billing, $contact, $method) {
                 'seller'       => $app['seller'],
                 'billing_name' => $billing,
                 'contact'      => $contact,
+                // 銀行振込のとき、入金確認をお知らせする宛先
+                'email'        => strtolower(trim((string)$email)),
                 'method'       => $method,
                 'amount'       => $price['amount'],
                 'tax'          => $price['tax'],
@@ -269,6 +271,51 @@ function kapp_create_order($user, $app, $billing, $contact, $method) {
         });
 }
 
+/** 全注文（管理者用）。新しい順。 */
+function kapp_all_orders() { return array_reverse(kapp_orders_all()); }
+
+function kapp_find_order_any($id) {
+    foreach (kapp_orders_all() as $o) { if ($o['id'] === $id) { return $o; } }
+    return null;
+}
+
+/**
+ * 管理者が入金を確認して購入済みにする。
+ * 銀行振込には、これ以外に購入済みへ変える経路が無い
+ * （PayPalは kapp_mark_paid が決済完了時に呼ばれる）。
+ */
+function kapp_admin_mark_paid($order_id, $note = '') {
+    return kapp_ledger_update(KAPP_ORDERS, 'orders', function (&$data) use ($order_id, $note) {
+        foreach ($data['orders'] as $i => $order) {
+            if ($order['id'] === $order_id) {
+                if ($order['status'] === 'paid') { return array(false, 'すでに入金済みです'); }
+                $data['orders'][$i]['status'] = 'paid';
+                $data['orders'][$i]['paid_at'] = time();
+                $data['orders'][$i]['paid_by'] = 'admin';
+                if ($note !== '') { $data['orders'][$i]['paid_note'] = $note; }
+                return array(true, $order);
+            }
+        }
+        return array(false, '注文が見つかりません');
+    });
+}
+
+/** 入金の記録を取り消す（間違えて押したとき） */
+function kapp_admin_unmark_paid($order_id) {
+    return kapp_ledger_update(KAPP_ORDERS, 'orders', function (&$data) use ($order_id) {
+        foreach ($data['orders'] as $i => $order) {
+            // PayPalで決済済みのものは取り消さない（決済の記録と食い違うため）
+            if ($order['id'] === $order_id) {
+                if (!empty($order['paypal_order_id'])) { return array(false, 'PayPal決済済みのため取り消せません'); }
+                $data['orders'][$i]['status'] = 'unpaid';
+                unset($data['orders'][$i]['paid_at'], $data['orders'][$i]['paid_by']);
+                return array(true, '未入金に戻しました');
+            }
+        }
+        return array(false, '注文が見つかりません');
+    });
+}
+
 function kapp_mark_paid($user, $order_id, $paypal_id) {
     $user = kapp_norm_user($user);
     return kapp_ledger_update(KAPP_ORDERS, 'orders', function (&$data) use ($user, $order_id, $paypal_id) {
@@ -282,4 +329,54 @@ function kapp_mark_paid($user, $order_id, $paypal_id) {
         }
         return array(false, '注文が見つかりません');
     });
+}
+
+/* ---------------- 通知メール ---------------- */
+
+/**
+ * 入金確認をお知らせして、ダウンロードURLを渡す。
+ *
+ * 共有サーバーから送るので、From は SPF にそのサーバーが入っている
+ * ドメインを使うこと。入っていないと受信側に捨てられ、mail() は
+ * それでも true を返す（kinvoice で実際に不達を起こした）。
+ */
+function kapp_mail_from() {
+    return defined('KAPP_MAIL_FROM') ? KAPP_MAIL_FROM : 'info@exbridge.jp';
+}
+
+function kapp_send_paid_mail($order) {
+    $to = isset($order['email']) ? trim((string)$order['email']) : '';
+    if ($to === '' || !filter_var($to, FILTER_VALIDATE_EMAIL)) { return false; }
+
+    $from = kapp_mail_from();
+    $dl   = 'https://kappstore.exbridge.jp/download.php?id=' . rawurlencode($order['app_id']);
+    $subject = '【Kurage App Store】ご入金を確認しました（' . $order['invoice_no'] . '）';
+
+    $body = $order['billing_name'] . " 様\n\n"
+          . "いつもお世話になっております。Kurage App Store です。\n"
+          . "ご入金を確認しました。ありがとうございます。\n\n"
+          . "──────────────────────────\n"
+          . "  注文番号 : " . $order['invoice_no'] . "\n"
+          . "  商品     : " . $order['app_name'] . "\n"
+          . "  金額     : " . number_format((int)$order['total']) . " 円（税込）\n"
+          . "──────────────────────────\n\n"
+          . "▼ ダウンロードはこちら\n"
+          . $dl . "\n\n"
+          . "ダウンロードには、ご注文時の 𝕏 アカウント（@" . $order['user'] . "）での\n"
+          . "ログインが必要です。購入履歴からいつでも再ダウンロードいただけます。\n"
+          . "  https://kappstore.exbridge.jp/orders.php\n\n"
+          . "──────────────────────────\n"
+          . "Kurage App Store — 株式会社エクスブリッジ\n"
+          . $from . "\n";
+
+    $headers = implode("\r\n", array(
+        'From: Kurage App Store <' . $from . '>',
+        'Reply-To: ' . $from,
+        'MIME-Version: 1.0',
+        'Content-Type: text/plain; charset=UTF-8',
+        'Content-Transfer-Encoding: base64',
+        'X-Mailer: Kurage App Store',
+    ));
+    return @mail($to, '=?UTF-8?B?' . base64_encode($subject) . '?=',
+                 chunk_split(base64_encode($body)), $headers);
 }

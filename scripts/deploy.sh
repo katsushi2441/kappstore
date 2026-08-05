@@ -35,7 +35,7 @@ upload /home/kojima/work/kurage_web/auth_common.php auth_common.php
 upload public/config.php config.php
 
 # --- 画面 ---
-for f in index.php app.php order.php orders.php download.php register.php sellers.php sitemap.php; do
+for f in index.php app.php order.php orders.php download.php register.php sellers.php admin.php sitemap.php; do
   upload "public/$f" "$f"
 done
 

@@ -123,6 +123,43 @@ check('銀行名が入っている', strpos($pdf, kapp_pdf_hex('三井住友銀�
 check('口座番号が入っている', strpos($pdf, '7312531') !== false, true);
 check('税込金額が入っている', strpos($pdf, '3,300') !== false, true);
 
+
+/* ---- 銀行振込の一連（ここが壊れると入金しても永久に落とせない）---- */
+$bank_app = kapp_find_app('app0001');
+$r = kapp_create_order('carol', $bank_app, '株式会社キャロル', '', 'bank', 'Keiri@Carol.co.JP');
+$cid = $r[1];
+check('振込注文は未入金で始まる', kapp_find_order('carol', $cid)['status'], 'unpaid');
+check('振込直後は落とせない', kapp_has_paid('carol', 'app0001'), false);
+check('メールアドレスを保存している', kapp_find_order('carol', $cid)['email'], 'keiri@carol.co.jp');
+
+// 管理者は、購入者本人でなくても入金を記録できる
+$res = kapp_admin_mark_paid($cid, '2026-08-05 振込確認');
+check('管理者が入金を記録できる', $res[0], true);
+check('入金後は落とせる', kapp_has_paid('carol', 'app0001'), true);
+check('手動である印が残る', kapp_find_order('carol', $cid)['paid_by'], 'admin');
+check('メモが残る', kapp_find_order('carol', $cid)['paid_note'], '2026-08-05 振込確認');
+
+// 二重に押しても壊れない
+check('入金済みを再度押しても増えない', kapp_admin_mark_paid($cid, '')[0], false);
+
+// 取り消し
+check('取り消せる', kapp_admin_unmark_paid($cid)[0], true);
+check('取り消すと落とせない', kapp_has_paid('carol', 'app0001'), false);
+
+// PayPal決済済みは取り消させない（決済の記録と食い違うため）
+$r2 = kapp_create_order('dave', $bank_app, '株式会社デイブ', '', 'paypal', 'dave@example.test');
+kapp_mark_paid('dave', $r2[1], 'PAYPAL-ABC');
+check('PayPal決済済みは取り消せない', kapp_admin_unmark_paid($r2[1])[0], false);
+check('PayPal決済済みのままである', kapp_find_order('dave', $r2[1])['status'], 'paid');
+
+// 全注文は管理者用。ここが本人限定だと入金確認ができない
+check('全注文を引ける', count(kapp_all_orders()) >= 2, true);
+check('IDだけで引ける（本人でなくても）', kapp_find_order_any($cid)['billing_name'], '株式会社キャロル');
+
+// 宛先が無ければ送らない（誤送信しない）
+check('宛先なしでは送信しない', kapp_send_paid_mail(array('email' => '')), false);
+check('不正な宛先では送信しない', kapp_send_paid_mail(array('email' => 'not-an-email')), false);
+
 /* 後片付け */
 foreach (array('sellers.json', 'apps.json', 'orders.json') as $f) { @unlink($tmp . '/' . $f); }
 @rmdir($tmp . '/files');

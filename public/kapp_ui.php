@@ -138,6 +138,7 @@ function kapp_header($subtitle, $logged_in, $user, $is_seller = false, $is_admin
     if ($logged_in) {
         echo '<a class="chip" href="orders.php">購入履歴</a>';
         if ($is_seller) { echo '<a class="chip" href="register.php">出品する</a>'; }
+        if ($is_admin)  { echo '<a class="chip" href="admin.php">注文管理</a>'; }
         if ($is_admin)  { echo '<a class="chip" href="sellers.php?admin=1">審査</a>'; }
         echo '<span class="chip">@' . kapp_h($user) . '</span>';
         echo '<a class="chip" href="?logout=1">ログアウト</a>';

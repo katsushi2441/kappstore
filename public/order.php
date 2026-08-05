@@ -72,15 +72,18 @@ if ($logged_in && isset($_POST['register'])) {
         $billing = trim((string)(isset($_POST['billing_name']) ? $_POST['billing_name'] : ''));
         $contact = trim((string)(isset($_POST['contact']) ? $_POST['contact'] : ''));
         $method  = (isset($_POST['method']) && $_POST['method'] === 'paypal') ? 'paypal' : 'bank';
+        $email   = trim((string)(isset($_POST['email']) ? $_POST['email'] : ''));
         if ($is_free) { $billing = ($billing !== '') ? $billing : '@' . $user; $method = 'free'; }
         if ($billing === '') {
             $error = '請求先名をご入力ください。';
+        } elseif (!$is_free && ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL))) {
+            $error = 'メールアドレスをご入力ください。';
         } elseif (mb_strlen($billing, 'UTF-8') > 100 || mb_strlen($contact, 'UTF-8') > 60) {
             $error = '入力が長すぎます。';
         } elseif (empty($_POST['agree'])) {
             $error = '利用規約への同意が必要です。';
         } else {
-            $result = kapp_create_order($user, $app, $billing, $contact, $method);
+            $result = kapp_create_order($user, $app, $billing, $contact, $method, $email);
             if (empty($result[0])) {
                 $error = isset($result[1]) ? $result[1] : '注文を登録できませんでした。';
             } else {
@@ -162,7 +165,7 @@ kapp_header('注文', $logged_in, $user, $is_seller, $is_admin);
       </table>
       <p class="hint">振込手数料はお客様のご負担でお願いいたします。
         お振込みの際は請求書番号（<?php echo kapp_h($current['invoice_no']); ?>）をご記入ください。
-        <b>ご入金の確認後にダウンロードが開きます。</b></p>
+        <b>ご入金の確認後にダウンロードが開きます。</b>確認できましたら、ご登録のメールアドレスへご連絡します。</p>
     </div>
     <?php if (KAPP_PAYPAL_CLIENT_ID !== ''): ?>
     <div class="card">
@@ -244,6 +247,12 @@ kapp_header('注文', $logged_in, $user, $is_seller, $is_admin);
       <label for="contact">ご担当者名（任意）</label>
       <input type="text" id="contact" name="contact" maxlength="60" placeholder="例：山田 太郎"
              value="<?php echo kapp_h(isset($_POST['contact']) ? $_POST['contact'] : ''); ?>">
+
+      <label for="email">メールアドレス<span style="color:#c0392b">*</span></label>
+      <input type="email" id="email" name="email" maxlength="200" required
+             placeholder="例：keiri@example.co.jp"
+             value="<?php echo kapp_h(isset($_POST['email']) ? $_POST['email'] : ''); ?>">
+      <p class="hint">銀行振込の場合、<b>ご入金を確認したらこちらへご連絡します。</b></p>
 
       <label>お支払方法<span style="color:#c0392b">*</span></label>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:8px">
