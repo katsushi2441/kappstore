@@ -55,7 +55,7 @@ header.site .wrap{display:flex;align-items:center;gap:12px;padding:12px 22px;fle
 .hbrand{display:flex;gap:11px;align-items:center;color:inherit}
 .hbrand:hover{text-decoration:none}
 .hbrand .ico{width:38px;height:38px;border-radius:50%;overflow:hidden;border:2px solid var(--teal);flex:none}
-.hbrand .ico img{width:100%;height:100%;object-fit:cover;object-position:50% 12%;display:block}
+.hbrand .ico img{width:100%;height:100%;object-fit:cover;display:block}
 .hbrand strong{font-size:14.5px;font-weight:900;display:block;line-height:1.25}
 .hbrand span{font-size:11px;color:var(--abyss-soft)}
 .hnav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -130,7 +130,7 @@ HTML;
 function kapp_header($subtitle, $logged_in, $user, $is_seller = false, $is_admin = false) {
     echo '<header class="site"><div class="wrap">';
     echo '<a class="hbrand" href="index.php"><span class="ico">'
-       . '<img src="assets/kurage_avatar.png" alt="Kurage"></span>'
+       . '<img src="assets/kurage-face-192.webp" alt="Kurage"></span>'
        . '<div><strong>Kurage App Store</strong><span>' . kapp_h($subtitle) . '</span></div></a>';
     echo '<nav class="hnav">';
     echo '<a class="chip" href="index.php">アプリ一覧</a>';
