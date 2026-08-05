@@ -1,5 +1,8 @@
 public/kapp_config.php
-public/kapp_data/
+# 台帳・配布ファイル・画像は入れない。ただし保護用の .htaccess は
+# リポジトリに残す（これが欠けると台帳がWebから読める）。
+public/kapp_data/*
+!public/kapp_data/.htaccess
 public/kapp_media/*
 !public/kapp_media/.htaccess
 outputs/
