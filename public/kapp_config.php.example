@@ -1,3 +1,10 @@
 <?php
 // kappstore の実行時設定。実物は公開リポジトリに入れない（scripts/deploy.sh が配置する）。
 define('KAPP_PAYPAL_CLIENT_ID', '');  // PayPal Smart Buttons の Client ID。空なら PayPal を出さない
+// 送信元メールアドレス。
+// 【重要】共有サーバーから送る場合、そのサーバーが送信ドメインのSPFに
+// 含まれていないと受信側に捨てられます（mail() は成功を返します）。
+//   確認: dig +short TXT example.co.jp | grep spf
+define('KAPP_MAIL_FROM', 'info@example.co.jp');
+// システム管理者。すべての通知メールの控えが Bcc で届きます。
+define('KAPP_ADMIN_EMAIL', 'admin@example.co.jp');

@@ -6,6 +6,8 @@ $tmp = sys_get_temp_dir() . '/kappstore-check-' . getmypid();
 @mkdir($tmp, 0700, true);
 define('KAPP_DATA_DIR', $tmp);
 define('KAPP_ADMIN', 'xb_bittensor');
+define('KAPP_ADMIN_EMAIL', 'sysadmin@example.test');
+define('KAPP_MAIL_FROM', 'noreply@example.test');
 
 require_once __DIR__ . '/../public/kapp_lib.php';
 require_once __DIR__ . '/../public/kapp_invoice.php';
@@ -22,7 +24,7 @@ function check($label, $actual, $expected) {
 /* ---- 販売店 ---- */
 check('最初は販売店0件', count(kapp_sellers()), 0);
 
-$r = kapp_register_seller('xb_bittensor', '株式会社エクスブリッジ', 'https://exbridge.jp/');
+$r = kapp_register_seller('xb_bittensor', '株式会社エクスブリッジ', 'https://exbridge.jp/', 'info@exbridge.test');
 check('管理者は登録できる', $r[0], true);
 check('管理者は自動承認', kapp_is_approved_seller('xb_bittensor'), true);
 
@@ -123,6 +125,16 @@ check('銀行名が入っている', strpos($pdf, kapp_pdf_hex('三井住友銀�
 check('口座番号が入っている', strpos($pdf, '7312531') !== false, true);
 check('税込金額が入っている', strpos($pdf, '3,300') !== false, true);
 
+
+
+/* ---- 通知の宛先（ここが空だと注文に気づけない）---- */
+check('販売店のメールを保存している', kapp_find_seller('xb_bittensor')['email'], 'info@exbridge.test');
+check('販売店の通知先を引ける', kapp_seller_email('xb_bittensor'), 'info@exbridge.test');
+// メール未登録の販売店は、管理者へ落とす（通知が消えるのが一番まずい）
+check('メール未登録なら管理者へ落ちる', kapp_seller_email('someone'), 'sysadmin@example.test');
+check('存在しない販売店でも管理者へ落ちる', kapp_seller_email('nobody'), 'sysadmin@example.test');
+check('不正な形式のメールは登録できない',
+    kapp_register_seller('baddr', 'ダメ商店', '', 'not-an-email')[0], false);
 
 /* ---- 銀行振込の一連（ここが壊れると入金しても永久に落とせない）---- */
 $bank_app = kapp_find_app('app0001');

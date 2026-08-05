@@ -19,10 +19,13 @@ if ($logged_in && isset($_POST['register_seller'])) {
     } else {
         $name = trim((string)(isset($_POST['seller_name']) ? $_POST['seller_name'] : ''));
         $url  = trim((string)(isset($_POST['seller_url']) ? $_POST['seller_url'] : ''));
+        $mail = trim((string)(isset($_POST['seller_email']) ? $_POST['seller_email'] : ''));
         if (mb_strlen($name, 'UTF-8') > 80 || mb_strlen($url, 'UTF-8') > 200) {
             $error = '入力が長すぎます。';
+        } elseif ($mail === '' || !filter_var($mail, FILTER_VALIDATE_EMAIL)) {
+            $error = '通知先メールアドレスをご入力ください。';
         } else {
-            $result = kapp_register_seller($user, $name, $url);
+            $result = kapp_register_seller($user, $name, $url, $mail);
             if (empty($result[0])) { $error = $result[1]; }
             else {
                 $notice = $result[1];
@@ -153,6 +156,12 @@ kapp_header('販売店', $logged_in, $user, $is_seller, $is_admin);
         <input type="text" id="seller_name" name="seller_name" maxlength="80" required
                placeholder="例：株式会社エクスブリッジ"
                value="<?php echo kapp_h($mine ? $mine['name'] : ''); ?>">
+
+        <label for="seller_email">通知先メールアドレス<span style="color:#c0392b">*</span></label>
+        <input type="email" id="seller_email" name="seller_email" maxlength="200" required
+               placeholder="例：info@example.co.jp"
+               value="<?php echo kapp_h($mine && !empty($mine['email']) ? $mine['email'] : ''); ?>">
+        <p class="hint"><b>ご注文が入るとここへお知らせします。</b>購入者には表示されません。</p>
 
         <label for="seller_url">URL（任意）</label>
         <input type="url" id="seller_url" name="seller_url" maxlength="200" placeholder="https://example.com/"

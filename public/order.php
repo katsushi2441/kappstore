@@ -87,6 +87,13 @@ if ($logged_in && isset($_POST['register'])) {
             if (empty($result[0])) {
                 $error = isset($result[1]) ? $result[1] : '注文を登録できませんでした。';
             } else {
+                // 注文が入ったことを知らせる。通知が無いと、銀行振込の
+                // 入金確認をするタイミングを見失う。
+                $new = kapp_find_order($user, $result[1]);
+                if ($new) {
+                    kapp_send_order_mail($new);        // 販売店（無ければ管理者）へ
+                    kapp_send_buyer_order_mail($new);  // 購入者へ控え
+                }
                 // POSTの再送で二重登録されないよう、GETへ逃がす
                 header('Location: order.php?order=' . rawurlencode($result[1]));
                 exit;

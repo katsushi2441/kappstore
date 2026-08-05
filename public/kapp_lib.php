@@ -109,19 +109,24 @@ function kapp_is_admin($user) {
  * 販売店を登録する。管理者は自動承認、それ以外は審査待ち。
  * マーケットプレイス化したらここの既定を変える。
  */
-function kapp_register_seller($user, $name, $url) {
+function kapp_register_seller($user, $name, $url, $email = '') {
     $user = kapp_norm_user($user);
     if ($user === '') { return array(false, 'ログインが必要です'); }
     if (trim($name) === '') { return array(false, '販売者名をご入力ください'); }
     if ($url !== '' && !preg_match('#^https?://#i', $url)) {
         return array(false, 'URLは http:// または https:// で始めてください');
     }
-    return kapp_ledger_update(KAPP_SELLERS, 'sellers', function (&$data) use ($user, $name, $url) {
+    $email = strtolower(trim((string)$email));
+    if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        return array(false, 'メールアドレスの形式が正しくありません');
+    }
+    return kapp_ledger_update(KAPP_SELLERS, 'sellers', function (&$data) use ($user, $name, $url, $email) {
         foreach ($data['sellers'] as $i => $seller) {
             if (kapp_norm_user($seller['x']) === $user) {
                 // 再登録は上書き。承認状態は維持する（登録し直しで承認が外れないように）
                 $data['sellers'][$i]['name'] = $name;
                 $data['sellers'][$i]['url'] = $url;
+                if ($email !== '') { $data['sellers'][$i]['email'] = $email; }
                 $data['sellers'][$i]['updated_at'] = time();
                 return array(true, '販売店情報を更新しました');
             }
@@ -130,6 +135,8 @@ function kapp_register_seller($user, $name, $url) {
             'x'          => $user,
             'name'       => $name,
             'url'        => $url,
+            // 注文が入ったときの通知先。無ければ管理者へ送る
+            'email'      => $email,
             'approved'   => kapp_is_admin($user),
             'created_at' => time(),
             'updated_at' => time(),
@@ -344,12 +351,124 @@ function kapp_mail_from() {
     return defined('KAPP_MAIL_FROM') ? KAPP_MAIL_FROM : 'info@exbridge.jp';
 }
 
+/** システム管理者。すべてのメールの控えがここに届く。 */
+function kapp_admin_email() {
+    return defined('KAPP_ADMIN_EMAIL') ? trim(KAPP_ADMIN_EMAIL) : '';
+}
+
+/** 販売店の通知先。未登録なら管理者へ落とす（通知が消えるのが一番まずい）。 */
+function kapp_seller_email($seller_x) {
+    $s = kapp_find_seller($seller_x);
+    if ($s && !empty($s['email']) && filter_var($s['email'], FILTER_VALIDATE_EMAIL)) {
+        return $s['email'];
+    }
+    return kapp_admin_email();
+}
+
+/**
+ * メール送信の共通口。
+ *
+ * すべてのメールの控えをシステム管理者へ Bcc で送る。To/Cc にすると
+ * 購入者に管理者のアドレスが見えてしまうため Bcc を使う。
+ *
+ * From は SPF にこのサーバーが入っているドメインを使うこと。入っていないと
+ * 受信側に捨てられ、mail() はそれでも true を返す（kinvoice で実際に不達）。
+ */
+function kapp_mail($to, $subject, $body) {
+    $to = trim((string)$to);
+    if ($to === '' || !filter_var($to, FILTER_VALIDATE_EMAIL)) { return false; }
+    $from = kapp_mail_from();
+    $headers = array(
+        'From: Kurage App Store <' . $from . '>',
+        'Reply-To: ' . $from,
+        'MIME-Version: 1.0',
+        'Content-Type: text/plain; charset=UTF-8',
+        'Content-Transfer-Encoding: base64',
+        'X-Mailer: Kurage App Store',
+    );
+    $bcc = kapp_admin_email();
+    if ($bcc !== '' && strtolower($bcc) !== strtolower($to)) {
+        $headers[] = 'Bcc: ' . $bcc;
+    }
+    return @mail($to, '=?UTF-8?B?' . base64_encode($subject) . '?=',
+                 chunk_split(base64_encode($body)), implode("\r\n", $headers));
+}
+
+/** 注文が入ったことを販売店へ知らせる。銀行振込はこれが入金待ちの合図。 */
+function kapp_send_order_mail($order) {
+    $to = kapp_seller_email(isset($order['seller']) ? $order['seller'] : '');
+    if ($to === '' || !filter_var($to, FILTER_VALIDATE_EMAIL)) { return false; }
+    $method = $order['method'] === 'paypal' ? 'PayPal'
+            : ($order['method'] === 'free' ? '無料' : '銀行振込');
+    $paid = $order['status'] === 'paid';
+
+    $subject = '【Kurage App Store】新しいご注文（' . $order['invoice_no'] . '）'
+             . ($paid ? '' : ' ※入金待ち');
+
+    $body = "新しいご注文が入りました。\n\n"
+          . "──────────────────────────\n"
+          . "  注文番号 : " . $order['invoice_no'] . "\n"
+          . "  商品     : " . $order['app_name'] . "\n"
+          . "  金額     : " . number_format((int)$order['total']) . " 円（税込）\n"
+          . "  支払方法 : " . $method . "\n"
+          . "  状態     : " . ($paid ? '入金済み' : '入金待ち') . "\n"
+          . "──────────────────────────\n"
+          . "  請求先   : " . $order['billing_name'] . " 様\n"
+          . (empty($order['contact']) ? '' : "  ご担当   : " . $order['contact'] . "\n")
+          . "  購入者   : @" . $order['user'] . "\n"
+          . "  連絡先   : " . (empty($order['email']) ? '（未登録）' : $order['email']) . "\n"
+          . "──────────────────────────\n\n";
+
+    if (!$paid) {
+        $body .= "▼ 銀行振込です。入金を確認したら、下記から「入金を確認」を押してください。\n"
+               . "  押すと、購入者へダウンロード案内が自動で送られます。\n\n";
+    }
+    $body .= "https://kappstore.exbridge.jp/admin.php\n\n"
+           . "──────────────────────────\n"
+           . "Kurage App Store — 株式会社エクスブリッジ\n";
+    return kapp_mail($to, $subject, $body);
+}
+
+/** 購入者へ注文内容の控えを送る。画面を閉じても振込先が分かるように。 */
+function kapp_send_buyer_order_mail($order) {
+    $to = isset($order['email']) ? trim((string)$order['email']) : '';
+    if ($to === '' || !filter_var($to, FILTER_VALIDATE_EMAIL)) { return false; }
+    $bank = ($order['method'] === 'bank' && (int)$order['total'] > 0);
+
+    $subject = '【Kurage App Store】ご注文を承りました（' . $order['invoice_no'] . '）';
+    $body = $order['billing_name'] . " 様\n\n"
+          . "ご注文ありがとうございます。内容は下記のとおりです。\n\n"
+          . "──────────────────────────\n"
+          . "  注文番号 : " . $order['invoice_no'] . "\n"
+          . "  商品     : " . $order['app_name'] . "\n"
+          . "  金額     : " . number_format((int)$order['total']) . " 円（税込）\n"
+          . "──────────────────────────\n\n";
+
+    if ($bank) {
+        $body .= "▼ お振込先\n"
+               . "  三井住友銀行 上前津支店 普通 7312531\n"
+               . "  カ）エクスブリッジ（株式会社エクスブリッジ）\n"
+               . "  金額 " . number_format((int)$order['total']) . " 円（税込）\n\n"
+               . "  振込手数料はお客様のご負担でお願いいたします。\n"
+               . "  お振込みの際は注文番号（" . $order['invoice_no'] . "）をご記入ください。\n\n"
+               . "  ご入金を確認しましたら、ダウンロードのご案内をお送りします。\n\n";
+    } elseif ($order['status'] === 'paid') {
+        $body .= "▼ ダウンロードはこちら\n"
+               . "  https://kappstore.exbridge.jp/download.php?id=" . rawurlencode($order['app_id']) . "\n\n";
+    }
+
+    $body .= "ご注文の状況は購入履歴からご確認いただけます。\n"
+           . "  https://kappstore.exbridge.jp/orders.php\n\n"
+           . "──────────────────────────\n"
+           . "Kurage App Store — 株式会社エクスブリッジ\n"
+           . kapp_mail_from() . "\n";
+    return kapp_mail($to, $subject, $body);
+}
+
 function kapp_send_paid_mail($order) {
     $to = isset($order['email']) ? trim((string)$order['email']) : '';
     if ($to === '' || !filter_var($to, FILTER_VALIDATE_EMAIL)) { return false; }
-
-    $from = kapp_mail_from();
-    $dl   = 'https://kappstore.exbridge.jp/download.php?id=' . rawurlencode($order['app_id']);
+    $dl = 'https://kappstore.exbridge.jp/download.php?id=' . rawurlencode($order['app_id']);
     $subject = '【Kurage App Store】ご入金を確認しました（' . $order['invoice_no'] . '）';
 
     $body = $order['billing_name'] . " 様\n\n"
@@ -367,16 +486,6 @@ function kapp_send_paid_mail($order) {
           . "  https://kappstore.exbridge.jp/orders.php\n\n"
           . "──────────────────────────\n"
           . "Kurage App Store — 株式会社エクスブリッジ\n"
-          . $from . "\n";
-
-    $headers = implode("\r\n", array(
-        'From: Kurage App Store <' . $from . '>',
-        'Reply-To: ' . $from,
-        'MIME-Version: 1.0',
-        'Content-Type: text/plain; charset=UTF-8',
-        'Content-Transfer-Encoding: base64',
-        'X-Mailer: Kurage App Store',
-    ));
-    return @mail($to, '=?UTF-8?B?' . base64_encode($subject) . '?=',
-                 chunk_split(base64_encode($body)), $headers);
+          . kapp_mail_from() . "\n";
+    return kapp_mail($to, $subject, $body);
 }
