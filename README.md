@@ -65,8 +65,15 @@ bash scripts/deploy.sh            # heteml へ公開
 `scripts/deploy.sh` は `aixec/.env` の FTP 認証情報を使います。実行時設定
 `public/kapp_config.php` はリポジトリに入れません（`kapp_config.php.example` を参照）。
 
-**PHP 5.x でも動く構文だけを使ってください。** 新規サブドメインのPHPバージョンが
-事前に確認できないためです（exbridge.jp が 5.6 で `??` が構文エラーになった事例あり）。
+### heteml の注意点
+
+- **PHPのバージョンは `.htaccess` で決まります。** `AddHandler php8.3-script .php` を
+  置かないと **5.6 で動きます**（新規サブドメインの既定）。`public/.htaccess` を
+  消さないでください。
+- `auth_common.php` は同じディレクトリの `config.php` を require します。
+  kurage 側の `config.php` には kfreqai / rqdb4ai の API 認証情報が入っているので
+  **流用せず**、`public/config.php`（空）を置いています。使わない認証情報を、
+  置く理由のないドキュメントルートに増やさないためです。
 
 ## ライセンス
 

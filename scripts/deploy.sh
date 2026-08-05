@@ -23,9 +23,16 @@ upload() {  # upload <local> <remote-path>
   echo "deployed: ${2}"
 }
 
+# --- サーバー設定（heteml は .htaccess でPHPのバージョンを選ぶ。
+#     置かないと 5.6 で動く）---
+upload public/.htaccess .htaccess
+
 # --- 認証（kurage.exbridge.jp と同じものを使う。OAuth自体は
 #     aiknowledgecms.exbridge.jp が受け持つので、ここにXの鍵は置かない）---
 upload /home/kojima/work/kurage_web/auth_common.php auth_common.php
+# auth_common.php が require する。kappstore 用の空の設定
+# （kurage 側の config.php には kfreqai/rqdb4ai の認証情報が入っているので流用しない）
+upload public/config.php config.php
 
 # --- 画面 ---
 for f in index.php app.php order.php orders.php download.php register.php sellers.php sitemap.php; do

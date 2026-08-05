@@ -1,0 +1,17 @@
+# heteml は .htaccess でPHPのバージョンを選ぶ。指定しないと 5.6 で動く。
+AddHandler php8.3-script .php
+DirectoryIndex index.php index.html
+
+RewriteEngine On
+RewriteRule ^sitemap\.xml$ sitemap.php [L]
+
+# 実行時設定と台帳は直接読ませない（PHPが止まったときにソースが出るため）
+<FilesMatch "^(kapp_config\.php)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>
