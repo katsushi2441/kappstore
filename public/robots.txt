@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /order.php
+Disallow: /orders.php
+Disallow: /register.php
+Disallow: /download.php
+Disallow: /kapp_data/
+Sitemap: https://kappstore.exbridge.jp/sitemap.php

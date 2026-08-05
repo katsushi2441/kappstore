@@ -1,0 +1,3 @@
+<?php
+// kappstore の実行時設定。実物は公開リポジトリに入れない（scripts/deploy.sh が配置する）。
+define('KAPP_PAYPAL_CLIENT_ID', '');  // PayPal Smart Buttons の Client ID。空なら PayPal を出さない

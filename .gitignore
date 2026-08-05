@@ -1,0 +1,7 @@
+public/kapp_config.php
+public/kapp_data/
+public/kapp_media/*
+!public/kapp_media/.htaccess
+outputs/
+*.pyc
+__pycache__/
