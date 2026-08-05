@@ -152,7 +152,7 @@ function kapp_footer() {
        . 'Kurage App Store — <a href="https://exbridge.jp/">株式会社エクスブリッジ</a><br>'
        . '<a href="https://kurage.exbridge.jp/terms.html">利用規約</a> · '
        . '<a href="https://kurage.exbridge.jp/tokusho.php">特定商取引法に基づく表記</a> · '
-       . '<a href="https://kurage.exbridge.jp/sales-partner.html">営業パートナー募集</a> · '
+       . '<a href="https://kurage.exbridge.jp/sales-partner.html">販売代理店募集</a> · '
        . '<a href="https://kurage.exbridge.jp/">Kurage シリーズ</a> · '
        . '<a href="https://exbridge.jp/contact.php">お問い合わせ</a>'
        . '</div></footer></body></html>';
