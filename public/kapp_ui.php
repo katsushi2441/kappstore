@@ -5,7 +5,11 @@
  * 画面ごとにCSSを複製すると、直したつもりが1画面だけ古いままになる。
  */
 
-function kapp_head($title, $description, $canonical, $noindex = false) {
+/**
+ * @param string $jsonld 構造化データ(JSON-LD)。検索結果での見え方に効くので、
+ *                       トップと商品ページでは入れる。
+ */
+function kapp_head($title, $description, $canonical, $noindex = false, $jsonld = '') {
     $t = kapp_h($title);
     $d = kapp_h($description);
     $c = kapp_h($canonical);
@@ -125,6 +129,10 @@ footer.site{text-align:center;color:var(--abyss-soft);font-size:12.5px;padding:3
 </head>
 <body>
 HTML;
+    // 構造化データは heredoc の外で出す（JSONの波括弧が変数展開と衝突するため）
+    if ($jsonld !== '') {
+        echo '<script type="application/ld+json">' . $jsonld . '</script>' . "\n";
+    }
 }
 
 function kapp_header($subtitle, $logged_in, $user, $is_seller = false, $is_admin = false) {

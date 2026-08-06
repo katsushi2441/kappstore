@@ -4,12 +4,17 @@
  *
  * 買い手はここから探し、デモを触ってから注文する。ログイン不要で閲覧できる
  * （何を売っているか見せてからログインさせる。vibe-prototype.php と同じ方針）。
+ *
+ * このページは店の説明も兼ねる。「非エンジニアが、買ったあとで自分で
+ * 改変・拡張できるプロトタイプの店」という一点を伝えるのが役割で、
+ * 検索から来た人が最初に読む文章でもあるため、そこを厚く書いている。
  */
 require_once __DIR__ . '/kapp_boot.php';
 kapp_handle_auth_links('index.php');
 
 $q = isset($_GET['q']) ? trim((string)$_GET['q']) : '';
-$apps = kapp_apps_published();
+$all = kapp_apps_published();
+$apps = $all;
 if ($q !== '') {
     $hit = array();
     foreach ($apps as $app) {
@@ -22,24 +27,80 @@ if ($q !== '') {
 $sellers = array();
 foreach (kapp_sellers() as $s) { $sellers[kapp_norm_user($s['x'])] = $s; }
 
-kapp_head(
-    'Kurage App Store — AIが設置できる業務システムのダウンロード販売',
-    'デモを触ってから買える、業務システムのダウンロード販売。購入後はAIエージェントに渡すだけで設置まで進められます。ソースは改変・再配布自由。',
-    'https://kappstore.exbridge.jp/'
+/* ---- 構造化データ ----
+ * 商品一覧(ItemList)とよくある質問(FAQPage)を出す。検索結果での見え方に効く。 */
+$item_list = array();
+foreach ($all as $i => $app) {
+    $p = kapp_price_parts($app['price']);
+    $item_list[] = array(
+        '@type'    => 'ListItem',
+        'position' => $i + 1,
+        'item'     => array(
+            '@type'       => 'Product',
+            'name'        => $app['name'],
+            'description' => mb_strimwidth($app['summary'], 0, 200, '…', 'UTF-8'),
+            'url'         => 'https://kappstore.exbridge.jp/app.php?id=' . $app['id'],
+            'offers'      => array(
+                '@type'         => 'Offer',
+                'price'         => (string)$p['total'],
+                'priceCurrency' => 'JPY',
+                'availability'  => 'https://schema.org/InStock',
+            ),
+        ),
+    );
+}
+$faq = array(
+    array('プログラミングができなくても使えますか。',
+          'はい。購入したファイル一式をClaude CodeなどのAIエージェントに渡すと、同梱の手順書を読んで設置まで進みます。設置後の「項目を1つ増やしたい」「文面を変えたい」といった改造も、AIに頼んで進められます。'),
+    array('買ったあとで自由に変えられますか。',
+          'すべてMIT Licenseです。商用利用・改変・再配布・再販が自由に行えます。ソースコードが手元に残るので、他社に依頼しなくても自分で育てられます。'),
+    array('どのくらいの規模のコードですか。',
+          '1,000〜2,000行程度に収めています。読めないコードは改変できないため、「全部読めるサイズ」を意図的な上限にしています。'),
+    array('動かすのに何が必要ですか。',
+          'PHPが動くレンタルサーバーがあれば動きます。データベース・Composer・npmは不要で、FTPでアップロードするだけです。'),
+    array('買う前に試せますか。',
+          'すべての商品にデモをご用意しています。実際に操作してから購入をご判断ください。'),
 );
-kapp_header('AIが設置できる業務システム', $logged_in, $user, $is_seller, $is_admin);
+$faq_list = array();
+foreach ($faq as $f) {
+    $faq_list[] = array(
+        '@type' => 'Question', 'name' => $f[0],
+        'acceptedAnswer' => array('@type' => 'Answer', 'text' => $f[1]),
+    );
+}
+$jsonld = json_encode(array(
+    '@context' => 'https://schema.org',
+    '@graph'   => array(
+        array('@type' => 'WebSite', 'name' => 'Kurage App Store',
+              'url' => 'https://kappstore.exbridge.jp/',
+              'description' => '非エンジニアが自分で改変・拡張できる業務システムのプロトタイプを販売するダウンロードストア。'),
+        array('@type' => 'ItemList', 'itemListElement' => $item_list),
+        array('@type' => 'FAQPage', 'mainEntity' => $faq_list),
+    ),
+), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+kapp_head(
+    '非エンジニアが自分で改変できる業務システム | Kurage App Store',
+    '買ったあとで自分でカスタマイズできる業務システムのプロトタイプを販売。AIエージェントに渡せば設置も改造も進められます。MITライセンスで改変・再販自由、データベース不要、デモを触ってから購入できます。',
+    'https://kappstore.exbridge.jp/',
+    false,
+    $jsonld
+);
+kapp_header('改変できる業務システムのお店', $logged_in, $user, $is_seller, $is_admin);
 ?>
 <main class="wrap">
 <section>
-  <h1>触ってから買える、業務システムのお店</h1>
+  <h1>買ったあとで、自分で変えられる業務システム</h1>
   <p class="lead">
-    デモサイトで実際に動かしてからご購入いただけます。購入後はダウンロードしたファイルを
-    <b>AIエージェント（Claude Code など）に渡すだけ</b>で、設置とカスタマイズまで進められます。<br>
-    ソースコードが手元に残るので、あとからご自身で育てられます。
+    Kurage App Store は、<b>非エンジニアの方が自分でカスタマイズ・拡張できる</b>
+    業務システムのプロトタイプを販売するダウンロードストアです。<br>
+    完成品ではなく<b>「育てられる土台」</b>をお渡しします。
   </p>
 
-  <form method="get" style="margin-bottom:24px;display:flex;gap:10px;flex-wrap:wrap">
-    <input type="text" name="q" value="<?php echo kapp_h($q); ?>" placeholder="やりたいことで探す（例：見積書、勤怠、予約）"
+  <form method="get" role="search" style="margin-bottom:26px;display:flex;gap:10px;flex-wrap:wrap">
+    <input type="text" name="q" value="<?php echo kapp_h($q); ?>"
+           aria-label="やりたいことで探す"
+           placeholder="やりたいことで探す（例：請求書、注文、監視、見積書）"
            style="flex:1;min-width:240px">
     <button type="submit" class="btn">探す</button>
   </form>
@@ -84,6 +145,58 @@ kapp_header('AIが設置できる業務システム', $logged_in, $user, $is_sel
 
 <section>
   <div class="card plain">
+    <h2>完成品を買うと、変えられなくなる</h2>
+    <p>
+      業務システムを外注すると、たいていこうなります。作ってもらった直後は満足します。
+      半年経つと業務が変わって合わなくなる。直したいけれど自分では触れないので、また見積もりを取る。
+      小さな変更に数十万円かかる。だんだん頼まなくなり、Excelで回避するようになる。
+    </p>
+    <p>
+      <b>完成品は、渡された瞬間から劣化していきます。</b>変えられないからです。
+    </p>
+    <p>
+      かといって、ゼロから作るのも現実的ではありません。AIがあっても、非エンジニアが白紙から
+      業務システムを立ち上げるのは重い。「何をどう持つか」という判断が先に来るからです。
+    </p>
+    <p><b>その中間が、これまで売られていませんでした。</b></p>
+  </div>
+</section>
+
+<section>
+  <div class="card plain">
+    <h2>なぜ非エンジニアでも改変できるのか</h2>
+    <p>「AIがあるから」だけでは足りません。改変できる形で作ってあるからです。</p>
+    <ul>
+      <li><b>全部読めるサイズ。</b>1本あたり1,000〜2,000行程度に収めています。
+        読めないコードは改変できません。だから機能を盛らず、<b>読める上限</b>を先に決めています。</li>
+      <li><b>なぜそうしたかが書いてある。</b>コード中のコメントに設計の理由を残しています。
+        理由が書かれていないと、AIは良かれと思って安全側の作りを外してしまいます。</li>
+      <li><b>AIへの指示書が同梱。</b><code>CLAUDE.md</code> / <code>AGENTS.md</code> /
+        <code>INSTALL.md</code> を入れてあります。AIに渡せば、設置手順を読んでそのまま進みます。</li>
+      <li><b>改造の練習問題つき。</b>「項目を1つ増やす」から始めて、
+        少しずつ自分のものにしていく順序を用意しています。</li>
+      <li><b>MIT License。</b>商用利用・改変・再配布・再販が自由です。
+        買った方が改造して、自分のブランドで売っても構いません。</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <div class="card plain">
+    <h2>触ってから買えます</h2>
+    <p>
+      ソフトを買わない最大の理由は「自社で使えるか分からない」です。
+      スクリーンショットと機能一覧では、この不安は消えません。<b>触れば10秒で分かります。</b>
+    </p>
+    <p>
+      当ストアの商品には<b>すべてデモがついています</b>。実際に操作し、
+      画面と動きを確かめてからご購入ください。
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="card plain">
     <h2>ご購入からご利用までの流れ</h2>
     <ul>
       <li><b>デモを触る</b> — 各アプリのデモサイトで、実際の動きをご確認ください。</li>
@@ -91,8 +204,49 @@ kapp_header('AIが設置できる業務システム', $logged_in, $user, $is_sel
       <li><b>ダウンロード</b> — お支払い後、この画面からダウンロードできます。</li>
       <li><b>AIに渡して設置</b> — ダウンロードした一式を Claude Code などのAIエージェントに渡すと、
         設置手順書と設計書が同梱されているので、そのまま構築まで進められます。</li>
+      <li><b>自分で育てる</b> — 業務が変わったら、AIに頼んで直します。他社への依頼は要りません。</li>
     </ul>
     <p class="hint">動作環境・設置方法は、アプリごとの詳細画面に記載しています。</p>
+  </div>
+</section>
+
+<section>
+  <div class="card plain">
+    <h2>動作環境</h2>
+    <p>
+      <b>PHPが動くレンタルサーバーがあれば動きます。</b>
+      データベース・Composer・npm・常駐プロセスは不要で、FTPでアップロードするだけです。
+    </p>
+    <p>
+      日本の小さな会社が持っているのは、たいていPHPが動く共有サーバーです。
+      そこにデータベースの設定から始めさせると、多くの方がそこで止まります。
+      <b>届く相手を増やすために、必要な条件をここまで下げています。</b>
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="card plain">
+    <h2>よくあるご質問</h2>
+    <?php foreach ($faq as $f): ?>
+    <h3 style="font-size:15px;margin-top:16px"><?php echo kapp_h($f[0]); ?></h3>
+    <p style="font-size:14px"><?php echo kapp_h($f[1]); ?></p>
+    <?php endforeach; ?>
+  </div>
+</section>
+
+<section>
+  <div class="card plain">
+    <h2>出品をお考えの方へ</h2>
+    <p>
+      当ストアの方針は3つです。<b>買った人がAIに渡すだけで設置できること</b>、
+      <b>デモを触ってから買えること</b>、<b>改変が自由であること</b>。
+      この3つを満たさないものは並べていません。
+    </p>
+    <p>
+      出品にご興味のある方は<a href="sellers.php">販売店登録</a>からご連絡ください。
+      現在は準備中のため承認制です。
+    </p>
   </div>
 </section>
 </main>
