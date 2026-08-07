@@ -109,10 +109,8 @@ function kapp_statement_pdf($payout, $seller) {
     // 発行元
     $c .= kapp_pdf_text(360, 724, 11, $issuer['name']);
     $c .= kapp_pdf_text(360, 711, 8,   '登録番号 ' . $issuer['invoice_no']);
-    $c .= kapp_pdf_text(360, 700, 7.5, $issuer['zip'] . ' ' . $issuer['addr1']);
-    $c .= kapp_pdf_text(360, 689, 7.5, $issuer['addr2']);
-    $c .= kapp_pdf_text(360, 678, 7.5, $issuer['tel']);
-    $c .= kapp_pdf_text(360, 667, 7.5, $issuer['mail']);
+    $c .= kapp_pdf_text(360, 700, 7.5, $issuer['zip'] . ' ' . $issuer['addr']);
+    $c .= kapp_pdf_text(360, 690, 7.5, $issuer['mail']);
 
     // お支払額
     $c .= kapp_pdf_rect_fill($L, 626, 300, 34);

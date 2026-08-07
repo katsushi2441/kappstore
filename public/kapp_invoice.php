@@ -143,11 +143,11 @@ function kapp_issuer() {
     return array(
         'name'       => '株式会社エクスブリッジ',
         'invoice_no' => 'T4180001056508',
+        // 建物名と電話・FAXは載せない。請求書・支払明細書に必要なのは
+        // 発行者名・登録番号・連絡の取れる宛先で、建物名や電話番号は要件ではない。
+        // 特定商取引法に基づく表記（tokusho.php）には法定で必要なので、そちらには残す。
         'zip'        => '〒467-0853',
-        'addr'       => '愛知県名古屋市瑞穂区内浜町34-9 宝第二スカイハイツ305',
-        'addr1'      => '愛知県名古屋市瑞穂区内浜町34-9',
-        'addr2'      => '宝第二スカイハイツ305',
-        'tel'        => 'TEL 050-5436-6141 / FAX 052-388-7758',
+        'addr'       => '愛知県名古屋市瑞穂区内浜町34-9',
         'mail'       => 'info@exdirect.net',
         'bank'       => '三井住友銀行 上前津支店　普通 7312531',
         'holder'     => 'カ）エクスブリッジ',
@@ -192,10 +192,8 @@ function kapp_invoice_pdf($order) {
     // 発行元。登録番号は適格請求書の必須記載事項（無いと購入者が仕入税額控除を受けられない）
     $c .= kapp_pdf_text(360, 724, 11, $issuer['name']);
     $c .= kapp_pdf_text(360, 711, 8,   '登録番号 ' . $issuer['invoice_no']);
-    $c .= kapp_pdf_text(360, 700, 7.5, $issuer['zip'] . ' ' . $issuer['addr1']);
-    $c .= kapp_pdf_text(360, 689, 7.5, $issuer['addr2']);
-    $c .= kapp_pdf_text(360, 678, 7.5, $issuer['tel']);
-    $c .= kapp_pdf_text(360, 667, 7.5, $issuer['mail']);
+    $c .= kapp_pdf_text(360, 700, 7.5, $issuer['zip'] . ' ' . $issuer['addr']);
+    $c .= kapp_pdf_text(360, 690, 7.5, $issuer['mail']);
 
     // 合計
     $c .= kapp_pdf_rect_fill($L, 626, 300, 34);
