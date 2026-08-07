@@ -75,7 +75,14 @@ kapp_header('精算', $logged_in, $user, $is_seller, $is_admin);
     </div>
     <p class="hint">
       出品手数料は <b>販売価格（税抜）の<?php echo (int)(KAPP_FEE_RATE * 100); ?>％ ＋ <?php echo number_format(KAPP_FEE_FIXED); ?>円（税別）</b>です。
-      デモサイトの構築、導入・設定マニュアルを同梱したパッケージング、出品登録の費用が含まれます。</p>
+      デモサイトの構築、導入・設定マニュアルを同梱したパッケージング、出品登録の費用が含まれます。
+      お振り込み後に支払明細書（兼 適格請求書）を発行しますので、下記の履歴からお受け取りください。</p>
+    <?php $me = kapp_find_seller($user); ?>
+    <?php if (empty($me['bank'])): ?>
+    <p class="err" style="margin-top:12px">
+      <b>お振込先が未登録です。</b>お売り上げをお振り込みできませんので、
+      <a href="sellers.php">販売店情報</a>にご登録ください。</p>
+    <?php endif; ?>
   </div>
 
   <?php $my_unpaid = kapp_unpaid_orders($user); ?>
@@ -84,15 +91,15 @@ kapp_header('精算', $logged_in, $user, $is_seller, $is_admin);
     <h2>お支払い予定（<?php echo count($my_unpaid); ?>件）</h2>
     <div class="scroll">
     <table class="kv" style="width:100%">
-      <tr><th>販売日</th><th>商品</th><th style="text-align:right">売上(税込)</th>
-          <th style="text-align:right">手数料(税込)</th><th style="text-align:right">お支払額</th></tr>
+      <tr><th>販売日</th><th>商品</th><th style="text-align:right;white-space:nowrap">売上(税込)</th>
+          <th style="text-align:right;white-space:nowrap">手数料(税込)</th><th style="text-align:right;white-space:nowrap">お支払額</th></tr>
       <?php foreach ($my_unpaid as $o): ?>
       <tr>
         <td><?php echo date('Y/n/j', (int)$o['paid_at']); ?></td>
         <td><?php echo kapp_h(mb_strimwidth($o['app_name'], 0, 30, '…', 'UTF-8')); ?></td>
-        <td style="text-align:right"><?php echo number_format($o['sale_total']); ?>円</td>
-        <td style="text-align:right;color:var(--abyss-soft)">-<?php echo number_format($o['fee_total']); ?>円</td>
-        <td style="text-align:right"><b><?php echo number_format($o['net_total']); ?>円</b></td>
+        <td style="text-align:right;white-space:nowrap"><?php echo number_format($o['sale_total']); ?>円</td>
+        <td style="text-align:right;white-space:nowrap;color:var(--abyss-soft)">-<?php echo number_format($o['fee_total']); ?>円</td>
+        <td style="text-align:right;white-space:nowrap"><b><?php echo number_format($o['net_total']); ?>円</b></td>
       </tr>
       <?php endforeach; ?>
     </table>
@@ -112,6 +119,8 @@ kapp_header('精算', $logged_in, $user, $is_seller, $is_admin);
           <?php if (!empty($p['note'])): ?>　<?php echo kapp_h($p['note']); ?><?php endif; ?></span>
       </div>
       <b><?php echo number_format($p['total']); ?>円</b>
+      <a class="btn ghost" style="padding:6px 14px;font-size:12.5px;margin-left:12px"
+         href="statement.php?id=<?php echo kapp_h($p['id']); ?>" target="_blank" rel="noopener">支払明細書</a>
     </div>
     <?php endforeach; ?>
   </div>
@@ -141,6 +150,16 @@ kapp_header('精算', $logged_in, $user, $is_seller, $is_admin);
         <span>未払残 <b style="color:var(--teal-deep)"><?php echo number_format($s['unpaid_total']); ?></b>円</span>
       </div>
 
+      <?php $sk = kapp_norm_user($seller); $sinfo = isset($sellers[$sk]) ? $sellers[$sk] : array(); ?>
+      <p class="hint" style="margin-bottom:12px">
+        <?php if (!empty($sinfo['bank'])): ?>
+          お振込先: <b><?php echo kapp_h($sinfo['bank']); ?></b>
+        <?php else: ?>
+          <b style="color:#c0392b">お振込先が未登録です。</b>出品者に販売店情報の更新をご案内してください。
+        <?php endif; ?>
+        <?php if (!empty($sinfo['invoice_no'])): ?>　登録番号 <?php echo kapp_h($sinfo['invoice_no']); ?><?php endif; ?>
+      </p>
+
       <?php if (!$unpaid): ?>
         <p class="hint">未払いはありません。</p>
       <?php else: ?>
@@ -149,7 +168,7 @@ kapp_header('精算', $logged_in, $user, $is_seller, $is_admin);
           <div class="scroll">
           <table class="kv" style="width:100%">
             <tr><th style="width:34px"></th><th>販売日</th><th>商品</th><th>購入者</th>
-                <th style="text-align:right">お支払額</th></tr>
+                <th style="text-align:right;white-space:nowrap">お支払額</th></tr>
             <?php foreach ($unpaid as $o): ?>
             <tr>
               <td><input type="checkbox" name="orders[]" value="<?php echo kapp_h($o['id']); ?>" checked
@@ -157,7 +176,7 @@ kapp_header('精算', $logged_in, $user, $is_seller, $is_admin);
               <td><?php echo date('n/j', (int)$o['paid_at']); ?></td>
               <td><?php echo kapp_h(mb_strimwidth($o['app_name'], 0, 26, '…', 'UTF-8')); ?></td>
               <td style="font-size:12.5px;color:var(--abyss-soft)"><?php echo kapp_h($o['billing_name']); ?></td>
-              <td style="text-align:right"><b><?php echo number_format($o['net_total']); ?>円</b></td>
+              <td style="text-align:right;white-space:nowrap"><b><?php echo number_format($o['net_total']); ?>円</b></td>
             </tr>
             <?php endforeach; ?>
           </table>
@@ -171,8 +190,25 @@ kapp_header('精算', $logged_in, $user, $is_seller, $is_admin);
           </p>
           <p class="hint">
             <b>この操作でお金は動きません。</b>実際の振込を済ませてから記録してください。
-            記録すると未払残から外れ、取り消しはできません。</p>
+            記録すると未払残から外れ、取り消しはできません。支払明細書は記録と同時に発行されます。</p>
         </form>
+      <?php endif; ?>
+
+      <?php $past = kapp_seller_payouts($seller); ?>
+      <?php if ($past): ?>
+        <p class="hint" style="margin-top:14px;margin-bottom:4px">お支払い済み</p>
+        <?php foreach ($past as $p): ?>
+        <div class="row" style="padding:6px 0">
+          <div class="grow" style="font-size:13px">
+            <?php echo date('Y/n/j', (int)$p['paid_at']); ?>
+            <span style="color:var(--abyss-soft)">　<?php echo count($p['order_ids']); ?>件
+              <?php if (!empty($p['note'])): ?>　<?php echo kapp_h($p['note']); ?><?php endif; ?></span>
+          </div>
+          <span style="font-size:13px"><?php echo number_format($p['total']); ?>円</span>
+          <a style="font-size:12.5px;margin-left:12px"
+             href="statement.php?id=<?php echo kapp_h($p['id']); ?>" target="_blank" rel="noopener">支払明細書</a>
+        </div>
+        <?php endforeach; ?>
       <?php endif; ?>
     </div>
     <?php endforeach; ?>

@@ -109,7 +109,22 @@ function kapp_is_admin($user) {
  * 販売店を登録する。管理者は自動承認、それ以外は審査待ち。
  * マーケットプレイス化したらここの既定を変える。
  */
-function kapp_register_seller($user, $name, $url, $email = '') {
+/**
+ * 適格請求書発行事業者の登録番号を整える。
+ *
+ * 「T」＋13桁が正。全角や空白、ハイフン混じりで入力されがちなので直してから
+ * 検証する。形が違うものを通すと支払明細書に嘘の番号が載る。
+ */
+function kapp_norm_invoice_no($no) {
+    $no = mb_convert_kana(trim((string)$no), 'as', 'UTF-8');   // 全角英数→半角
+    $no = preg_replace('/[\s\-‐−―ー]/u', '', $no);
+    $no = strtoupper($no);
+    if ($no === '') { return ''; }
+    if (preg_match('/^[0-9]{13}$/', $no)) { $no = 'T' . $no; } // Tの付け忘れ
+    return $no;
+}
+
+function kapp_register_seller($user, $name, $url, $email = '', $invoice_no = '', $bank = '') {
     $user = kapp_norm_user($user);
     if ($user === '') { return array(false, 'ログインが必要です'); }
     if (trim($name) === '') { return array(false, '販売者名をご入力ください'); }
@@ -120,13 +135,22 @@ function kapp_register_seller($user, $name, $url, $email = '') {
     if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
         return array(false, 'メールアドレスの形式が正しくありません');
     }
-    return kapp_ledger_update(KAPP_SELLERS, 'sellers', function (&$data) use ($user, $name, $url, $email) {
+    $invoice_no = kapp_norm_invoice_no($invoice_no);
+    if ($invoice_no !== '' && !preg_match('/^T[0-9]{13}$/', $invoice_no)) {
+        return array(false, '登録番号は「T」＋13桁の数字でご入力ください');
+    }
+    $bank = trim((string)$bank);
+    if (mb_strlen($bank, 'UTF-8') > 200) { return array(false, 'お振込先が長すぎます'); }
+
+    return kapp_ledger_update(KAPP_SELLERS, 'sellers', function (&$data) use ($user, $name, $url, $email, $invoice_no, $bank) {
         foreach ($data['sellers'] as $i => $seller) {
             if (kapp_norm_user($seller['x']) === $user) {
                 // 再登録は上書き。承認状態は維持する（登録し直しで承認が外れないように）
                 $data['sellers'][$i]['name'] = $name;
                 $data['sellers'][$i]['url'] = $url;
                 if ($email !== '') { $data['sellers'][$i]['email'] = $email; }
+                $data['sellers'][$i]['invoice_no'] = $invoice_no;
+                $data['sellers'][$i]['bank'] = $bank;
                 $data['sellers'][$i]['updated_at'] = time();
                 return array(true, '販売店情報を更新しました');
             }
@@ -137,6 +161,10 @@ function kapp_register_seller($user, $name, $url, $email = '') {
             'url'        => $url,
             // 注文が入ったときの通知先。無ければ管理者へ送る
             'email'      => $email,
+            // 適格請求書発行事業者の登録番号。支払明細書に相手方として印字する
+            'invoice_no' => $invoice_no,
+            // 売上をお振り込みする口座
+            'bank'       => $bank,
             'approved'   => kapp_is_admin($user),
             'created_at' => time(),
             'updated_at' => time(),

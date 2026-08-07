@@ -97,6 +97,29 @@ function kapp_pdf_escape($text) {
     return str_replace(array('\\', '(', ')'), array('\\\\', '\\(', '\\)'), $text);
 }
 
+/** 描いたときの送り幅(pt)。右揃えに使う。kapp_pdf_text と同じ計算にすること。 */
+function kapp_pdf_width($size, $text) {
+    $widths = kapp_pdf_helvetica_widths();
+    $w = 0;
+    foreach (kapp_pdf_runs((string)$text) as $run) {
+        list($is_ascii, $chunk) = $run;
+        if ($is_ascii) {
+            for ($i = 0; $i < strlen($chunk); $i++) {
+                $code = ord($chunk[$i]);
+                $w += (isset($widths[$code]) ? $widths[$code] : 556) * $size / 1000;
+            }
+        } else {
+            $w += mb_strlen($chunk, 'UTF-8') * $size;   // 全角は1em
+        }
+    }
+    return $w;
+}
+
+/** 右揃え。$x が右端。金額欄は桁が揃っていないと読めない。 */
+function kapp_pdf_text_right($x, $y, $size, $text) {
+    return kapp_pdf_text($x - kapp_pdf_width($size, $text), $y, $size, $text);
+}
+
 function kapp_pdf_line($x1, $y1, $x2, $y2, $width = 0.5) {
     return sprintf("%s w %s %s m %s %s l S\n", $width, $x1, $y1, $x2, $y2);
 }
@@ -110,18 +133,29 @@ function kapp_pdf_rect_fill($x, $y, $w, $h, $gray = 0.94) {
  *
  * @param array $order 注文（id, invoice_no, billing_name, contact, created_at, amount, tax, total, method）
  */
-function kapp_invoice_pdf($order) {
-    $issuer = array(
-        'name'   => '株式会社エクスブリッジ',
-        'zip'    => '〒467-0853',
-        'addr'   => '愛知県名古屋市瑞穂区内浜町34-9 宝第二スカイハイツ305',
-        'addr1'  => '愛知県名古屋市瑞穂区内浜町34-9',
-        'addr2'  => '宝第二スカイハイツ305',
-        'tel'    => 'TEL 050-5436-6141 / FAX 052-388-7758',
-        'mail'   => 'info@exdirect.net',
-        'bank'   => '三井住友銀行 上前津支店　普通 7312531',
-        'holder' => 'カ）エクスブリッジ',
+/**
+ * 発行元。請求書と支払明細書で同じものを使う（食い違うと問い合わせになる）。
+ *
+ * invoice_no は適格請求書発行事業者の登録番号。これが無いと購入者は
+ * 仕入税額控除を受けられないので、請求書・支払明細書の双方に必ず印字する。
+ */
+function kapp_issuer() {
+    return array(
+        'name'       => '株式会社エクスブリッジ',
+        'invoice_no' => 'T4180001056508',
+        'zip'        => '〒467-0853',
+        'addr'       => '愛知県名古屋市瑞穂区内浜町34-9 宝第二スカイハイツ305',
+        'addr1'      => '愛知県名古屋市瑞穂区内浜町34-9',
+        'addr2'      => '宝第二スカイハイツ305',
+        'tel'        => 'TEL 050-5436-6141 / FAX 052-388-7758',
+        'mail'       => 'info@exdirect.net',
+        'bank'       => '三井住友銀行 上前津支店　普通 7312531',
+        'holder'     => 'カ）エクスブリッジ',
     );
+}
+
+function kapp_invoice_pdf($order) {
+    $issuer = kapp_issuer();
 
     $no      = isset($order['invoice_no']) ? $order['invoice_no'] : '';
     $to      = isset($order['billing_name']) ? $order['billing_name'] : '';
@@ -155,12 +189,13 @@ function kapp_invoice_pdf($order) {
         $c .= kapp_pdf_text($L, 700, 9, 'ご担当: ' . $contact . ' 様');
     }
 
-    // 発行元
+    // 発行元。登録番号は適格請求書の必須記載事項（無いと購入者が仕入税額控除を受けられない）
     $c .= kapp_pdf_text(360, 724, 11, $issuer['name']);
-    $c .= kapp_pdf_text(360, 710, 7.5, $issuer['zip'] . ' ' . $issuer['addr1']);
-    $c .= kapp_pdf_text(360, 699, 7.5, $issuer['addr2']);
-    $c .= kapp_pdf_text(360, 688, 7.5, $issuer['tel']);
-    $c .= kapp_pdf_text(360, 677, 7.5, $issuer['mail']);
+    $c .= kapp_pdf_text(360, 711, 8,   '登録番号 ' . $issuer['invoice_no']);
+    $c .= kapp_pdf_text(360, 700, 7.5, $issuer['zip'] . ' ' . $issuer['addr1']);
+    $c .= kapp_pdf_text(360, 689, 7.5, $issuer['addr2']);
+    $c .= kapp_pdf_text(360, 678, 7.5, $issuer['tel']);
+    $c .= kapp_pdf_text(360, 667, 7.5, $issuer['mail']);
 
     // 合計
     $c .= kapp_pdf_rect_fill($L, 626, 300, 34);
@@ -188,8 +223,9 @@ function kapp_invoice_pdf($order) {
 
     // 小計・消費税・合計
     $sy = $ry - 46;
+    // 適用税率と税率ごとの消費税額を明示する（適格請求書の必須記載事項）
     $rows = array(
-        array('小計', number_format($amount)),
+        array('10%対象 小計', number_format($amount)),
         array('消費税（10%）', number_format($tax)),
         array('合計', number_format($total)),
     );

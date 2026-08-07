@@ -20,12 +20,14 @@ if ($logged_in && isset($_POST['register_seller'])) {
         $name = trim((string)(isset($_POST['seller_name']) ? $_POST['seller_name'] : ''));
         $url  = trim((string)(isset($_POST['seller_url']) ? $_POST['seller_url'] : ''));
         $mail = trim((string)(isset($_POST['seller_email']) ? $_POST['seller_email'] : ''));
+        $inv  = trim((string)(isset($_POST['seller_invoice_no']) ? $_POST['seller_invoice_no'] : ''));
+        $bank = trim((string)(isset($_POST['seller_bank']) ? $_POST['seller_bank'] : ''));
         if (mb_strlen($name, 'UTF-8') > 80 || mb_strlen($url, 'UTF-8') > 200) {
             $error = '入力が長すぎます。';
         } elseif ($mail === '' || !filter_var($mail, FILTER_VALIDATE_EMAIL)) {
             $error = '通知先メールアドレスをご入力ください。';
         } else {
-            $result = kapp_register_seller($user, $name, $url, $mail);
+            $result = kapp_register_seller($user, $name, $url, $mail, $inv, $bank);
             if (empty($result[0])) { $error = $result[1]; }
             else {
                 $notice = $result[1];
@@ -167,6 +169,20 @@ kapp_header('販売店', $logged_in, $user, $is_seller, $is_admin);
         <input type="url" id="seller_url" name="seller_url" maxlength="200" placeholder="https://example.com/"
                value="<?php echo kapp_h($mine && !empty($mine['url']) ? $mine['url'] : ''); ?>">
         <p class="hint">会社サイトやポートフォリオなど。購入者に表示されます。</p>
+
+        <label for="seller_bank">売上のお振込先</label>
+        <input type="text" id="seller_bank" name="seller_bank" maxlength="200"
+               placeholder="例：三井住友銀行 上前津支店 普通 1234567 カ）レイ"
+               value="<?php echo kapp_h($mine && !empty($mine['bank']) ? $mine['bank'] : ''); ?>">
+        <p class="hint">銀行名・支店名・種別・口座番号・口座名義を続けてご入力ください。
+          <b>お売り上げのお振り込みに使います。</b>購入者には表示されません。</p>
+
+        <label for="seller_invoice_no">適格請求書発行事業者の登録番号（任意）</label>
+        <input type="text" id="seller_invoice_no" name="seller_invoice_no" maxlength="20"
+               placeholder="T1234567890123"
+               value="<?php echo kapp_h($mine && !empty($mine['invoice_no']) ? $mine['invoice_no'] : ''); ?>">
+        <p class="hint">「T」＋13桁。お支払明細書に記載します。
+          <b>登録がなくてもご出品・お支払いに支障はありません。</b>その場合は明細書に消費税相当額を分けて記載します。</p>
 
         <button type="submit" name="register_seller" value="1" class="btn" style="margin-top:18px">
           <?php echo $mine ? '販売店情報を更新' : '販売店として登録'; ?></button>
