@@ -34,7 +34,7 @@ function make_seller($x, $name, $url = '', $email = '') {
     return kapp_complete_seller($x, array(
         'name' => $name, 'company' => $name, 'contact' => '担当者',
         'tel' => '052-000-0000', 'email' => $email, 'url' => $url,
-        'addr' => '', 'bank' => '三井住友銀行 上前津支店 普通 1234567', 'invoice_no' => '',
+        'addr' => '', 'bank' => '三井住友銀行 上前津支店 普通 1234567', 'invoice_no' => '', 'agree' => '1',
     ));
 }
 

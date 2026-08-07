@@ -12,6 +12,7 @@
  * 商品を並べさせないため。
  */
 require_once __DIR__ . '/kapp_boot.php';
+require_once __DIR__ . '/kapp_payout.php';   // 出品手数料の率を同意文に出す
 
 // 案内URL（?t=<token>）で来た人は、ログイン後もここへ戻す
 $token = isset($_GET['t']) ? (string)$_GET['t'] : '';
@@ -44,7 +45,7 @@ if ($logged_in && isset($_POST['complete'])) {
         $error = '送信を確認できませんでした。もう一度お試しください。';
     } else {
         $f = array();
-        foreach (array('name','company','contact','tel','email','url','addr','bank','invoice_no') as $k) {
+        foreach (array('name','company','contact','tel','email','url','addr','bank','invoice_no','agree') as $k) {
             $f[$k] = isset($_POST[$k]) ? $_POST[$k] : '';
         }
         $r = kapp_complete_seller($user, $f);
@@ -172,6 +173,10 @@ if ($logged_in) { kapp_subnav($admin_view ? 'sellers.php?admin=1' : 'sellers.php
           <?php if (!empty($s['tel'])): ?> · <?php echo kapp_h($s['tel']); ?><?php endif; ?>
           <?php if (!empty($s['email'])): ?> · <?php echo kapp_h($s['email']); ?><?php endif; ?>
           · <?php echo date('Y/n/j', (int)$s['created_at']); ?>
+          <?php if (!empty($s['agreed_terms'])): ?>
+            · 条件に同意 <?php echo date('Y/n/j', (int)$s['agreed_at']); ?>
+            <span style="font-size:11px">(<?php echo kapp_h($s['agreed_version']); ?>)</span>
+          <?php endif; ?>
         </span>
         <?php if ($st === 'invited' || $st === 'approved'): ?>
           <br><span style="font-size:11.5px;color:var(--abyss-soft)">
@@ -342,6 +347,25 @@ if ($logged_in) { kapp_subnav($admin_view ? 'sellers.php?admin=1' : 'sellers.php
       <input type="url" id="url" name="url" maxlength="200" placeholder="https://example.com/"
              value="<?php echo kapp_h(!empty($mine['url']) ? $mine['url'] : ''); ?>">
       <p class="hint">会社サイトなど。購入者に表示されます。</p>
+
+      <?php /* 出品条件への同意。購入者側と同じ作法で、何に同意したかを本文で示す。
+               ここを口頭の説明だけにすると、手数料や返品を巡って揉める。 */ ?>
+      <label class="card plain" style="display:flex;gap:10px;align-items:flex-start;padding:14px 16px;
+             margin:20px 0 0;font-size:13.5px;box-shadow:none">
+        <input type="checkbox" name="agree" value="1" required
+               <?php echo $status === 'active' ? 'checked' : ''; ?>
+               style="margin-top:6px;width:17px;height:17px;flex:none">
+        <span><a href="https://kurage.exbridge.jp/terms.html" target="_blank" rel="noopener">Kurage 利用規約</a>
+          に同意し、出品にあたっての次の4点を確認しました。<br>
+          ① <b>出品手数料は 販売価格（税抜）の<?php echo (int)(KAPP_FEE_RATE * 100); ?>％ ＋ <?php echo number_format(KAPP_FEE_FIXED); ?>円（税別）</b>です。
+             初期費用はなく、<b>売れたときだけ</b>発生します。<br>
+          ② <b>販売価格は 100,000円（税別）から</b>とします。<br>
+          ③ 販売するのは<b>プロトタイプ</b>であり、<b>動作を保証しません</b>。購入者はAIエージェントに相談しながら
+             ご自身で設置・改修を進める前提で、<b>ノークレーム・ノーリターン</b>での販売となります。
+             個別サポートの提供も約束しません。<br>
+          ④ 売上は出品手数料を差し引いてご登録の口座へお振り込みし、
+             <b>支払明細書（兼 適格請求書）</b>を発行します。購入者への請求と販売は当社が行います。</span>
+      </label>
 
       <button type="submit" name="complete" value="1" class="btn" style="margin-top:18px">
         <?php echo $status === 'active' ? '出品者情報を更新' : '登録して出品を始める'; ?></button>

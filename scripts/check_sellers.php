@@ -31,7 +31,7 @@ function details($over = array()) {
         'name' => '株式会社サンプル', 'company' => '株式会社サンプル', 'contact' => '山田 太郎',
         'tel' => '052-000-0000', 'email' => 'info@example.test', 'url' => 'https://example.test/',
         'addr' => '愛知県名古屋市', 'bank' => '三井住友銀行 上前津支店 普通 1234567 カ）サンプル',
-        'invoice_no' => 'T1234567890123',
+        'invoice_no' => 'T1234567890123', 'agree' => '1',
     ), $over);
 }
 
@@ -74,7 +74,14 @@ check('登録番号が変なら弾く', kapp_complete_seller('alice', details(ar
 check('URLが変なら弾く',     kapp_complete_seller('alice', details(array('url' => 'example.test')))[0], false);
 check('弾かれたら出品可にならない', st('alice'), 'approved');
 
+// 同意していなければ出品可にしない。ここが抜けると、手数料や返品の条件に
+// 同意していない人が商品を並べられる
+check('同意なしは弾く',   kapp_complete_seller('alice', details(array('agree' => '')))[0], false);
+check('弾かれたら出品可にならない（同意）', st('alice'), 'approved');
 check('詳細を登録できる', kapp_complete_seller('alice', details())[0], true);
+check('同意した事実を控える', kapp_find_seller('alice')['agreed_terms'], true);
+check('同意した版を控える',   kapp_find_seller('alice')['agreed_version'], KAPP_SELLER_TERMS_VERSION);
+check('同意した時刻を控える', is_int(kapp_find_seller('alice')['agreed_at']), true);
 check('出品可になる',     st('alice'), 'active');
 check('出品できる',       kapp_is_approved_seller('alice'), true);
 check('登録番号が整う',   kapp_find_seller('alice')['invoice_no'], 'T1234567890123');

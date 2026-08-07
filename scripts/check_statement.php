@@ -62,7 +62,7 @@ function make_seller($x, $name, $inv = '', $bank = '三井住友銀行 上前津
     return kapp_complete_seller($x, array(
         'name' => $name, 'company' => $name, 'contact' => '担当者',
         'tel' => '052-000-0000', 'email' => $x . '@example.test',
-        'url' => 'https://example.test/', 'addr' => '', 'bank' => $bank, 'invoice_no' => $inv,
+        'url' => 'https://example.test/', 'addr' => '', 'bank' => $bank, 'invoice_no' => $inv, 'agree' => '1',
     ));
 }
 make_seller('demo_maker', 'デモ製作所', 'T1234567890123');

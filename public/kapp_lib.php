@@ -25,6 +25,10 @@ if (!defined('KAPP_ADMIN')) { define('KAPP_ADMIN', 'xb_bittensor'); }
 
 define('KAPP_TAX_RATE', 0.10);
 
+// 出品条件の版。文面を変えたらここを上げる。過去に同意した人が
+// 「どの条件に同意したのか」を後から辿れなくなるため。
+if (!defined('KAPP_SELLER_TERMS_VERSION')) { define('KAPP_SELLER_TERMS_VERSION', '2026-08-07'); }
+
 /* ---------------- 基盤 ---------------- */
 
 /** random_bytes は PHP 7 以降。5.x でも動くように退避経路を持つ。 */
@@ -305,6 +309,9 @@ function kapp_approve_seller($user, $approved) {
  * 商品を並べさせないため。
  */
 function kapp_complete_seller($user, $f) {
+    // 出品条件への同意。控えるのは「同意した事実と時刻と版」で、
+    // あとから条件を変えても、その人が何に同意したかが分かるようにする。
+    $agreed = !empty($f['agree']);
     $user = kapp_norm_user($user);
     if ($user === '') { return array(false, 'ログインが必要です'); }
     $seller = kapp_find_seller($user);
@@ -335,6 +342,7 @@ function kapp_complete_seller($user, $f) {
     if ($url !== '' && !preg_match('#^https?://#i', $url)) {
         return array(false, 'URLは http:// または https:// で始めてください');
     }
+    if (!$agreed)        { return array(false, '出品条件へのご同意が必要です'); }
     if ($bank === '')    { return array(false, '売上のお振込先をご入力ください'); }
     if (mb_strlen($bank, 'UTF-8') > 200) { return array(false, 'お振込先が長すぎます'); }
     if ($inv !== '' && !preg_match('/^T[0-9]{13}$/', $inv)) {
@@ -349,6 +357,9 @@ function kapp_complete_seller($user, $f) {
                 'name' => $name, 'company' => $company, 'contact' => $contact,
                 'tel' => $tel, 'email' => $email, 'url' => $url, 'addr' => $addr,
                 'bank' => $bank, 'invoice_no' => $inv,
+                'agreed_terms' => true,
+                'agreed_at' => time(),
+                'agreed_version' => KAPP_SELLER_TERMS_VERSION,
                 'status' => 'active', 'approved' => true, 'updated_at' => time(),
             ));
             return array(true, '出品者情報を登録しました。出品できます');
