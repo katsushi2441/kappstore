@@ -141,6 +141,7 @@ $v = function ($key, $default = '') use ($editing) {
 kapp_head('出品する | Kurage App Store', 'Kurage App Store にアプリを出品します。',
     'https://kappstore.exbridge.jp/register.php', true);
 kapp_header('出品', $logged_in, $user, $is_seller, $is_admin);
+if ($logged_in) { kapp_subnav('register.php', $user, $is_seller, $is_admin); }
 ?>
 <main class="wrap narrow">
 <section>

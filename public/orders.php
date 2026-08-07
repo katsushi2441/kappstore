@@ -9,6 +9,7 @@ kapp_handle_auth_links('orders.php');
 kapp_head('購入履歴 | Kurage App Store', 'ご購入いただいたアプリの一覧とダウンロード。',
     'https://kappstore.exbridge.jp/orders.php', true);
 kapp_header('購入履歴', $logged_in, $user, $is_seller, $is_admin);
+if ($logged_in) { kapp_subnav('orders.php', $user, $is_seller, $is_admin); }
 ?>
 <main class="wrap narrow">
 <section>

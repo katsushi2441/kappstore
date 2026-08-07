@@ -116,6 +116,7 @@ foreach (kapp_apps_published() as $app) {
 kapp_head('販売店 | Kurage App Store', 'Kurage App Store に出品している販売店の一覧と、出品のお申し込み。',
     'https://kappstore.exbridge.jp/sellers.php', $token !== '');
 kapp_header('販売店', $logged_in, $user, $is_seller, $is_admin);
+if ($logged_in) { kapp_subnav($admin_view ? 'sellers.php?admin=1' : 'sellers.php', $user, $is_seller, $is_admin); }
 ?>
 <main class="wrap narrow">
 <section>

@@ -62,6 +62,7 @@ foreach ($orders as $o) { if ($o['status'] !== 'paid') { $unpaid[] = $o; } }
 kapp_head('注文管理 | Kurage App Store', '全注文の一覧と入金確認。',
     'https://kappstore.exbridge.jp/admin.php', true);
 kapp_header('注文管理', $logged_in, $user, $is_seller, $is_admin);
+if ($logged_in) { kapp_subnav('admin.php', $user, $is_seller, $is_admin); }
 ?>
 <main class="wrap">
 <section>

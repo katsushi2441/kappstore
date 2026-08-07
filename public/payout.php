@@ -49,6 +49,7 @@ function payout_seller_name($seller, $sellers) {
 kapp_head('精算 | Kurage App Store', '売上と手数料、未払残の確認。',
     'https://kappstore.exbridge.jp/payout.php', true);
 kapp_header('精算', $logged_in, $user, $is_seller, $is_admin);
+if ($logged_in) { kapp_subnav('payout.php', $user, $is_seller, $is_admin); }
 ?>
 <main class="wrap">
 <section>

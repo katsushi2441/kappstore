@@ -67,6 +67,16 @@ header.site .wrap{display:flex;align-items:center;gap:12px;padding:12px 22px;fle
 .hbrand strong{font-size:14.5px;font-weight:900;display:block;line-height:1.25}
 .hbrand span{font-size:11px;color:var(--abyss-soft)}
 .hnav{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+/* ダッシュボードの2段目。上段より一段落ち着いた見た目にして、
+   店のヘッダーと作業用のメニューを視覚的に分ける */
+.subnav{background:var(--foam);border-bottom:1px solid var(--panel-line)}
+.subnav .wrap{display:flex;gap:4px;padding:0 22px;flex-wrap:wrap;overflow-x:auto}
+.subnav a.sub{font-size:13px;font-weight:700;color:var(--abyss-soft);padding:13px 14px;
+  border-bottom:3px solid transparent;white-space:nowrap}
+.subnav a.sub:hover{color:var(--abyss);text-decoration:none}
+.subnav a.sub.on{color:var(--teal-deep);border-bottom-color:var(--teal)}
+.subnav a.sub b{display:inline-block;min-width:18px;padding:1px 5px;margin-left:3px;border-radius:9px;
+  background:var(--gold);color:#fff;font-size:11px;text-align:center;line-height:1.5}
 .chip{font-size:12px;font-weight:700;color:var(--abyss-soft);border:1px solid var(--panel-line);
   border-radius:999px;padding:4px 12px;background:var(--foam)}
 a.chip:hover{text-decoration:none;border-color:var(--teal);color:var(--teal-deep)}
@@ -149,37 +159,83 @@ function kapp_header($subtitle, $logged_in, $user, $is_seller = false, $is_admin
     echo '<a class="hbrand" href="index.php"><span class="ico">'
        . '<img src="assets/kurage-face-192.webp" alt="Kurage"></span>'
        . '<div><strong>Kurage App Store</strong><span>' . kapp_h($subtitle) . '</span></div></a>';
+    // 上段はお店として誰にでも要るものだけ。役割ごとの画面は
+    // ダッシュボードの下（kapp_subnav）へ寄せる。上段に全部並べると、
+    // 買いに来た人にまで管理用のメニューが見えて店に見えなくなる。
     echo '<nav class="hnav">';
     echo '<a class="chip" href="index.php">アプリ一覧</a>';
     echo '<a class="chip" href="sellers.php">販売店一覧</a>';
     if ($logged_in) {
-        echo '<a class="chip" href="orders.php">購入履歴</a>';
-        if ($is_seller) { echo '<a class="chip" href="register.php">出品する</a>'; }
-        // 招待・承認されたが詳細登録が済んでいない人。ここに導線が無いと
-        // 案内メールを閉じた時点で戻る道が分からなくなる
-        elseif (kapp_seller_can_complete($user)) {
-            echo '<a class="chip" href="sellers.php"><b style="color:var(--gold)">販売店登録</b></a>';
-        }
-        // 精算は出品者本人（自分の売上）と管理者（支払い作業）の両方が使う
-        if ($is_seller || $is_admin) { echo '<a class="chip" href="payout.php">精算</a>'; }
-        if ($is_admin)  { echo '<a class="chip" href="admin.php">注文管理</a>'; }
-        if ($is_admin) {
-            // 審査待ちの件数を出す。押す前に分かるようにしないと、
-            // 応募が溜まっていることに気づかないまま放置される
-            $waiting = 0;
-            foreach (kapp_sellers() as $s) {
-                if (kapp_seller_status($s) === 'applied') { $waiting++; }
-            }
-            echo '<a class="chip" href="sellers.php?admin=1">販売店管理'
-               . ($waiting > 0 ? ' <b style="color:var(--gold)">' . $waiting . '</b>' : '')
-               . '</a>';
-        }
+        $badge = kapp_dashboard_badge($user, $is_admin);
+        echo '<a class="chip" href="dashboard.php">ダッシュボード'
+           . ($badge > 0 ? ' <b style="color:var(--gold)">' . $badge . '</b>' : '') . '</a>';
         echo '<span class="chip">@' . kapp_h($user) . '</span>';
         echo '<a class="chip" href="?logout=1">ログアウト</a>';
     } else {
         echo '<a class="chip" href="?login=1">𝕏 でログイン</a>';
     }
     echo '</nav></div></header>';
+}
+
+/**
+ * ダッシュボードに出す「手を動かす必要がある件数」。
+ *
+ * 上段の1箇所にまとめる。押す前に分からないと、審査待ちや入金待ちが
+ * 溜まっていることに気づかないまま放置される。
+ */
+function kapp_dashboard_badge($user, $is_admin) {
+    $n = 0;
+    if ($is_admin) {
+        foreach (kapp_sellers() as $s) {
+            if (kapp_seller_status($s) === 'applied') { $n++; }
+        }
+        foreach (kapp_all_orders() as $o) {
+            if ($o['status'] !== 'paid') { $n++; }     // 入金確認待ち
+        }
+    }
+    if (kapp_seller_can_complete($user)) { $n++; }      // 自分の詳細登録が未了
+    return $n;
+}
+
+/**
+ * ダッシュボードの2段目。役割ごとに出すものを変える。
+ *
+ * $current は今いる画面のファイル名。押せない自分自身を目立たせて、
+ * どこにいるか分かるようにする。
+ */
+function kapp_subnav($current, $user, $is_seller, $is_admin) {
+    $items = array();
+
+    if ($is_admin) {
+        $waiting = 0;
+        foreach (kapp_all_orders() as $o) { if ($o['status'] !== 'paid') { $waiting++; } }
+        $items[] = array('admin.php', '注文管理', $waiting);
+
+        $applied = 0;
+        foreach (kapp_sellers() as $s) { if (kapp_seller_status($s) === 'applied') { $applied++; } }
+        $items[] = array('sellers.php?admin=1', '販売店管理', $applied);
+    }
+    if ($is_seller) {
+        $items[] = array('sales.php', '販売履歴', 0);
+        $items[] = array('register.php', '出品する', 0);
+    } elseif (kapp_seller_can_complete($user)) {
+        // 招待・承認されたが詳細登録が済んでいない人。ここに導線が無いと
+        // 案内メールを閉じた時点で戻る道が分からなくなる
+        $items[] = array('sellers.php', '販売店登録', 1);
+    }
+    if ($is_seller || $is_admin) { $items[] = array('payout.php', '精算', 0); }
+    $items[] = array('orders.php', '購入履歴', 0);
+
+    echo '<div class="subnav"><div class="wrap">';
+    foreach ($items as $it) {
+        list($href, $label, $n) = $it;
+        $on = (strpos($href, $current) === 0
+               && (strpos($current, '?') !== false || strpos($href, '?') === false));
+        echo '<a class="' . ($on ? 'sub on' : 'sub') . '" href="' . kapp_h($href) . '">'
+           . kapp_h($label)
+           . ($n > 0 ? ' <b>' . (int)$n . '</b>' : '') . '</a>';
+    }
+    echo '</div></div>';
 }
 
 function kapp_footer() {
