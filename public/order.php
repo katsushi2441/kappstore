@@ -279,8 +279,13 @@ kapp_header('注文', $logged_in, $user, $is_seller, $is_admin);
            margin:18px 0;font-size:13.5px;box-shadow:none">
       <input type="checkbox" name="agree" value="1" required style="margin-top:6px;width:17px;height:17px;flex:none">
       <span><a href="https://kurage.exbridge.jp/terms.html" target="_blank" rel="noopener">Kurage 利用規約</a>
-        と<a href="https://kurage.exbridge.jp/tokusho.php" target="_blank" rel="noopener">特定商取引法に基づく表記</a>に同意します。
-        <b>ダウンロード商品のため、購入後の返品・返金はできません。</b>デモで動作をご確認のうえお進みください。</span>
+        と<a href="https://kurage.exbridge.jp/tokusho.php" target="_blank" rel="noopener">特定商取引法に基づく表記</a>に同意し、
+        次の4点を確認しました。<br>
+        ① これは<b>プロトタイプ</b>であり、<b>動作は保証されていません</b>。環境によっては動かない可能性があります。<br>
+        ② 設置と問題解決は、<b>Claude Code / Codex などのAIエージェントに相談しながら自分で進めます</b>。<br>
+        ③ <b>問い合わせへの対応は約束されておらず</b>、購入代金に個別サポートは含まれません。<br>
+        ④ <b>ノークレーム・ノーリターン。</b>ダウンロード商品のため購入後の返品・返金はできません。
+        デモで動作を確認のうえ購入します。</span>
     </label>
 
     <button type="submit" name="register" value="1" class="btn">
