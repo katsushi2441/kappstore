@@ -121,6 +121,11 @@ table.kv{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:10px}
 table.kv th,table.kv td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--panel-line);vertical-align:top}
 table.kv th{width:32%;color:var(--abyss-soft);font-size:12px;white-space:nowrap}
 .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;border-top:1px solid var(--panel-line);padding:12px 2px}
+/* 明細表。スマホでは横スクロールさせる（列を減らすと突き合わせができなくなる） */
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.kv{border-collapse:collapse;font-size:13.5px;min-width:520px}
+table.kv th,table.kv td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--panel-line);vertical-align:top}
+table.kv th{color:var(--abyss-soft);font-size:12px;white-space:nowrap;font-weight:700}
 .row:first-child{border-top:0}
 .row .grow{flex:1;min-width:180px}
 .empty-note{text-align:center;color:var(--abyss-soft);font-size:14px;padding:50px 20px}
@@ -150,6 +155,8 @@ function kapp_header($subtitle, $logged_in, $user, $is_seller = false, $is_admin
     if ($logged_in) {
         echo '<a class="chip" href="orders.php">購入履歴</a>';
         if ($is_seller) { echo '<a class="chip" href="register.php">出品する</a>'; }
+        // 精算は出品者本人（自分の売上）と管理者（支払い作業）の両方が使う
+        if ($is_seller || $is_admin) { echo '<a class="chip" href="payout.php">精算</a>'; }
         if ($is_admin)  { echo '<a class="chip" href="admin.php">注文管理</a>'; }
         if ($is_admin)  { echo '<a class="chip" href="sellers.php?admin=1">審査</a>'; }
         echo '<span class="chip">@' . kapp_h($user) . '</span>';

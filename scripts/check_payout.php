@@ -152,7 +152,27 @@ check('未払残＝取り分合計－支払済',
     $sum['someone']['unpaid_total'], $sum['someone']['net_total'] - $sum['someone']['paid_total']);
 
 /* ============================================================
- * 6. 支払い実績の履歴
+ * 6. 自社出品は精算しない
+ *
+ * 店の運営者自身の出品が精算対象に混ざると、画面に「自分への未払残」が
+ * 出て、誤って振り込む事故につながる。
+ * ========================================================== */
+$own = $app;
+$own['id'] = 'app0003'; $own['seller'] = KAPP_ADMIN; $own['name'] = '自社商品';
+kapp_save_app($own);
+$r5 = kapp_create_order('erin', $own, '株式会社エリン', '', 'bank', 'e@example.test');
+kapp_admin_mark_paid($r5[1], '');
+
+check('自社出品は判定できる', kapp_is_own_listing(KAPP_ADMIN), true);
+check('大文字でも自社と判定', kapp_is_own_listing('XB_BitTensor'), true);
+check('他人は自社ではない',   kapp_is_own_listing('someone'), false);
+check('自社は精算一覧に出ない', isset(kapp_payout_summary()[kapp_norm_user(KAPP_ADMIN)]), false);
+check('自社には支払えない',     kapp_record_payout(KAPP_ADMIN, array($r5[1]), '')[0], false);
+// 他の出品者の集計は影響を受けない
+check('他の出品者は変わらず', kapp_payout_summary()['someone']['count'], 3);
+
+/* ============================================================
+ * 7. 支払い実績の履歴
  * ========================================================== */
 check('履歴を引ける', count(kapp_seller_payouts('someone')), 1);
 check('他人の履歴は混ざらない', count(kapp_seller_payouts('another')), 0);

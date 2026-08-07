@@ -49,6 +49,18 @@ function kapp_payout_parts($order) {
     );
 }
 
+/**
+ * 自社の出品かどうか。
+ *
+ * 店の運営者自身が出品したものは、売れてもお金は動かない（自分から自分へ
+ * 払うことになる）。精算の対象に混ぜると、画面に「自分への未払残」が出て、
+ * 誤って振り込む事故につながる。売上そのものは注文管理で見られる。
+ */
+function kapp_is_own_listing($seller) {
+    return defined('KAPP_ADMIN') && KAPP_ADMIN !== ''
+        && kapp_norm_user($seller) === kapp_norm_user(KAPP_ADMIN);
+}
+
 /* ---------------- 支払い実績 ---------------- */
 
 function kapp_payouts() { return kapp_ledger_load(KAPP_PAYOUTS, 'payouts'); }
@@ -72,6 +84,7 @@ function kapp_seller_payouts($seller) {
 function kapp_record_payout($seller, $order_ids, $note = '') {
     $seller = kapp_norm_user($seller);
     if ($seller === '') { return array(false, '出品者が指定されていません'); }
+    if (kapp_is_own_listing($seller)) { return array(false, '自社の出品は精算の対象外です'); }
     if (!is_array($order_ids) || !$order_ids) { return array(false, '対象の注文がありません'); }
 
     // 金額は注文台帳から引き直す。画面から渡された数字は信用しない。
@@ -125,6 +138,8 @@ function kapp_payout_summary() {
         if ($order['status'] !== 'paid') { continue; }          // 入金済みだけが精算の対象
         $seller = kapp_norm_user($order['seller']);
         if ($seller === '') { continue; }
+        if (kapp_is_own_listing($seller)) { continue; }         // 自社出品は精算しない
+
         if (!isset($sum[$seller])) {
             $sum[$seller] = array(
                 'seller' => $seller, 'count' => 0,
