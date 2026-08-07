@@ -560,8 +560,26 @@ function kapp_mail_from() {
 }
 
 /** システム管理者。すべてのメールの控えがここに届く。 */
+/**
+ * システム管理者。カンマ区切りで複数を指定できる。
+ *
+ * 1つしか送れないと、その1つが受け取れなかったときに気づく人がいなくなる。
+ * 注文や出品の申し込みは放置されるのが一番まずいので、複数へ送る。
+ */
+function kapp_admin_emails() {
+    if (!defined('KAPP_ADMIN_EMAIL')) { return array(); }
+    $out = array();
+    foreach (explode(',', KAPP_ADMIN_EMAIL) as $a) {
+        $a = trim($a);
+        if ($a !== '' && filter_var($a, FILTER_VALIDATE_EMAIL)) { $out[] = $a; }
+    }
+    return $out;
+}
+
+/** 先頭の1つ。宛先を1つだけ書きたい場面（Bcc・出品者の代替宛先）で使う。 */
 function kapp_admin_email() {
-    return defined('KAPP_ADMIN_EMAIL') ? trim(KAPP_ADMIN_EMAIL) : '';
+    $a = kapp_admin_emails();
+    return $a ? $a[0] : '';
 }
 
 /** 出品者の通知先。未登録なら管理者へ落とす（通知が消えるのが一番まずい）。 */
@@ -594,10 +612,12 @@ function kapp_mail($to, $subject, $body) {
         'Content-Transfer-Encoding: base64',
         'X-Mailer: Kurage App Store',
     );
-    $bcc = kapp_admin_email();
-    if ($bcc !== '' && strtolower($bcc) !== strtolower($to)) {
-        $headers[] = 'Bcc: ' . $bcc;
+    // 控えは管理者全員へ。宛先と重複するものだけ除く
+    $bcc = array();
+    foreach (kapp_admin_emails() as $a) {
+        if (strtolower($a) !== strtolower($to)) { $bcc[] = $a; }
     }
+    if ($bcc) { $headers[] = 'Bcc: ' . implode(', ', $bcc); }
     return @mail($to, '=?UTF-8?B?' . base64_encode($subject) . '?=',
                  chunk_split(base64_encode($body)), implode("\r\n", $headers));
 }
@@ -704,10 +724,18 @@ function kapp_send_paid_mail($order) {
  * 一番まずいので、状態が変わったら必ずメールで知らせる。
  */
 
+/** 管理者全員へ送る。1人でも送れたら成功とみなす。 */
+function kapp_mail_admins($subject, $body) {
+    $ok = false;
+    foreach (kapp_admin_emails() as $to) {
+        if (kapp_mail($to, $subject, $body)) { $ok = true; }
+    }
+    return $ok;
+}
+
 /** 応募が入ったことを管理者へ。これが無いと審査待ちが溜まったまま気づけない。 */
 function kapp_notify_seller_applied($seller) {
-    $to = kapp_admin_email();
-    if ($to === '') { return false; }
+    if (!kapp_admin_emails()) { return false; }
     $body = "出品者のお申し込みが届きました。\n\n"
           . "  𝕏        @" . $seller['x'] . "\n"
           . "  会社名   " . $seller['company'] . "\n"
@@ -718,7 +746,7 @@ function kapp_notify_seller_applied($seller) {
           . "https://kappstore.exbridge.jp/sellers.php?admin=1\n\n"
           . "──────────────────────────\n"
           . "Kurage App Store\n";
-    return kapp_mail($to, '[kappstore] 出品者のお申し込み @' . $seller['x'], $body);
+    return kapp_mail_admins('[kappstore] 出品者のお申し込み @' . $seller['x'], $body);
 }
 
 /** 招待・承認を本人へ。詳細登録の入口URLを必ず入れる。 */
@@ -744,8 +772,7 @@ function kapp_notify_seller_invited($seller, $approved = false) {
 
 /** 詳細登録が済んで出品可になったことを管理者へ。 */
 function kapp_notify_seller_active($seller) {
-    $to = kapp_admin_email();
-    if ($to === '') { return false; }
+    if (!kapp_admin_emails()) { return false; }
     $body = "出品者の情報登録が完了しました。出品可能になっています。\n\n"
           . "  𝕏        @" . $seller['x'] . "\n"
           . "  開発元名 " . $seller['name'] . "\n"
@@ -753,5 +780,5 @@ function kapp_notify_seller_active($seller) {
           . "  振込先   " . $seller['bank'] . "\n"
           . "  登録番号 " . ($seller['invoice_no'] !== '' ? $seller['invoice_no'] : '（未登録）') . "\n\n"
           . "https://kappstore.exbridge.jp/sellers.php?admin=1\n";
-    return kapp_mail($to, '[kappstore] 出品者の情報登録が完了 @' . $seller['x'], $body);
+    return kapp_mail_admins('[kappstore] 出品者の情報登録が完了 @' . $seller['x'], $body);
 }
