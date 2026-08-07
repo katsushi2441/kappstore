@@ -55,8 +55,17 @@ $app = array(
     'status' => 'published', 'created_at' => time(),
 );
 kapp_save_app($app);
-kapp_register_seller('demo_maker', 'デモ製作所', 'https://example.test/',
-    'maker@example.test', 'T1234567890123', '三井住友銀行 上前津支店 普通 1234567 デモセイサクジヨ');
+/** 応募 → 承認 → 詳細登録 まで通す。 */
+function make_seller($x, $name, $inv = '', $bank = '三井住友銀行 上前津支店 普通 1234567 デモセイサクジヨ') {
+    kapp_apply_seller($x, $name, '担当者', '052-000-0000', $x . '@example.test');
+    kapp_approve_seller($x, true);
+    return kapp_complete_seller($x, array(
+        'name' => $name, 'company' => $name, 'contact' => '担当者',
+        'tel' => '052-000-0000', 'email' => $x . '@example.test',
+        'url' => 'https://example.test/', 'addr' => '', 'bank' => $bank, 'invoice_no' => $inv,
+    ));
+}
+make_seller('demo_maker', 'デモ製作所', 'T1234567890123');
 $seller = kapp_find_seller('demo_maker');
 
 check('登録番号を保存できる', $seller['invoice_no'], 'T1234567890123');
@@ -67,10 +76,9 @@ check('全角で入れても直る',   kapp_norm_invoice_no('Ｔ１２３４５�
 check('ハイフンを落とす',     kapp_norm_invoice_no('T-1234-5678-90123'), 'T1234567890123');
 check('Tの付け忘れを補う',    kapp_norm_invoice_no('1234567890123'), 'T1234567890123');
 check('空はそのまま空',       kapp_norm_invoice_no('  '), '');
-check('桁数違いは弾く',
-    kapp_register_seller('bad_user', 'だめ', '', 'b@example.test', 'T123')[0], false);
-check('登録番号なしでも登録できる',
-    kapp_register_seller('no_inv', '登録なし', '', 'n@example.test', '', '')[0], true);
+check('桁数違いは弾く',   make_seller('bad_user', 'だめ', 'T123')[0], false);
+check('登録番号なしでも登録できる', make_seller('no_inv', '登録なし', '')[0], true);
+check('振込先が無いと登録できない', make_seller('no_bank', '口座なし', '', '')[0], false);
 
 /* ---- 支払いを1件つくる ---- */
 $ids = array();

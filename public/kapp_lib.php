@@ -95,20 +95,61 @@ function kapp_find_seller($user) {
     return null;
 }
 
-/** 承認済みの販売店だけが出品できる。 */
+/* ============================================================
+ * 販売店の状態
+ *
+ * 入り口が2つある。
+ *
+ *   管理者が招待する  invited  ─┐
+ *                              ├─▶ 詳細登録 ─▶ active（出品可）
+ *   本人が応募する    applied ─▶ approved ─┘
+ *
+ * 段階を分けたのは、聞く情報の重さが違うから。応募の時点で銀行口座まで
+ * 求めると応募されない。承認して取引すると決めてから聞く。
+ * 逆に招待は当方から声を掛けているので、承認の段階を挟まない。
+ * ========================================================== */
+
+/** 出品できる状態。ここを通らないと register.php は使えない。 */
+function kapp_seller_status($seller) {
+    if (!$seller) { return ''; }
+    if (!empty($seller['status'])) { return (string)$seller['status']; }
+    // 旧レコード（approved の真偽しか持たない）からの読み替え
+    return !empty($seller['approved']) ? 'active' : 'applied';
+}
+
+/** 詳細登録が済んでいるか。振込先が無いと売上を払えないので必須にする。 */
+function kapp_seller_details_ready($seller) {
+    return $seller
+        && trim((string)(isset($seller['name']) ? $seller['name'] : '')) !== ''
+        && trim((string)(isset($seller['bank']) ? $seller['bank'] : '')) !== '';
+}
+
+/** 販売店として出品できるか。 */
 function kapp_is_approved_seller($user) {
-    $seller = kapp_find_seller($user);
-    return $seller !== null && !empty($seller['approved']);
+    return kapp_seller_status(kapp_find_seller($user)) === 'active';
+}
+
+/** 詳細登録の画面を出してよい状態か（招待された／承認された）。 */
+function kapp_seller_can_complete($user) {
+    $st = kapp_seller_status(kapp_find_seller($user));
+    return $st === 'invited' || $st === 'approved';
+}
+
+function kapp_seller_status_label($status) {
+    $map = array(
+        'invited'   => 'ご案内済み',
+        'applied'   => '審査待ち',
+        'approved'  => '承認済み（詳細未登録）',
+        'active'    => '出品可',
+        'suspended' => '停止中',
+    );
+    return isset($map[$status]) ? $map[$status] : $status;
 }
 
 function kapp_is_admin($user) {
     return $user !== '' && kapp_norm_user($user) === kapp_norm_user(KAPP_ADMIN);
 }
 
-/**
- * 販売店を登録する。管理者は自動承認、それ以外は審査待ち。
- * マーケットプレイス化したらここの既定を変える。
- */
 /**
  * 適格請求書発行事業者の登録番号を整える。
  *
@@ -124,65 +165,193 @@ function kapp_norm_invoice_no($no) {
     return $no;
 }
 
-function kapp_register_seller($user, $name, $url, $email = '', $invoice_no = '', $bank = '') {
-    $user = kapp_norm_user($user);
-    if ($user === '') { return array(false, 'ログインが必要です'); }
-    if (trim($name) === '') { return array(false, '販売者名をご入力ください'); }
-    if ($url !== '' && !preg_match('#^https?://#i', $url)) {
-        return array(false, 'URLは http:// または https:// で始めてください');
+/** 空の販売店レコード。どの入り口から作っても形を揃える。 */
+function kapp_seller_blank($user, $status) {
+    return array(
+        'x'          => kapp_norm_user($user),
+        'status'     => $status,
+        'name'       => '',   // 購入者に見せる販売者名
+        'company'    => '',   // 法人名（契約・支払明細書に使う）
+        'contact'    => '',   // ご担当者名
+        'tel'        => '',   // 管理用。購入者には出さない
+        'email'      => '',   // 注文通知の宛先
+        'url'        => '',
+        'addr'       => '',
+        'bank'       => '',
+        'invoice_no' => '',
+        'token'      => kapp_random_hex(16),   // 詳細登録の案内URLに使う
+        'approved'   => false,                 // 旧実装との互換
+        'created_at' => time(),
+        'updated_at' => time(),
+    );
+}
+
+/** 案内URLのトークンから引く。 */
+function kapp_find_seller_by_token($token) {
+    $token = trim((string)$token);
+    if ($token === '') { return null; }
+    foreach (kapp_sellers() as $seller) {
+        if (!empty($seller['token']) && hash_equals((string)$seller['token'], $token)) { return $seller; }
+    }
+    return null;
+}
+
+/** 詳細登録の案内URL。管理者がこれを販売店へ送る。 */
+function kapp_seller_invite_url($seller) {
+    return 'https://kappstore.exbridge.jp/sellers.php?t=' . rawurlencode((string)$seller['token']);
+}
+
+/**
+ * 管理者が販売店を招待する（経路A）。
+ *
+ * こちらから声を掛けている相手なので、審査の段階を挟まない。
+ * 𝕏アカウントだけで枠を作り、残りは本人に埋めてもらう。
+ */
+function kapp_invite_seller($x, $email = '', $memo = '') {
+    $x = kapp_norm_user($x);
+    if ($x === '') { return array(false, '𝕏 アカウントをご入力ください'); }
+    if (!preg_match('/^[a-z0-9_]{1,15}$/', $x)) {
+        return array(false, '𝕏 アカウントは半角英数字とアンダースコアのみです');
     }
     $email = strtolower(trim((string)$email));
     if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
         return array(false, 'メールアドレスの形式が正しくありません');
     }
-    $invoice_no = kapp_norm_invoice_no($invoice_no);
-    if ($invoice_no !== '' && !preg_match('/^T[0-9]{13}$/', $invoice_no)) {
-        return array(false, '登録番号は「T」＋13桁の数字でご入力ください');
-    }
-    $bank = trim((string)$bank);
-    if (mb_strlen($bank, 'UTF-8') > 200) { return array(false, 'お振込先が長すぎます'); }
-
-    return kapp_ledger_update(KAPP_SELLERS, 'sellers', function (&$data) use ($user, $name, $url, $email, $invoice_no, $bank) {
-        foreach ($data['sellers'] as $i => $seller) {
-            if (kapp_norm_user($seller['x']) === $user) {
-                // 再登録は上書き。承認状態は維持する（登録し直しで承認が外れないように）
-                $data['sellers'][$i]['name'] = $name;
-                $data['sellers'][$i]['url'] = $url;
-                if ($email !== '') { $data['sellers'][$i]['email'] = $email; }
-                $data['sellers'][$i]['invoice_no'] = $invoice_no;
-                $data['sellers'][$i]['bank'] = $bank;
-                $data['sellers'][$i]['updated_at'] = time();
-                return array(true, '販売店情報を更新しました');
+    return kapp_ledger_update(KAPP_SELLERS, 'sellers', function (&$data) use ($x, $email, $memo) {
+        foreach ($data['sellers'] as $seller) {
+            if (kapp_norm_user($seller['x']) === $x) {
+                return array(false, '@' . $x . ' はすでに登録されています');
             }
         }
-        $data['sellers'][] = array(
-            'x'          => $user,
-            'name'       => $name,
-            'url'        => $url,
-            // 注文が入ったときの通知先。無ければ管理者へ送る
-            'email'      => $email,
-            // 適格請求書発行事業者の登録番号。支払明細書に相手方として印字する
-            'invoice_no' => $invoice_no,
-            // 売上をお振り込みする口座
-            'bank'       => $bank,
-            'approved'   => kapp_is_admin($user),
-            'created_at' => time(),
-            'updated_at' => time(),
-        );
-        return array(true, kapp_is_admin($user)
-            ? '販売店を登録しました'
-            : '販売店の登録を受け付けました。審査後に出品できるようになります');
+        $rec = kapp_seller_blank($x, 'invited');
+        $rec['email'] = $email;
+        $rec['memo']  = (string)$memo;
+        $data['sellers'][] = $rec;
+        return array(true, $rec);
     });
 }
 
+/**
+ * 本人が応募する（経路B）。
+ *
+ * ここで聞くのは連絡が取れる情報だけ。銀行口座は承認後に聞く。
+ * 応募の時点で口座まで求めると、応募そのものが来なくなる。
+ */
+function kapp_apply_seller($user, $company, $contact, $tel, $email) {
+    $user = kapp_norm_user($user);
+    if ($user === '') { return array(false, 'ログインが必要です'); }
+    $company = trim((string)$company);
+    $contact = trim((string)$contact);
+    $tel     = trim((string)$tel);
+    $email   = strtolower(trim((string)$email));
+    if ($company === '') { return array(false, '会社名（屋号）をご入力ください'); }
+    if ($contact === '') { return array(false, 'ご担当者名をご入力ください'); }
+    if (!preg_match('/^[0-9０-９\-‐ー－\(\)\s]{9,20}$/u', $tel)) {
+        return array(false, 'お電話番号をご入力ください');
+    }
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        return array(false, 'メールアドレスをご入力ください');
+    }
+    return kapp_ledger_update(KAPP_SELLERS, 'sellers', function (&$data) use ($user, $company, $contact, $tel, $email) {
+        foreach ($data['sellers'] as $i => $seller) {
+            if (kapp_norm_user($seller['x']) === $user) {
+                $st = kapp_seller_status($seller);
+                if ($st !== 'applied') {
+                    return array(false, 'すでに登録済みです（' . kapp_seller_status_label($st) . '）');
+                }
+                // 審査待ちの間は書き直せる
+                $data['sellers'][$i] = array_merge($seller, array(
+                    'company' => $company, 'contact' => $contact,
+                    'tel' => $tel, 'email' => $email, 'updated_at' => time(),
+                ));
+                return array(true, 'お申し込みの内容を更新しました');
+            }
+        }
+        // 管理者が自分を承認する段取りは意味が無いので、審査を飛ばす。
+        // ただし出品可にはしない。振込先の登録は管理者にも通す。
+        $rec = kapp_seller_blank($user, kapp_is_admin($user) ? 'approved' : 'applied');
+        $rec['company'] = $company; $rec['contact'] = $contact;
+        $rec['tel'] = $tel;         $rec['email'] = $email;
+        $data['sellers'][] = $rec;
+        return array(true, 'お申し込みを受け付けました');
+    });
+}
+
+/** 管理者の審査。承認すると詳細登録に進める。 */
 function kapp_approve_seller($user, $approved) {
     $user = kapp_norm_user($user);
     return kapp_ledger_update(KAPP_SELLERS, 'sellers', function (&$data) use ($user, $approved) {
         foreach ($data['sellers'] as $i => $seller) {
-            if (kapp_norm_user($seller['x']) === $user) {
-                $data['sellers'][$i]['approved'] = (bool)$approved;
-                return array(true, $approved ? '承認しました' : '承認を取り消しました');
+            if (kapp_norm_user($seller['x']) !== $user) { continue; }
+            if ($approved) {
+                // 詳細が埋まっているなら、そのまま出品可へ戻す
+                $next = kapp_seller_details_ready($seller) ? 'active' : 'approved';
+                $data['sellers'][$i]['status']   = $next;
+                $data['sellers'][$i]['approved'] = true;
+                return array(true, $next === 'active' ? '承認しました' : '承認しました（詳細登録待ち）');
             }
+            $data['sellers'][$i]['status']   = 'suspended';
+            $data['sellers'][$i]['approved'] = false;
+            return array(true, '出品を停止しました');
+        }
+        return array(false, '販売店が見つかりません');
+    });
+}
+
+/**
+ * 本人が詳細を登録する。ここまで済んで初めて出品できる。
+ *
+ * 振込先を必須にしているのは、売上をお振り込みできない状態で
+ * 商品を並べさせないため。
+ */
+function kapp_complete_seller($user, $f) {
+    $user = kapp_norm_user($user);
+    if ($user === '') { return array(false, 'ログインが必要です'); }
+    $seller = kapp_find_seller($user);
+    if (!$seller) { return array(false, '販売店の登録が見つかりません'); }
+    $st = kapp_seller_status($seller);
+    if ($st === 'applied')   { return array(false, '審査が済むまでお待ちください'); }
+    if ($st === 'suspended') { return array(false, '現在ご出品いただけません'); }
+
+    $name    = trim((string)$f['name']);
+    $company = trim((string)$f['company']);
+    $contact = trim((string)$f['contact']);
+    $tel     = trim((string)$f['tel']);
+    $email   = strtolower(trim((string)$f['email']));
+    $url     = trim((string)$f['url']);
+    $addr    = trim((string)$f['addr']);
+    $bank    = trim((string)$f['bank']);
+    $inv     = kapp_norm_invoice_no($f['invoice_no']);
+
+    if ($name === '')    { return array(false, '販売者名をご入力ください'); }
+    if ($company === '') { return array(false, '会社名（屋号）をご入力ください'); }
+    if ($contact === '') { return array(false, 'ご担当者名をご入力ください'); }
+    if (!preg_match('/^[0-9０-９\-‐ー－\(\)\s]{9,20}$/u', $tel)) {
+        return array(false, 'お電話番号をご入力ください');
+    }
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        return array(false, 'メールアドレスをご入力ください');
+    }
+    if ($url !== '' && !preg_match('#^https?://#i', $url)) {
+        return array(false, 'URLは http:// または https:// で始めてください');
+    }
+    if ($bank === '')    { return array(false, '売上のお振込先をご入力ください'); }
+    if (mb_strlen($bank, 'UTF-8') > 200) { return array(false, 'お振込先が長すぎます'); }
+    if ($inv !== '' && !preg_match('/^T[0-9]{13}$/', $inv)) {
+        return array(false, '登録番号は「T」＋13桁の数字でご入力ください');
+    }
+
+    return kapp_ledger_update(KAPP_SELLERS, 'sellers', function (&$data) use (
+        $user, $name, $company, $contact, $tel, $email, $url, $addr, $bank, $inv) {
+        foreach ($data['sellers'] as $i => $seller) {
+            if (kapp_norm_user($seller['x']) !== $user) { continue; }
+            $data['sellers'][$i] = array_merge($seller, array(
+                'name' => $name, 'company' => $company, 'contact' => $contact,
+                'tel' => $tel, 'email' => $email, 'url' => $url, 'addr' => $addr,
+                'bank' => $bank, 'invoice_no' => $inv,
+                'status' => 'active', 'approved' => true, 'updated_at' => time(),
+            ));
+            return array(true, '販売店情報を登録しました。出品できます');
         }
         return array(false, '販売店が見つかりません');
     });
@@ -516,4 +685,62 @@ function kapp_send_paid_mail($order) {
           . "Kurage App Store — 株式会社エクスブリッジ\n"
           . kapp_mail_from() . "\n";
     return kapp_mail($to, $subject, $body);
+}
+
+/* ---------------- 販売店まわりの通知 ----------------
+ *
+ * 応募も承認も、相手が画面を見に来ないと気づけない。放置されるのが
+ * 一番まずいので、状態が変わったら必ずメールで知らせる。
+ */
+
+/** 応募が入ったことを管理者へ。これが無いと審査待ちが溜まったまま気づけない。 */
+function kapp_notify_seller_applied($seller) {
+    $to = kapp_admin_email();
+    if ($to === '') { return false; }
+    $body = "販売店のお申し込みが届きました。\n\n"
+          . "  𝕏        @" . $seller['x'] . "\n"
+          . "  会社名   " . $seller['company'] . "\n"
+          . "  ご担当   " . $seller['contact'] . "\n"
+          . "  電話     " . $seller['tel'] . "\n"
+          . "  メール   " . $seller['email'] . "\n\n"
+          . "▼ 審査はこちらから\n"
+          . "https://kappstore.exbridge.jp/sellers.php?admin=1\n\n"
+          . "──────────────────────────\n"
+          . "Kurage App Store\n";
+    return kapp_mail($to, '[kappstore] 販売店のお申し込み @' . $seller['x'], $body);
+}
+
+/** 招待・承認を本人へ。詳細登録の入口URLを必ず入れる。 */
+function kapp_notify_seller_invited($seller, $approved = false) {
+    $to = isset($seller['email']) ? (string)$seller['email'] : '';
+    if ($to === '') { return false; }
+    $head = $approved
+        ? "販売店のお申し込みを承認いたしました。\n\nお手数ですが、下記より残りの情報をご登録ください。"
+        : "Kurage App Store への出品をご案内いたします。\n\n下記より販売店情報をご登録ください。";
+    $body = $head . "\n\n"
+          . kapp_seller_invite_url($seller) . "\n\n"
+          . "※ @" . $seller['x'] . " で 𝕏 にログインしてお進みください。\n"
+          . "  お振込先のご登録まで済みますと、ご出品いただけます。\n\n"
+          . "出品手数料は 販売価格（税抜）の10％ ＋ 40,000円（税別）です。\n"
+          . "初期費用はいただかず、売れたときだけ発生します。\n\n"
+          . "──────────────────────────\n"
+          . "Kurage App Store — 株式会社エクスブリッジ\n"
+          . kapp_mail_from() . "\n";
+    $subject = $approved ? '[kappstore] 販売店のご承認と情報登録のお願い'
+                         : '[kappstore] 販売店ご登録のご案内';
+    return kapp_mail($to, $subject, $body);
+}
+
+/** 詳細登録が済んで出品可になったことを管理者へ。 */
+function kapp_notify_seller_active($seller) {
+    $to = kapp_admin_email();
+    if ($to === '') { return false; }
+    $body = "販売店の情報登録が完了しました。出品可能になっています。\n\n"
+          . "  𝕏        @" . $seller['x'] . "\n"
+          . "  販売者名 " . $seller['name'] . "\n"
+          . "  会社名   " . $seller['company'] . "\n"
+          . "  振込先   " . $seller['bank'] . "\n"
+          . "  登録番号 " . ($seller['invoice_no'] !== '' ? $seller['invoice_no'] : '（未登録）') . "\n\n"
+          . "https://kappstore.exbridge.jp/sellers.php?admin=1\n";
+    return kapp_mail($to, '[kappstore] 販売店の情報登録が完了 @' . $seller['x'], $body);
 }

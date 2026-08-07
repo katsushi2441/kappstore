@@ -154,8 +154,19 @@ kapp_header('出品', $logged_in, $user, $is_seller, $is_admin);
   <p><a class="btn" href="?login=1">𝕏 でログイン</a></p>
 
 <?php elseif (!$is_seller): ?>
-  <p class="lead">出品するには、販売店の登録と承認が必要です。</p>
-  <p><a class="btn" href="sellers.php">販売店登録へ</a></p>
+  <?php /* どこで止まっているかを出す。「登録が必要です」だけだと、
+           承認待ちなのか詳細未登録なのかが本人に分からない。 */ ?>
+  <?php $st = kapp_seller_status(kapp_find_seller($user)); ?>
+  <?php if ($st === 'applied'): ?>
+    <p class="lead"><b>審査中です。</b>結果はご登録のメールアドレスへご連絡します。</p>
+  <?php elseif ($st === 'invited' || $st === 'approved'): ?>
+    <p class="lead">あと少しです。<b>販売店情報のご登録</b>が済むとご出品いただけます。</p>
+  <?php elseif ($st === 'suspended'): ?>
+    <p class="lead">現在ご出品いただけません。お手数ですがお問い合わせください。</p>
+  <?php else: ?>
+    <p class="lead">出品するには、販売店の登録と審査が必要です。</p>
+  <?php endif; ?>
+  <p><a class="btn" href="sellers.php">販売店のページへ</a></p>
 
 <?php else: ?>
   <form method="post" enctype="multipart/form-data" class="card">

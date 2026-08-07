@@ -21,24 +21,41 @@ function check($label, $actual, $expected) {
         var_export($expected, true), var_export($actual, true));
 }
 
-/* ---- 販売店 ---- */
+/* ---- 販売店 ----
+ * 遷移そのものは check_sellers.php で見る。ここでは以降のテストが
+ * 必要とする「出品できる販売店」を用意しつつ、入口だけ確かめる。 */
 check('最初は販売店0件', count(kapp_sellers()), 0);
 
-$r = kapp_register_seller('xb_bittensor', '株式会社エクスブリッジ', 'https://exbridge.jp/', 'info@exbridge.test');
-check('管理者は登録できる', $r[0], true);
-check('管理者は自動承認', kapp_is_approved_seller('xb_bittensor'), true);
+/** 応募 → 承認 → 詳細登録 まで通して出品可にする。 */
+function make_seller($x, $name, $url = '', $email = '') {
+    if ($email === '') { $email = $x . '@example.test'; }
+    kapp_apply_seller($x, $name, '担当者', '052-000-0000', $email);
+    kapp_approve_seller($x, true);
+    return kapp_complete_seller($x, array(
+        'name' => $name, 'company' => $name, 'contact' => '担当者',
+        'tel' => '052-000-0000', 'email' => $email, 'url' => $url,
+        'addr' => '', 'bank' => '三井住友銀行 上前津支店 普通 1234567', 'invoice_no' => '',
+    ));
+}
 
-$r = kapp_register_seller('someone', 'サムワン商店', '');
-check('一般は登録できる', $r[0], true);
+check('管理者は応募できる',
+    kapp_apply_seller('xb_bittensor', '株式会社エクスブリッジ', '担当', '052-000-0000', 'info@exbridge.test')[0], true);
+check('管理者は審査を挟まない', kapp_seller_status(kapp_find_seller('xb_bittensor')), 'approved');
+check('管理者でも詳細登録前は出品不可', kapp_is_approved_seller('xb_bittensor'), false);
+check('管理者が詳細を登録できる',
+    make_seller('xb_bittensor', '株式会社エクスブリッジ', 'https://exbridge.jp/', 'info@exbridge.test')[0], true);
+check('管理者が出品できる', kapp_is_approved_seller('xb_bittensor'), true);
+
+check('一般は応募できる',
+    kapp_apply_seller('someone', 'サムワン商店', '担当', '052-000-0000', 'someone@example.test')[0], true);
 check('一般は審査待ち（出品不可）', kapp_is_approved_seller('someone'), false);
 
 check('大文字小文字を同一視', kapp_is_approved_seller('XB_BitTensor'), true);
 check('@付きでも同一視', kapp_is_approved_seller('@xb_bittensor'), true);
 
-$r = kapp_register_seller('bad', 'ダメ商店', 'javascript:alert(1)');
-check('不正なURLは弾く', $r[0], false);
+check('不正なURLは弾く', make_seller('bad', 'ダメ商店', 'javascript:alert(1)')[0], false);
 
-kapp_approve_seller('someone', true);
+check('承認して詳細を登録すると出品できる', make_seller('someone', 'サムワン商店')[0], true);
 check('承認すると出品できる', kapp_is_approved_seller('someone'), true);
 
 /* ---- アプリ ---- */
@@ -131,10 +148,17 @@ check('税込金額が入っている', strpos($pdf, '3,300') !== false, true);
 check('販売店のメールを保存している', kapp_find_seller('xb_bittensor')['email'], 'info@exbridge.test');
 check('販売店の通知先を引ける', kapp_seller_email('xb_bittensor'), 'info@exbridge.test');
 // メール未登録の販売店は、管理者へ落とす（通知が消えるのが一番まずい）
-check('メール未登録なら管理者へ落ちる', kapp_seller_email('someone'), 'sysadmin@example.test');
+// メールは応募時の必須項目なので、未登録が残るのは status を持たない
+// 古い形式のレコードだけ。そこでも通知が消えないことを確かめる
+kapp_ledger_update(KAPP_SELLERS, 'sellers', function (&$data) {
+    $data['sellers'][] = array('x' => 'legacy_nomail', 'name' => '旧レコード', 'approved' => true,
+        'created_at' => time(), 'updated_at' => time());
+    return array(true, '');
+});
+check('メール未登録なら管理者へ落ちる', kapp_seller_email('legacy_nomail'), 'sysadmin@example.test');
 check('存在しない販売店でも管理者へ落ちる', kapp_seller_email('nobody'), 'sysadmin@example.test');
 check('不正な形式のメールは登録できない',
-    kapp_register_seller('baddr', 'ダメ商店', '', 'not-an-email')[0], false);
+    kapp_apply_seller('baddr', 'ダメ商店', '担当', '052-000-0000', 'not-an-email')[0], false);
 
 /* ---- 銀行振込の一連（ここが壊れると入金しても永久に落とせない）---- */
 $bank_app = kapp_find_app('app0001');

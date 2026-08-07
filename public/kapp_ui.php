@@ -90,7 +90,7 @@ h3{font-size:15px;font-weight:900;margin-bottom:6px}
 ul{padding-left:22px;font-size:14px}
 li{margin-bottom:8px}
 label{display:block;font-size:13.5px;font-weight:700;margin:16px 0 6px}
-input[type=text],input[type=url],input[type=number],textarea,select{width:100%;font:inherit;font-size:15px;
+input[type=text],input[type=url],input[type=email],input[type=tel],input[type=number],textarea,select{width:100%;font:inherit;font-size:15px;
   color:inherit;background:var(--foam);border:1.5px solid var(--panel-line);border-radius:10px;padding:11px 13px}
 textarea{min-height:130px;line-height:1.8;resize:vertical}
 input:focus,textarea:focus,select:focus{outline:2px solid var(--teal);border-color:var(--teal)}
