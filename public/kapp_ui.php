@@ -164,7 +164,7 @@ function kapp_header($subtitle, $logged_in, $user, $is_seller = false, $is_admin
     // 買いに来た人にまで管理用のメニューが見えて店に見えなくなる。
     echo '<nav class="hnav">';
     echo '<a class="chip" href="index.php">アプリ一覧</a>';
-    echo '<a class="chip" href="sellers.php">販売店一覧</a>';
+    echo '<a class="chip" href="sellers.php">開発元一覧</a>';
     if ($logged_in) {
         $badge = kapp_dashboard_badge($user, $is_admin);
         echo '<a class="chip" href="dashboard.php">ダッシュボード'
@@ -213,7 +213,7 @@ function kapp_subnav($current, $user, $is_seller, $is_admin) {
 
         $applied = 0;
         foreach (kapp_sellers() as $s) { if (kapp_seller_status($s) === 'applied') { $applied++; } }
-        $items[] = array('sellers.php?admin=1', '販売店管理', $applied);
+        $items[] = array('sellers.php?admin=1', '出品者管理', $applied);
     }
     if ($is_seller) {
         $items[] = array('sales.php', '販売履歴', 0);
@@ -221,7 +221,7 @@ function kapp_subnav($current, $user, $is_seller, $is_admin) {
     } elseif (kapp_seller_can_complete($user)) {
         // 招待・承認されたが詳細登録が済んでいない人。ここに導線が無いと
         // 案内メールを閉じた時点で戻る道が分からなくなる
-        $items[] = array('sellers.php', '販売店登録', 1);
+        $items[] = array('sellers.php', '出品者登録', 1);
     }
     if ($is_seller || $is_admin) { $items[] = array('payout.php', '精算', 0); }
     $items[] = array('orders.php', '購入履歴', 0);

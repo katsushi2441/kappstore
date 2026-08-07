@@ -1,6 +1,6 @@
 <?php
 /**
- * Kurage App Store — 台帳（販売店 / アプリ / 注文）。
+ * Kurage App Store — 台帳（出品者 / アプリ / 注文）。
  *
  * heteml にDBを置かない方針（kgeo/karchitect/vibe-prototype と同じ）。
  * JSONファイルを flock で直列化して読み書きする。更新は必ず
@@ -20,7 +20,7 @@ define('KAPP_APPS',    KAPP_DATA_DIR . '/apps.json');
 define('KAPP_ORDERS',  KAPP_DATA_DIR . '/orders.json');
 define('KAPP_FILES',   KAPP_DATA_DIR . '/files');
 
-// 最初の販売者。マーケットプレイス化までは、この人以外は審査待ちで止める。
+// 最初の出品者。マーケットプレイス化までは、この人以外は審査待ちで止める。
 if (!defined('KAPP_ADMIN')) { define('KAPP_ADMIN', 'xb_bittensor'); }
 
 define('KAPP_TAX_RATE', 0.10);
@@ -80,7 +80,7 @@ function kapp_ledger_load($path, $key) {
     return $data[$key];
 }
 
-/* ---------------- 販売店 ---------------- */
+/* ---------------- 出品者 ---------------- */
 
 /** Xのユーザー名は大文字小文字を区別しない。台帳側で正規化しておく。 */
 function kapp_norm_user($user) { return strtolower(ltrim(trim((string)$user), '@')); }
@@ -96,7 +96,7 @@ function kapp_find_seller($user) {
 }
 
 /* ============================================================
- * 販売店の状態
+ * 出品者の状態
  *
  * 入り口が2つある。
  *
@@ -124,7 +124,7 @@ function kapp_seller_details_ready($seller) {
         && trim((string)(isset($seller['bank']) ? $seller['bank'] : '')) !== '';
 }
 
-/** 販売店として出品できるか。 */
+/** 出品者として出品できるか。 */
 function kapp_is_approved_seller($user) {
     return kapp_seller_status(kapp_find_seller($user)) === 'active';
 }
@@ -165,12 +165,12 @@ function kapp_norm_invoice_no($no) {
     return $no;
 }
 
-/** 空の販売店レコード。どの入り口から作っても形を揃える。 */
+/** 空の出品者レコード。どの入り口から作っても形を揃える。 */
 function kapp_seller_blank($user, $status) {
     return array(
         'x'          => kapp_norm_user($user),
         'status'     => $status,
-        'name'       => '',   // 購入者に見せる販売者名
+        'name'       => '',   // 購入者に見せる開発元名
         'company'    => '',   // 法人名（契約・支払明細書に使う）
         'contact'    => '',   // ご担当者名
         'tel'        => '',   // 管理用。購入者には出さない
@@ -196,13 +196,13 @@ function kapp_find_seller_by_token($token) {
     return null;
 }
 
-/** 詳細登録の案内URL。管理者がこれを販売店へ送る。 */
+/** 詳細登録の案内URL。管理者がこれを出品者へ送る。 */
 function kapp_seller_invite_url($seller) {
     return 'https://kappstore.exbridge.jp/sellers.php?t=' . rawurlencode((string)$seller['token']);
 }
 
 /**
- * 管理者が販売店を招待する（経路A）。
+ * 管理者が出品者を招待する（経路A）。
  *
  * こちらから声を掛けている相手なので、審査の段階を挟まない。
  * 𝕏アカウントだけで枠を作り、残りは本人に埋めてもらう。
@@ -294,7 +294,7 @@ function kapp_approve_seller($user, $approved) {
             $data['sellers'][$i]['approved'] = false;
             return array(true, '出品を停止しました');
         }
-        return array(false, '販売店が見つかりません');
+        return array(false, '出品者が見つかりません');
     });
 }
 
@@ -308,7 +308,7 @@ function kapp_complete_seller($user, $f) {
     $user = kapp_norm_user($user);
     if ($user === '') { return array(false, 'ログインが必要です'); }
     $seller = kapp_find_seller($user);
-    if (!$seller) { return array(false, '販売店の登録が見つかりません'); }
+    if (!$seller) { return array(false, '出品者の登録が見つかりません'); }
     $st = kapp_seller_status($seller);
     if ($st === 'applied')   { return array(false, '審査が済むまでお待ちください'); }
     if ($st === 'suspended') { return array(false, '現在ご出品いただけません'); }
@@ -323,7 +323,7 @@ function kapp_complete_seller($user, $f) {
     $bank    = trim((string)$f['bank']);
     $inv     = kapp_norm_invoice_no($f['invoice_no']);
 
-    if ($name === '')    { return array(false, '販売者名をご入力ください'); }
+    if ($name === '')    { return array(false, '開発元名をご入力ください'); }
     if ($company === '') { return array(false, '会社名（屋号）をご入力ください'); }
     if ($contact === '') { return array(false, 'ご担当者名をご入力ください'); }
     if (!preg_match('/^[0-9０-９\-‐ー－\(\)\s]{9,20}$/u', $tel)) {
@@ -351,9 +351,9 @@ function kapp_complete_seller($user, $f) {
                 'bank' => $bank, 'invoice_no' => $inv,
                 'status' => 'active', 'approved' => true, 'updated_at' => time(),
             ));
-            return array(true, '販売店情報を登録しました。出品できます');
+            return array(true, '出品者情報を登録しました。出品できます');
         }
-        return array(false, '販売店が見つかりません');
+        return array(false, '出品者が見つかりません');
     });
 }
 
@@ -553,7 +553,7 @@ function kapp_admin_email() {
     return defined('KAPP_ADMIN_EMAIL') ? trim(KAPP_ADMIN_EMAIL) : '';
 }
 
-/** 販売店の通知先。未登録なら管理者へ落とす（通知が消えるのが一番まずい）。 */
+/** 出品者の通知先。未登録なら管理者へ落とす（通知が消えるのが一番まずい）。 */
 function kapp_seller_email($seller_x) {
     $s = kapp_find_seller($seller_x);
     if ($s && !empty($s['email']) && filter_var($s['email'], FILTER_VALIDATE_EMAIL)) {
@@ -591,7 +591,7 @@ function kapp_mail($to, $subject, $body) {
                  chunk_split(base64_encode($body)), implode("\r\n", $headers));
 }
 
-/** 注文が入ったことを販売店へ知らせる。銀行振込はこれが入金待ちの合図。 */
+/** 注文が入ったことを出品者へ知らせる。銀行振込はこれが入金待ちの合図。 */
 function kapp_send_order_mail($order) {
     $to = kapp_seller_email(isset($order['seller']) ? $order['seller'] : '');
     if ($to === '' || !filter_var($to, FILTER_VALIDATE_EMAIL)) { return false; }
@@ -687,7 +687,7 @@ function kapp_send_paid_mail($order) {
     return kapp_mail($to, $subject, $body);
 }
 
-/* ---------------- 販売店まわりの通知 ----------------
+/* ---------------- 出品者まわりの通知 ----------------
  *
  * 応募も承認も、相手が画面を見に来ないと気づけない。放置されるのが
  * 一番まずいので、状態が変わったら必ずメールで知らせる。
@@ -697,7 +697,7 @@ function kapp_send_paid_mail($order) {
 function kapp_notify_seller_applied($seller) {
     $to = kapp_admin_email();
     if ($to === '') { return false; }
-    $body = "販売店のお申し込みが届きました。\n\n"
+    $body = "出品者のお申し込みが届きました。\n\n"
           . "  𝕏        @" . $seller['x'] . "\n"
           . "  会社名   " . $seller['company'] . "\n"
           . "  ご担当   " . $seller['contact'] . "\n"
@@ -707,7 +707,7 @@ function kapp_notify_seller_applied($seller) {
           . "https://kappstore.exbridge.jp/sellers.php?admin=1\n\n"
           . "──────────────────────────\n"
           . "Kurage App Store\n";
-    return kapp_mail($to, '[kappstore] 販売店のお申し込み @' . $seller['x'], $body);
+    return kapp_mail($to, '[kappstore] 出品者のお申し込み @' . $seller['x'], $body);
 }
 
 /** 招待・承認を本人へ。詳細登録の入口URLを必ず入れる。 */
@@ -715,8 +715,8 @@ function kapp_notify_seller_invited($seller, $approved = false) {
     $to = isset($seller['email']) ? (string)$seller['email'] : '';
     if ($to === '') { return false; }
     $head = $approved
-        ? "販売店のお申し込みを承認いたしました。\n\nお手数ですが、下記より残りの情報をご登録ください。"
-        : "Kurage App Store への出品をご案内いたします。\n\n下記より販売店情報をご登録ください。";
+        ? "出品者のお申し込みを承認いたしました。\n\nお手数ですが、下記より残りの情報をご登録ください。"
+        : "Kurage App Store への出品をご案内いたします。\n\n下記より出品者情報をご登録ください。";
     $body = $head . "\n\n"
           . kapp_seller_invite_url($seller) . "\n\n"
           . "※ @" . $seller['x'] . " で 𝕏 にログインしてお進みください。\n"
@@ -726,8 +726,8 @@ function kapp_notify_seller_invited($seller, $approved = false) {
           . "──────────────────────────\n"
           . "Kurage App Store — 株式会社エクスブリッジ\n"
           . kapp_mail_from() . "\n";
-    $subject = $approved ? '[kappstore] 販売店のご承認と情報登録のお願い'
-                         : '[kappstore] 販売店ご登録のご案内';
+    $subject = $approved ? '[kappstore] 出品者のご承認と情報登録のお願い'
+                         : '[kappstore] 出品者ご登録のご案内';
     return kapp_mail($to, $subject, $body);
 }
 
@@ -735,12 +735,12 @@ function kapp_notify_seller_invited($seller, $approved = false) {
 function kapp_notify_seller_active($seller) {
     $to = kapp_admin_email();
     if ($to === '') { return false; }
-    $body = "販売店の情報登録が完了しました。出品可能になっています。\n\n"
+    $body = "出品者の情報登録が完了しました。出品可能になっています。\n\n"
           . "  𝕏        @" . $seller['x'] . "\n"
-          . "  販売者名 " . $seller['name'] . "\n"
+          . "  開発元名 " . $seller['name'] . "\n"
           . "  会社名   " . $seller['company'] . "\n"
           . "  振込先   " . $seller['bank'] . "\n"
           . "  登録番号 " . ($seller['invoice_no'] !== '' ? $seller['invoice_no'] : '（未登録）') . "\n\n"
           . "https://kappstore.exbridge.jp/sellers.php?admin=1\n";
-    return kapp_mail($to, '[kappstore] 販売店の情報登録が完了 @' . $seller['x'], $body);
+    return kapp_mail($to, '[kappstore] 出品者の情報登録が完了 @' . $seller['x'], $body);
 }

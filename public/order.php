@@ -91,7 +91,7 @@ if ($logged_in && isset($_POST['register'])) {
                 // 入金確認をするタイミングを見失う。
                 $new = kapp_find_order($user, $result[1]);
                 if ($new) {
-                    kapp_send_order_mail($new);        // 販売店（無ければ管理者）へ
+                    kapp_send_order_mail($new);        // 出品者（無ければ管理者）へ
                     kapp_send_buyer_order_mail($new);  // 購入者へ控え
                 }
                 // POSTの再送で二重登録されないよう、GETへ逃がす

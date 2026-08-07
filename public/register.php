@@ -2,7 +2,7 @@
 /**
  * Kurage App Store — アプリの出品登録・編集。
  *
- * 承認済みの販売店だけが使える。配布ファイルは kapp_data/files/ に、
+ * 承認済みの出品者だけが使える。配布ファイルは kapp_data/files/ に、
  * 画像は kapp_media/ に置く。配布ファイルはWebから直接落とせない場所に
  * 置き、download.php の購入判定を必ず通す。
  */
@@ -161,13 +161,13 @@ if ($logged_in) { kapp_subnav('register.php', $user, $is_seller, $is_admin); }
   <?php if ($st === 'applied'): ?>
     <p class="lead"><b>審査中です。</b>結果はご登録のメールアドレスへご連絡します。</p>
   <?php elseif ($st === 'invited' || $st === 'approved'): ?>
-    <p class="lead">あと少しです。<b>販売店情報のご登録</b>が済むとご出品いただけます。</p>
+    <p class="lead">あと少しです。<b>出品者情報のご登録</b>が済むとご出品いただけます。</p>
   <?php elseif ($st === 'suspended'): ?>
     <p class="lead">現在ご出品いただけません。お手数ですがお問い合わせください。</p>
   <?php else: ?>
-    <p class="lead">出品するには、販売店の登録と審査が必要です。</p>
+    <p class="lead">出品するには、出品者の登録と審査が必要です。</p>
   <?php endif; ?>
-  <p><a class="btn" href="sellers.php">販売店のページへ</a></p>
+  <p><a class="btn" href="sellers.php">出品者のページへ</a></p>
 
 <?php else: ?>
   <form method="post" enctype="multipart/form-data" class="card">

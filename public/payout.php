@@ -82,7 +82,7 @@ if ($logged_in) { kapp_subnav('payout.php', $user, $is_seller, $is_admin); }
     <?php if (empty($me['bank'])): ?>
     <p class="err" style="margin-top:12px">
       <b>お振込先が未登録です。</b>お売り上げをお振り込みできませんので、
-      <a href="sellers.php">販売店情報</a>にご登録ください。</p>
+      <a href="sellers.php">出品者情報</a>にご登録ください。</p>
     <?php endif; ?>
   </div>
 
@@ -128,7 +128,7 @@ if ($logged_in) { kapp_subnav('payout.php', $user, $is_seller, $is_admin); }
   <?php endif; ?>
 
   <?php elseif (!$is_admin): ?>
-  <p class="lead">まだ出品がありません。<a href="sellers.php">販売店登録</a>からお進みください。</p>
+  <p class="lead">まだ出品がありません。<a href="sellers.php">出品者登録</a>からお進みください。</p>
   <?php endif; ?>
 
   <?php /* ================= 管理者の画面 ================= */ ?>
@@ -156,7 +156,7 @@ if ($logged_in) { kapp_subnav('payout.php', $user, $is_seller, $is_admin); }
         <?php if (!empty($sinfo['bank'])): ?>
           お振込先: <b><?php echo kapp_h($sinfo['bank']); ?></b>
         <?php else: ?>
-          <b style="color:#c0392b">お振込先が未登録です。</b>出品者に販売店情報の更新をご案内してください。
+          <b style="color:#c0392b">お振込先が未登録です。</b>出品者に出品者情報の更新をご案内してください。
         <?php endif; ?>
         <?php if (!empty($sinfo['invoice_no'])): ?>　登録番号 <?php echo kapp_h($sinfo['invoice_no']); ?><?php endif; ?>
       </p>

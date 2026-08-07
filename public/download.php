@@ -49,7 +49,7 @@ if (empty($app['file'])) {
 // ファイル名は台帳の値をそのまま結合せず、basename で外へ出られないようにする。
 $path = KAPP_FILES . '/' . basename((string)$app['file']);
 if (!is_file($path)) {
-    kapp_download_deny(404, '配布ファイルが見つかりません。お手数ですが販売者へお問い合わせください。',
+    kapp_download_deny(404, '配布ファイルが見つかりません。お手数ですが開発元へお問い合わせください。',
         'アプリの説明へ', 'app.php?id=' . rawurlencode($app['id']));
 }
 

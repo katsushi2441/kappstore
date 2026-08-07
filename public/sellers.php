@@ -1,8 +1,8 @@
 <?php
 /**
- * Kurage App Store — 販売店の一覧・応募・詳細登録・審査。
+ * Kurage App Store — 出品者の一覧・応募・詳細登録・審査。
  *
- * 入り口が2つある（kapp_lib.php の「販売店の状態」を参照）。
+ * 入り口が2つある（kapp_lib.php の「出品者の状態」を参照）。
  *
  *   管理者が招待 → 案内URLを送る → 本人が詳細登録 → 出品可
  *   本人が応募   → 管理者が承認   → 本人が詳細登録 → 出品可
@@ -101,7 +101,7 @@ $invite_target = $token !== '' ? kapp_find_seller_by_token($token) : null;
 $wrong_account = ($invite_target && $logged_in
                   && kapp_norm_user($invite_target['x']) !== $user);
 
-// 一覧に出すのは出品可の販売店だけ（応募中・審査待ちを晒さない）
+// 一覧に出すのは出品可の出品者だけ（応募中・審査待ちを晒さない）
 $listed = array();
 foreach ($sellers as $s) {
     if (kapp_seller_status($s) === 'active') { $listed[] = $s; }
@@ -113,20 +113,20 @@ foreach (kapp_apps_published() as $app) {
     $app_count[$k] = (isset($app_count[$k]) ? $app_count[$k] : 0) + 1;
 }
 
-kapp_head('販売店 | Kurage App Store', 'Kurage App Store に出品している販売店の一覧と、出品のお申し込み。',
+kapp_head('開発元一覧 | Kurage App Store', 'Kurage App Store に出品している開発元の一覧と、出品のお申し込み。',
     'https://kappstore.exbridge.jp/sellers.php', $token !== '');
-kapp_header('販売店', $logged_in, $user, $is_seller, $is_admin);
+kapp_header('出品者', $logged_in, $user, $is_seller, $is_admin);
 if ($logged_in) { kapp_subnav($admin_view ? 'sellers.php?admin=1' : 'sellers.php', $user, $is_seller, $is_admin); }
 ?>
 <main class="wrap narrow">
 <section>
-  <h1><?php echo $admin_view ? '販売店の管理' : '販売店'; ?></h1>
+  <h1><?php echo $admin_view ? '出品者の管理' : '開発元'; ?></h1>
 
   <?php if ($notice !== ''): ?><p class="ok"><?php echo kapp_h($notice); ?></p><?php endif; ?>
   <?php if ($error !== ''): ?><p class="err"><?php echo kapp_h($error); ?></p><?php endif; ?>
   <?php if ($invited_url !== ''): ?>
     <div class="card plain">
-      <p style="font-size:13.5px;margin-bottom:6px">ご案内URL（販売店へお送りください）</p>
+      <p style="font-size:13.5px;margin-bottom:6px">ご案内URL（出品者へお送りください）</p>
       <input type="text" readonly value="<?php echo kapp_h($invited_url); ?>"
              onclick="this.select()" style="font-size:12.5px">
     </div>
@@ -135,8 +135,8 @@ if ($logged_in) { kapp_subnav($admin_view ? 'sellers.php?admin=1' : 'sellers.php
 <?php if ($admin_view): ?>
   <?php /* ================= 管理者 ================= */ ?>
   <div class="card plain">
-    <h2>販売店を登録する</h2>
-    <p class="hint">こちらからお声掛けした販売店を登録します。審査は挟まず、
+    <h2>出品者を登録する</h2>
+    <p class="hint">こちらからお声掛けした出品者を登録します。審査は挟まず、
       ご案内URLから本人に詳細を登録していただきます。</p>
     <form method="post" style="margin-top:12px">
       <input type="hidden" name="csrf" value="<?php echo kapp_h($csrf); ?>">
@@ -155,10 +155,10 @@ if ($logged_in) { kapp_subnav($admin_view ? 'sellers.php?admin=1' : 'sellers.php
     </form>
   </div>
 
-  <h2 style="margin-top:32px">登録されている販売店</h2>
+  <h2 style="margin-top:32px">登録されている出品者</h2>
   <div class="card">
   <?php if (!$sellers): ?>
-    <p style="font-size:14px">まだ販売店の登録がありません。</p>
+    <p style="font-size:14px">まだ出品者の登録がありません。</p>
   <?php endif; ?>
   <?php foreach ($sellers as $s): $st = kapp_seller_status($s); ?>
     <div class="row">
@@ -191,12 +191,12 @@ if ($logged_in) { kapp_subnav($admin_view ? 'sellers.php?admin=1' : 'sellers.php
     </div>
   <?php endforeach; ?>
   </div>
-  <p><a href="sellers.php">← 販売店一覧へ</a></p>
+  <p><a href="sellers.php">← 開発元一覧へ</a></p>
 
 <?php else: ?>
   <?php /* ================= 一般 ================= */ ?>
   <?php if (!$listed): ?>
-    <p class="empty-note">まだ販売店がありません。</p>
+    <p class="empty-note">まだ出品者がありません。</p>
   <?php else: ?>
   <div class="card">
     <?php foreach ($listed as $s): $k = kapp_norm_user($s['x']); ?>
@@ -218,7 +218,7 @@ if ($logged_in) { kapp_subnav($admin_view ? 'sellers.php?admin=1' : 'sellers.php
 
   <div class="card plain">
   <?php if (!$logged_in): ?>
-    <h2>販売店として出品する</h2>
+    <h2>開発元として出品する</h2>
     <p style="font-size:14px">出品には 𝕏 でのログインが必要です。</p>
     <p style="margin-top:14px"><a class="btn" href="?login=1<?php echo $token !== '' ? '&t=' . rawurlencode($token) : ''; ?>">𝕏 でログイン</a></p>
 
@@ -239,7 +239,7 @@ if ($logged_in) { kapp_subnav($admin_view ? 'sellers.php?admin=1' : 'sellers.php
     <p style="font-size:14px">お手数ですが、お問い合わせください。</p>
 
   <?php elseif ($status === 'invited' || $status === 'approved'): ?>
-    <h2>販売店情報のご登録</h2>
+    <h2>出品者情報のご登録</h2>
     <p style="font-size:14px">
       <?php if ($status === 'approved'): ?>
         <b>お申し込みを承認いたしました。</b>
@@ -255,7 +255,7 @@ if ($logged_in) { kapp_subnav($admin_view ? 'sellers.php?admin=1' : 'sellers.php
     <?php $show_complete = true; ?>
 
   <?php else: ?>
-    <h2>販売店として出品する</h2>
+    <h2>開発元として出品する</h2>
     <p style="font-size:14px">まずはご連絡先をお知らせください。審査のうえ、
       残りの情報のご登録をご案内します。</p>
     <p class="hint">出品手数料は <b>販売価格（税抜）の10％ ＋ 40,000円（税別）</b>で、
@@ -299,7 +299,7 @@ if ($logged_in) { kapp_subnav($admin_view ? 'sellers.php?admin=1' : 'sellers.php
       <label>𝕏 アカウント</label>
       <input type="text" value="@<?php echo kapp_h($user); ?>" disabled style="opacity:.7;background:var(--panel)">
 
-      <label for="name">販売者名<span style="color:#c0392b">*</span></label>
+      <label for="name">開発元名<span style="color:#c0392b">*</span></label>
       <input type="text" id="name" name="name" maxlength="80" required placeholder="例：株式会社サンプル"
              value="<?php echo kapp_h(!empty($mine['name']) ? $mine['name'] : (!empty($mine['company']) ? $mine['company'] : '')); ?>">
       <p class="hint"><b>商品ページに表示されます。</b></p>
@@ -344,7 +344,7 @@ if ($logged_in) { kapp_subnav($admin_view ? 'sellers.php?admin=1' : 'sellers.php
       <p class="hint">会社サイトなど。購入者に表示されます。</p>
 
       <button type="submit" name="complete" value="1" class="btn" style="margin-top:18px">
-        <?php echo $status === 'active' ? '販売店情報を更新' : '登録して出品を始める'; ?></button>
+        <?php echo $status === 'active' ? '出品者情報を更新' : '登録して出品を始める'; ?></button>
     </form>
   <?php endif; ?>
   </div>

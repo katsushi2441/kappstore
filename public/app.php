@@ -137,7 +137,7 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
   <div class="card plain">
     <h2>販売情報</h2>
     <table class="kv">
-      <tr><th>販売者</th><td>
+      <tr><th>開発元</th><td>
         <?php if ($seller): ?>
           <?php echo kapp_h($seller['name']); ?>
           <?php if (!empty($seller['url'])): ?><br>

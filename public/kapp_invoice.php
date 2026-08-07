@@ -219,7 +219,7 @@ function kapp_invoice_pdf($order) {
 
     $c .= kapp_pdf_text($L + 8, $ry - 18, 8.5,
         'ソフトウェアのダウンロード販売（Kurage App Store）'
-        . ($seller !== '' ? '　販売者: @' . $seller : ''));
+        . ($seller !== '' ? '　開発元: @' . $seller : ''));
 
     // 小計・消費税・合計
     $sy = $ry - 46;

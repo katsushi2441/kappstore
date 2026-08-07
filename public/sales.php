@@ -45,7 +45,7 @@ if ($logged_in) { kapp_subnav('sales.php', $user, $is_seller, $is_admin); }
   <p><a class="btn" href="?login=1">𝕏 でログイン</a></p>
 
 <?php elseif (!$is_seller): ?>
-  <p class="lead">まだご出品がありません。<a href="sellers.php">販売店のページ</a>からお進みください。</p>
+  <p class="lead">まだご出品がありません。<a href="sellers.php">出品者のページ</a>からお進みください。</p>
 
 <?php else: ?>
   <div class="card">
