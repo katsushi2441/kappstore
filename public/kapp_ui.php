@@ -155,10 +155,25 @@ function kapp_header($subtitle, $logged_in, $user, $is_seller = false, $is_admin
     if ($logged_in) {
         echo '<a class="chip" href="orders.php">購入履歴</a>';
         if ($is_seller) { echo '<a class="chip" href="register.php">出品する</a>'; }
+        // 招待・承認されたが詳細登録が済んでいない人。ここに導線が無いと
+        // 案内メールを閉じた時点で戻る道が分からなくなる
+        elseif (kapp_seller_can_complete($user)) {
+            echo '<a class="chip" href="sellers.php"><b style="color:var(--gold)">販売店登録</b></a>';
+        }
         // 精算は出品者本人（自分の売上）と管理者（支払い作業）の両方が使う
         if ($is_seller || $is_admin) { echo '<a class="chip" href="payout.php">精算</a>'; }
         if ($is_admin)  { echo '<a class="chip" href="admin.php">注文管理</a>'; }
-        if ($is_admin)  { echo '<a class="chip" href="sellers.php?admin=1">審査</a>'; }
+        if ($is_admin) {
+            // 審査待ちの件数を出す。押す前に分かるようにしないと、
+            // 応募が溜まっていることに気づかないまま放置される
+            $waiting = 0;
+            foreach (kapp_sellers() as $s) {
+                if (kapp_seller_status($s) === 'applied') { $waiting++; }
+            }
+            echo '<a class="chip" href="sellers.php?admin=1">販売店管理'
+               . ($waiting > 0 ? ' <b style="color:var(--gold)">' . $waiting . '</b>' : '')
+               . '</a>';
+        }
         echo '<span class="chip">@' . kapp_h($user) . '</span>';
         echo '<a class="chip" href="?logout=1">ログアウト</a>';
     } else {
