@@ -8,11 +8,15 @@
 /**
  * @param string $jsonld 構造化データ(JSON-LD)。検索結果での見え方に効くので、
  *                       トップと商品ページでは入れる。
+ * @param string $image  OGP画像のURL。商品ページでは必ず商品画像を渡すこと。
+ *                       ここを共通画像のままにすると、出品者が自分の商品を
+ *                       SNSで紹介しても店のロゴしか出ず、宣伝にならない。
  */
-function kapp_head($title, $description, $canonical, $noindex = false, $jsonld = '') {
+function kapp_head($title, $description, $canonical, $noindex = false, $jsonld = '', $image = '') {
     $t = kapp_h($title);
     $d = kapp_h($description);
     $c = kapp_h($canonical);
+    $img = kapp_h($image !== '' ? $image : 'https://kappstore.exbridge.jp/assets/ogp.png');
     $robots = $noindex ? 'noindex, follow' : 'index, follow';
     echo <<<HTML
 <!doctype html>
@@ -29,7 +33,7 @@ function kapp_head($title, $description, $canonical, $noindex = false, $jsonld =
 <meta property="og:title" content="{$t}">
 <meta property="og:description" content="{$d}">
 <meta property="og:url" content="{$c}">
-<meta property="og:image" content="https://kappstore.exbridge.jp/assets/ogp.png">
+<meta property="og:image" content="{$img}">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

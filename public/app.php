@@ -25,10 +25,37 @@ $seller = kapp_find_seller($app['seller']);
 $owned = $logged_in && ($p['total'] === 0 ? false : kapp_has_paid($user, $app['id']));
 $canonical = 'https://kappstore.exbridge.jp/app.php?id=' . rawurlencode($app['id']);
 
+// 商品ごとの構造化データ。検索結果に価格と在庫が出る。
+$p_head = kapp_price_parts($app['price']);
+$jsonld = json_encode(array(
+    '@context'    => 'https://schema.org',
+    '@type'       => 'Product',
+    'name'        => $app['name'],
+    'description' => mb_strimwidth($app['summary'], 0, 300, '…', 'UTF-8'),
+    'url'         => $canonical,
+    'image'       => !empty($app['image'])
+        ? 'https://kappstore.exbridge.jp/kapp_media/' . $app['image'] : null,
+    'offers'      => array(
+        '@type'         => 'Offer',
+        'price'         => (string)$p_head['total'],
+        'priceCurrency' => 'JPY',
+        'availability'  => 'https://schema.org/InStock',
+        'url'           => $canonical,
+    ),
+), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+// OGPは商品画像を使う。出品者がSNSで紹介したとき、店のロゴではなく
+// その商品が出るようにする（宣伝してもらう前提の店なので、ここは要）。
+$ogp = !empty($app['image'])
+    ? 'https://kappstore.exbridge.jp/kapp_media/' . $app['image'] : '';
+
 kapp_head(
     $app['name'] . ' | Kurage App Store',
     mb_strimwidth($app['summary'], 0, 110, '…', 'UTF-8'),
-    $canonical
+    $canonical,
+    false,
+    $jsonld,
+    $ogp
 );
 kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
 ?>
@@ -76,6 +103,28 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
     <?php elseif (!empty($app['demo_url'])): ?>
       <p class="hint">デモでご確認のうえ、ご納得いただいてからご購入ください。</p>
     <?php endif; ?>
+
+    <?php
+    /* 共有ボタン。出品者が自分の商品を広めることが、この店の集客そのもの。
+       紹介文まで用意しておかないと「URLをコピーして文章を考える」で止まる。 */
+    $share_text = $app['name'] . ' — ' . mb_strimwidth($app['summary'], 0, 70, '…', 'UTF-8');
+    $share_url  = $canonical;
+    ?>
+    <p class="hint" style="margin-top:18px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <span>この商品を紹介する</span>
+      <a class="btn ghost" style="padding:6px 14px;font-size:12px"
+         href="https://x.com/intent/tweet?text=<?php echo rawurlencode($share_text); ?>&amp;url=<?php echo rawurlencode($share_url); ?>"
+         target="_blank" rel="noopener">𝕏 でポスト</a>
+      <a class="btn ghost" style="padding:6px 14px;font-size:12px"
+         href="https://social-plugins.line.me/lineit/share?url=<?php echo rawurlencode($share_url); ?>"
+         target="_blank" rel="noopener">LINE</a>
+      <a class="btn ghost" style="padding:6px 14px;font-size:12px"
+         href="https://b.hatena.ne.jp/entry/<?php echo kapp_h(preg_replace('#^https?://#', '', $share_url)); ?>"
+         target="_blank" rel="noopener">はてブ</a>
+      <button type="button" class="btn ghost" style="padding:6px 14px;font-size:12px"
+              onclick="navigator.clipboard.writeText('<?php echo kapp_h($share_url); ?>').then(function(){this.textContent='コピーしました';}.bind(this))">
+        URLをコピー</button>
+    </p>
   </div>
 
 <?php if (!empty($app['body'])): ?>
