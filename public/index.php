@@ -64,6 +64,8 @@ $faq = array(
           '販売しているのはプロトタイプで、動作を保証していません。お客様の環境によっては、そのままでは動かない可能性があります。設置もつまずいたときの解決も、Claude CodeやCodexなどのAIエージェントに相談しながらご自身で進めていただく前提の商品です。お問い合わせへの対応はお約束できず、購入代金にサポートは含まれていません。ノークレーム・ノーリターンでお願いいたします。'),
     array('AIエージェントを使っていなくても買えますか。',
           'おすすめしていません。設置も改造もAIに相談しながら進める前提で作られているため、Claude CodeやCodexをお使いでない場合は、期待した結果にならない可能性が高くなります。'),
+    array('AIエージェントからこの店はどう見えますか。',
+          'AIエージェントが読める入口を用意しています。llms.txt(店と全商品の説明)、catalog.json(全商品と買い方・導入方法の機械可読カタログ)、sitemap.xml、各商品ページのProduct型JSON-LDです。決済だけは人間が行い、購入後の設置・改変はAIエージェントで進められます。'),
 );
 $faq_list = array();
 foreach ($faq as $f) {
@@ -77,7 +79,7 @@ $jsonld = json_encode(array(
     '@graph'   => array(
         array('@type' => 'WebSite', 'name' => 'Kurage App Store',
               'url' => 'https://kappstore.exbridge.jp/',
-              'description' => '非エンジニアが自分で改変・拡張できる業務システムのプロトタイプを販売するダウンロードストア。'),
+              'description' => 'AIエージェントが見つけて、導入し、AIエージェントで育てる業務システムのダウンロードストア。全商品にClaude Codeが読める設計マニュアルとMITライセンスのソースを同梱。llms.txtと機械可読カタログ(catalog.json)を公開し、AIエージェントからも探せます。'),
         array('@type' => 'ItemList', 'itemListElement' => $item_list),
         array('@type' => 'FAQPage', 'mainEntity' => $faq_list),
     ),
@@ -85,7 +87,7 @@ $jsonld = json_encode(array(
 
 kapp_head(
     '非エンジニアが自分で改変できる業務システム | Kurage App Store',
-    '買ったあとで自分でカスタマイズできる業務システムのプロトタイプを販売。AIエージェントに渡せば設置も改造も進められます。MITライセンスで改変・再販自由、データベース不要、デモを触ってから購入できます。',
+    'AIエージェントが見つけて、導入し、AIエージェントで育てる業務システムのダウンロードストア。全商品にClaude Codeが読める設計マニュアルを同梱し、コードが読めなくてもAIに頼んで改変・拡張できます。MITライセンス・DB不要・デモを触ってから購入。llms.txt/catalog.jsonでAIエージェントからも探せます。',
     'https://kappstore.exbridge.jp/',
     false,
     $jsonld
@@ -94,12 +96,38 @@ kapp_header('改変できる業務システムのお店', $logged_in, $user, $is
 ?>
 <main class="wrap">
 <section>
-  <h1>買ったあとで、自分で変えられる業務システム</h1>
-  <p class="lead">
-    Kurage App Store は、<b>非エンジニアの方が自分でカスタマイズ・拡張できる</b>
-    業務システムのプロトタイプを販売するダウンロードストアです。<br>
-    完成品ではなく<b>「育てられる土台」</b>をお渡しします。
-  </p>
+    <h1>エンジニアがいなくても、業務システムを持てる。</h1>
+    <p class="concept"><b>AIエージェントが見つけて、導入し、AIエージェントで育てる</b>業務システム。</p>
+    <p class="lead">
+      業務システムの構築・導入は、これまでエンジニアだけのものでした。
+      <b>Kurage App Store は、その敷居を下げるためのお店です。</b><br>
+      ここで販売しているのは完成品ではなく、<b>あなたの会社の業務に合わせて「育てられる土台」</b>
+      ——実際に動く、業務システムのプロトタイプです。
+    </p>
+    <div class="pillars">
+      <div class="pillar">
+        <b>🤖 AIが読めるマニュアルを同梱</b>
+        <span>これが一番のポイントです。すべての商品に、AIコーディングツール
+          <b>Claude Code</b> が理解できる設計マニュアル（仕組み・データの持ち方・拡張の手引き）を
+          同梱しています。コードが読めなくても、AIに「この項目を増やして」「この画面をこう変えて」と
+          頼むだけで、自分の業務に合わせて作り替えられます。</span>
+      </div>
+      <div class="pillar">
+        <b>🌱 完成品ではなく「土台」</b>
+        <span>最小限で動くプロトタイプをお渡しします。最初から100点を目指さず、
+          使いながら自社の業務に合わせて少しずつ育てられる——だから安く、早く、自分のものになります。</span>
+      </div>
+      <div class="pillar">
+        <b>🔧 設置も改変も自由</b>
+        <span><b>MITライセンス</b>で改変・再販は自由。多くはデータベース不要で、
+          お手元のレンタルサーバーにそのまま設置できます。購入前にデモを触って確かめられます。</span>
+      </div>
+    </div>
+    <p class="agent-strip">🔎 この店自体、AIエージェントが読める作りです —
+      <a href="/llms.txt">llms.txt</a>（店と全商品の説明）・
+      <a href="/catalog.json">catalog.json</a>（買い方・導入方法つきの機械可読カタログ）・
+      <a href="/sitemap.xml">sitemap.xml</a>・各商品ページのProduct型JSON-LD。
+      お使いのAIに「kappstore.exbridge.jp のカタログを読んで、うちに合う業務システムを探して」と頼めます。</p>
 
   <form method="get" role="search" style="margin-bottom:26px;display:flex;gap:10px;flex-wrap:wrap">
     <input type="text" name="q" value="<?php echo kapp_h($q); ?>"

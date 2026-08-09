@@ -91,6 +91,14 @@ h1{font-size:clamp(22px,3.6vw,30px);font-weight:900;line-height:1.35;margin-bott
 h2{font-size:19px;font-weight:900;margin-bottom:8px}
 h3{font-size:15px;font-weight:900;margin-bottom:6px}
 .lead{font-size:14.5px;color:var(--abyss-soft);margin-bottom:20px}
+.concept{font-size:15.5px;color:var(--jelly,#0b7285);font-weight:500;margin:-2px 0 14px}
+.agent-strip{font-size:12px;color:var(--abyss-soft);line-height:1.9;margin:-10px 0 26px;
+  padding:12px 16px;border:1.5px dashed var(--panel-line,#d7e5e5);border-radius:12px;background:#fbfdfd}
+.pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:6px 0 26px}
+@media(max-width:720px){.pillars{grid-template-columns:1fr}}
+.pillar{background:var(--panel,#eef6f5);border:1.5px solid var(--panel-line,#d7e5e5);border-radius:14px;padding:16px 18px}
+.pillar>b{display:block;font-size:14.5px;margin-bottom:6px}
+.pillar>span{font-size:12.5px;color:var(--abyss-soft);line-height:1.85}
 .card{background:var(--panel);border:1.5px solid var(--panel-line);border-radius:18px;
   padding:26px;box-shadow:var(--shadow);margin-bottom:18px}
 .card.plain{background:var(--foam)}

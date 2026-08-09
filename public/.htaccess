@@ -4,6 +4,9 @@ DirectoryIndex index.php index.html
 
 RewriteEngine On
 RewriteRule ^sitemap\.xml$ sitemap.php [L]
+# AIエージェント向けの発見ファイル(実体はPHPで台帳から動的生成)
+RewriteRule ^llms\.txt$ llms.php [L]
+RewriteRule ^catalog\.json$ catalog.php [L]
 
 # 実行時設定と台帳は直接読ませない（PHPが止まったときにソースが出るため）
 <FilesMatch "^(kapp_config\.php)$">
