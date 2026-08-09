@@ -21,6 +21,7 @@ foreach (kapp_apps_published() as $app) {
         'name'        => $app['name'],
         'url'         => $base . 'app.php?id=' . rawurlencode($app['id']),
         'summary'     => isset($app['summary']) ? $app['summary'] : '',
+        'image'       => !empty($app['image']) ? $base . 'kapp_media/' . rawurlencode($app['image']) : null,
         'price_jpy'   => $p['total'],
         'price_note'  => '税込(本体' . number_format($p['amount']) . '円+消費税)',
         'demo_url'    => !empty($app['demo_url']) ? $app['demo_url'] : null,
