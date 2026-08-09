@@ -77,8 +77,20 @@ foreach ($faq as $f) {
 $jsonld = json_encode(array(
     '@context' => 'https://schema.org',
     '@graph'   => array(
+        array('@type' => 'Organization',
+              '@id'  => 'https://kappstore.exbridge.jp/#org',
+              'name' => 'Kurage App Store',
+              'url'  => 'https://kappstore.exbridge.jp/',
+              'logo' => 'https://kappstore.exbridge.jp/assets/kurage_avatar.webp',
+              'description' => 'AIエージェントが見つけて、導入し、AIエージェントで育てる業務システムのダウンロードストア。Kurage Projectの一部。',
+              'sameAs' => array(
+                  'https://kurage.exbridge.jp/',
+                  'https://github.com/katsushi2441',
+                  'https://x.com/xb_bittensor',
+              )),
         array('@type' => 'WebSite', 'name' => 'Kurage App Store',
               'url' => 'https://kappstore.exbridge.jp/',
+              'publisher' => array('@id' => 'https://kappstore.exbridge.jp/#org'),
               'description' => 'AIエージェントが見つけて、導入し、AIエージェントで育てる業務システムのダウンロードストア。全商品にClaude Codeが読める設計マニュアルとMITライセンスのソースを同梱。llms.txtと機械可読カタログ(catalog.json)を公開し、AIエージェントからも探せます。'),
         array('@type' => 'ItemList', 'itemListElement' => $item_list),
         array('@type' => 'FAQPage', 'mainEntity' => $faq_list),
