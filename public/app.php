@@ -76,9 +76,10 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
   </p>
 <?php endif; ?>
 
+  <?php $external = empty($app['file']); /* 配布ファイルを持たない=公式サイト(LP)で配布する掲載 */ ?>
   <div class="gate">
     <?php if ($p['total'] === 0): ?>
-      <p class="price">無料<small>ダウンロードいただけます</small></p>
+      <p class="price">無料<small><?php echo $external ? '公式サイトで配布' : 'ダウンロードいただけます'; ?></small></p>
     <?php else: ?>
       <p class="price"><?php echo number_format($p['total']); ?>円<small>税込</small></p>
       <p style="font-size:13.5px;margin-top:6px">
@@ -86,12 +87,14 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
     <?php endif; ?>
 
     <p style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
-      <?php if (!empty($app['demo_url'])): ?>
+      <?php if (!empty($app['demo_url']) && !$external): ?>
         <a class="btn ghost" href="<?php echo kapp_h($app['demo_url']); ?>" target="_blank" rel="noopener">
           デモを触ってみる</a>
       <?php endif; ?>
       <?php if ($owned): ?>
         <a class="btn" href="download.php?id=<?php echo kapp_h($app['id']); ?>">ダウンロード</a>
+      <?php elseif ($external && !empty($app['demo_url'])): ?>
+        <a class="btn" href="<?php echo kapp_h($app['demo_url']); ?>" target="_blank" rel="noopener">公式サイトで入手する</a>
       <?php elseif ($p['total'] === 0): ?>
         <a class="btn" href="order.php?app=<?php echo kapp_h($app['id']); ?>">無料で受け取る</a>
       <?php else: ?>
@@ -100,6 +103,8 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
     </p>
     <?php if ($owned): ?>
       <p class="hint">ご購入済みです。何度でもダウンロードいただけます。</p>
+    <?php elseif ($external): ?>
+      <p class="hint">公式サイト（LP）から iPhone 版・Android 版を入手できます。</p>
     <?php elseif (!empty($app['demo_url'])): ?>
       <p class="hint">デモでご確認のうえ、ご納得いただいてからご購入ください。</p>
     <?php endif; ?>
