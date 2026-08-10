@@ -137,6 +137,7 @@ input[type=file]{font-size:13px;margin-top:6px}
 .tag.draft{border-color:var(--gold-line);color:var(--gold)}
 table.kv{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:10px}
 table.kv th,table.kv td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--panel-line);vertical-align:top}
+table.kv td{overflow-wrap:anywhere}
 table.kv th{width:32%;color:var(--abyss-soft);font-size:12px;white-space:nowrap}
 .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;border-top:1px solid var(--panel-line);padding:12px 2px}
 /* 明細表。スマホでは横スクロールさせる（列を減らすと突き合わせができなくなる） */

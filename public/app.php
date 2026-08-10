@@ -63,7 +63,7 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
 <section>
   <p style="font-size:12.5px"><a href="index.php">← アプリ一覧</a></p>
   <h1><?php echo kapp_h($app['name']); ?></h1>
-  <p class="lead"><?php echo nl2br(kapp_h($app['summary'])); ?></p>
+  <p class="lead" style="overflow-wrap:anywhere"><?php echo nl2br(kapp_h($app['summary'])); ?></p>
 
 <?php if (isset($app['status']) && $app['status'] !== 'published'): ?>
   <p class="ok">この出品は<b>下書き</b>です。公開するまで一覧には表示されません。</p>
@@ -135,13 +135,14 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
 <?php if (!empty($app['body'])): ?>
   <div class="card">
     <h2>このアプリについて</h2>
-    <p style="font-size:14px"><?php echo nl2br(kapp_h($app['body'])); ?></p>
+    <p style="font-size:14px;overflow-wrap:anywhere"><?php echo nl2br(kapp_h($app['body'])); ?></p>
   </div>
 <?php endif; ?>
 
   <div class="card plain">
     <h2>販売情報</h2>
-    <table class="kv">
+    <div class="scroll">
+    <table class="kv" style="min-width:0">
       <tr><th>開発元</th><td>
         <?php if ($seller): ?>
           <?php echo kapp_h($seller['name']); ?>
@@ -166,6 +167,7 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
       <?php endif; ?>
       <tr><th>公開日</th><td><?php echo date('Y年n月j日', (int)$app['created_at']); ?></td></tr>
     </table>
+    </div>
   </div>
 
   <div class="gate">
