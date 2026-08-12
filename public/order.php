@@ -94,8 +94,9 @@ if ($logged_in && isset($_POST['register'])) {
                     kapp_send_order_mail($new);        // 出品者（無ければ管理者）へ
                     kapp_send_buyer_order_mail($new);  // 購入者へ控え
                 }
-                // POSTの再送で二重登録されないよう、GETへ逃がす
-                header('Location: order.php?order=' . rawurlencode($result[1]));
+                // POSTの再送で二重登録されないよう、GETへ逃がす。
+                // placed=1 は確認画面で注文完了(purchase)を1回だけ計測するための目印。
+                header('Location: order.php?order=' . rawurlencode($result[1]) . '&placed=1');
                 exit;
             }
         }
@@ -133,6 +134,12 @@ kapp_header('注文', $logged_in, $user, $is_seller, $is_admin);
 
 <?php elseif ($current): ?>
 <section>
+  <?php if (isset($_GET['placed'])): /* 注文完了を1回だけ計測（Google広告CV=注文） */ ?>
+  <script>
+    if (window.gtag) gtag('event','purchase',{transaction_id:'<?php echo kapp_h($current['invoice_no']); ?>',value:<?php echo (int)$current['total']; ?>,currency:'JPY'});
+    try{history.replaceState({},'','order.php?order=<?php echo rawurlencode($current['id']); ?>');}catch(e){}
+  </script>
+  <?php endif; ?>
   <h1><?php echo $current['status'] === 'paid' ? 'ご購入ありがとうございます' : 'ご注文を承りました'; ?></h1>
   <p class="lead"><b><?php echo kapp_h($current['app_name']); ?></b><br>
     請求書番号 <b><?php echo kapp_h($current['invoice_no']); ?></b>
