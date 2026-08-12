@@ -27,7 +27,7 @@ $canonical = 'https://kappstore.exbridge.jp/app.php?id=' . rawurlencode($app['id
 
 // 商品ごとの構造化データ。検索結果に価格と在庫が出る。
 $p_head = kapp_price_parts($app['price']);
-$jsonld = json_encode(array(
+$product_ld = array(
     '@context'    => 'https://schema.org',
     '@type'       => 'Product',
     'name'        => $app['name'],
@@ -35,14 +35,39 @@ $jsonld = json_encode(array(
     'url'         => $canonical,
     'image'       => !empty($app['image'])
         ? 'https://kappstore.exbridge.jp/kapp_media/' . $app['image'] : null,
+    'brand'       => array('@type' => 'Organization', 'name' => '株式会社エクスブリッジ'),
     'offers'      => array(
         '@type'         => 'Offer',
         'price'         => (string)$p_head['total'],
         'priceCurrency' => 'JPY',
         'availability'  => 'https://schema.org/InStock',
         'url'           => $canonical,
+        'seller'        => array('@type' => 'Organization', 'name' => 'Kurage App Store'),
     ),
-), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+);
+// 商品データから正確なFAQを組む（可視のFAQ節と一致させる＝ガイドライン準拠）。
+$faq_items = array();
+$faq_items[] = array('ライセンスは？',
+    (!empty($app['license']) ? $app['license'] : 'MIT') . 'ライセンスです。ソースコードを同梱し、商用利用・改変・再配布が自由に行えます。');
+if (!empty($app['requires'])) {
+    $faq_items[] = array('動作環境・設置方法は？',
+        '設置先は「' . $app['requires'] . '」です。FTPでファイルを置くだけで動きます。');
+}
+if (!empty($app['demo_url'])) {
+    $faq_items[] = array('購入前に試せますか？',
+        'はい。デモで実際に触って、気に入ってから購入できます（' . $app['demo_url'] . '）。');
+}
+$faq_items[] = array('AIエージェントで改造・拡張できますか？',
+    'できます。Claude Code等のAIエージェント向けの設計マニュアルが付属し、触れてよい範囲を宣言したうえで安全に変更を頼めます。');
+$faq_items[] = array('買い切りですか？月額はありますか？',
+    ((int)$p_head['total'] === 0 ? '無料です。月額料金はありません。' : '買い切りです。月額料金はありません。'));
+$faq_ld = array('@context' => 'https://schema.org', '@type' => 'FAQPage', 'mainEntity' => array());
+foreach ($faq_items as $qa) {
+    $faq_ld['mainEntity'][] = array(
+        '@type' => 'Question', 'name' => $qa[0],
+        'acceptedAnswer' => array('@type' => 'Answer', 'text' => $qa[1]));
+}
+$jsonld = json_encode(array($product_ld, $faq_ld), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
 // OGPは商品画像を使う。出品者がSNSで紹介したとき、店のロゴではなく
 // その商品が出るようにする（宣伝してもらう前提の店なので、ここは要）。
@@ -196,6 +221,16 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
       <a href="https://kurage.exbridge.jp/terms.html">利用規約</a> ／
       <a href="https://kurage.exbridge.jp/tokusho.php">特定商取引法に基づく表記</a></p>
   </div>
+</section>
+
+<section style="max-width:760px;margin:18px auto 0;background:var(--foam);border:1px solid var(--panel-line);border-radius:16px;padding:18px 20px;box-shadow:var(--shadow)">
+  <h2 style="font-size:18px;margin:0 0 6px;color:var(--abyss)">よくある質問</h2>
+  <?php foreach ($faq_items as $qa): ?>
+    <details style="border-top:1px solid var(--panel-line);padding:11px 0">
+      <summary style="font-weight:800;cursor:pointer;color:var(--abyss)"><?php echo kapp_h($qa[0]); ?></summary>
+      <p style="margin:8px 0 0;color:var(--abyss-soft);overflow-wrap:anywhere;line-height:1.7"><?php echo kapp_h($qa[1]); ?></p>
+    </details>
+  <?php endforeach; ?>
 </section>
 </main>
 <?php kapp_footer(); ?>
