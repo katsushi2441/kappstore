@@ -157,6 +157,28 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
     </p>
   </div>
 
+<?php if (!$external && $p['total'] > 0): /* 入手方法の3択（手順書があれば3つ・なければ2つ） */
+  $has_guide = !empty($app['guide_url']); $opt = 1; ?>
+  <div class="card plain">
+    <h2>入手方法は<?php echo $has_guide ? '3' : '2'; ?>つあります</h2>
+    <p style="font-size:13.5px;color:var(--ink-soft);margin:0 0 10px">同じゴールに、あなたに合う入口からどうぞ。</p>
+    <div class="scroll">
+    <table class="kv" style="min-width:0">
+      <tr><th>①完成品を購入</th>
+        <td>すぐ使いたい方向け。このページで購入し、即ダウンロード（ソースコード付き・<?php echo number_format($p['total']); ?>円税込）。AIで自社向けに改変できます。</td></tr>
+      <?php if ($has_guide): ?>
+      <tr><th>②手順書で自作</th>
+        <td>作る力を手に入れたい方向け。開発手順書（同価格・55,000円）を購入し、Claude CodeなどのAIエージェントで自分の手で開発します。<br>
+          <a href="<?php echo kapp_h($app['guide_url']); ?>" target="_blank" rel="noopener">開発手順書を見る（Brain）</a></td></tr>
+      <?php endif; ?>
+      <tr><th><?php echo $has_guide ? '③' : '②'; ?>自社仕様に制作</th>
+        <td>「うちの業種・業務に合わせてほしい」方向け。バイブプロトタイピング（110,000円税込）で当社が開発し、最短1営業日で動くデモをお出しします。<br>
+          <a href="https://kurage.exbridge.jp/vibe-prototype.html?ref=kappstore" target="_blank" rel="noopener">バイブプロトタイピングを見る</a></td></tr>
+    </table>
+    </div>
+  </div>
+<?php endif; ?>
+
 <?php if (!empty($app['body'])): ?>
   <div class="card">
     <h2>このアプリについて</h2>

@@ -25,6 +25,7 @@ foreach (kapp_apps_published() as $app) {
         'price_jpy'   => $p['total'],
         'price_note'  => '税込(本体' . number_format($p['amount']) . '円+消費税)',
         'demo_url'    => !empty($app['demo_url']) ? $app['demo_url'] : null,
+        'guide_url'   => !empty($app['guide_url']) ? $app['guide_url'] : null,  // 自作派向けの開発手順書(Brain)
         'license'     => 'MIT',
         'includes'    => array('source_code', 'claude_code_manual', 'install_guide'),
         'requires'    => 'PHP rental server (no DB, no Composer, no npm)',
