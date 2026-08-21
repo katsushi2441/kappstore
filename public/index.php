@@ -324,4 +324,5 @@ kapp_header('改変できる業務システムのお店', $logged_in, $user, $is
   </div>
 </section>
 </main>
+<script defer src="https://kurage.exbridge.jp/js/oss-banners.js?v=20260822" data-ref="oss-lp-kappstore"></script>
 <?php kapp_footer(); ?>
