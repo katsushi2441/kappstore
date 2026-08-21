@@ -8,3 +8,4 @@ public/kapp_media/*
 outputs/
 *.pyc
 __pycache__/
+public/simpletrack_config.php

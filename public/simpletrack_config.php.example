@@ -1,0 +1,15 @@
+<?php
+/**
+ * SimpleTrack（kappstore.exbridge.jp 用）の環境ごとの設定。
+ * このファイルを simpletrack_config.php にコピーして使う。実値はgitに入れない。
+ *
+ * kurage.exbridge.jp にも同名の別系統があります。ログ・Cookie・合鍵は
+ * ドメインごとに分けてください（混ぜると集計が混ざります）。
+ */
+define("ST_TITLE", "Kurage App Store アクセス解析");
+// 見られて困る内容が無いので鍵は掛けない。空にすると誰でも開ける
+define("ST_PASSWORD_HASH", "");
+define("ST_OWN_HOSTS", "kappstore.exbridge.jp");
+define("ST_KEEP_MONTHS", 36);
+// サーバー間で呼ぶときの合鍵。kurage側とは別の値にする
+define("ST_INTERNAL_KEY", "kappstore-track-v1");

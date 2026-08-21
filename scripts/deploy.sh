@@ -35,12 +35,12 @@ upload /home/kojima/work/kurage_web/auth_common.php auth_common.php
 upload public/config.php config.php
 
 # --- 画面 ---
-for f in index.php app.php order.php orders.php download.php register.php sellers.php admin.php payout.php statement.php dashboard.php sales.php sitemap.php llms.php catalog.php; do
+for f in index.php app.php order.php orders.php download.php register.php sellers.php admin.php payout.php statement.php dashboard.php sales.php sitemap.php llms.php catalog.php simpletrack.php simpletrack_dashboard.php; do
   upload "public/$f" "$f"
 done
 
 # --- 部品 ---
-for f in kapp_boot.php kapp_lib.php kapp_ui.php kapp_invoice.php kapp_payout.php kapp_statement.php kapp_config.php; do
+for f in kapp_boot.php kapp_lib.php kapp_ui.php kapp_invoice.php kapp_payout.php kapp_statement.php kapp_config.php simpletrack_config.php; do
   upload "public/$f" "$f"
 done
 

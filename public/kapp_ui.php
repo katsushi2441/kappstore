@@ -153,7 +153,9 @@ footer.site{text-align:center;color:var(--abyss-soft);font-size:12.5px;padding:3
 </style>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-BP0650KDFR"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-BP0650KDFR');</script>
-<script>(function(){var s=document.createElement('script');s.src='https://kurage.exbridge.jp/simpletrack.php?url='+encodeURIComponent(location.href)+'&ref='+encodeURIComponent(document.referrer);document.head.appendChild(s)})();</script>
+<?php /* 計測タグは自ドメインの simpletrack.php を叩く。kurage.exbridge.jp のものを
+       貼るとkappstoreの流入がkurage側のログに混ざる（実際に混ざっていた）。 */ ?>
+<script>(function(){var s=document.createElement('script');s.src='https://kappstore.exbridge.jp/simpletrack.php?url='+encodeURIComponent(location.href)+'&ref='+encodeURIComponent(document.referrer);document.head.appendChild(s)})();</script>
 </head>
 <body>
 HTML;
