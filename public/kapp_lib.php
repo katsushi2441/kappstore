@@ -407,6 +407,40 @@ function kapp_seller_apps($user) {
 }
 
 /** 税別価格から税額と税込を出す。表示・請求書・PayPalでずれないよう一箇所に集約。 */
+/**
+ * 出品名から短い呼び名を取り出す。「顔打刻つき勤怠システム（Kurage Kintai）」→
+ * 「Kurage Kintai」。定義文の主語に使う。
+ */
+function kapp_short_name($app) {
+    $name = isset($app['name']) ? (string)$app['name'] : '';
+    if (preg_match('/[（(]([^）)]+)[）)]\s*$/u', $name, $m)) {
+        $inner = trim($m[1]);
+        if ($inner !== '') { return $inner; }
+    }
+    return $name;
+}
+
+/**
+ * 「○○とは、〜です。」の述部を作る。AI検索は定義文の形をした1文を引用するため、
+ * 要約の第1文をそのまま使い、体言止めなら「〜です。」を補う。
+ * （kgeoのAEO監査で definitions が0点だったことへの対策）
+ */
+function kapp_definition_sentence($app) {
+    $summary = isset($app['summary']) ? trim((string)$app['summary']) : '';
+    if ($summary === '') {
+        return '業務システムです。';
+    }
+    $parts = preg_split('/(?<=。)/u', $summary, 2);
+    $first = isset($parts[0]) ? trim($parts[0]) : $summary;
+    if (function_exists('mb_strimwidth')) {
+        $first = mb_strimwidth($first, 0, 220, '…', 'UTF-8');
+    }
+    if ($first === '') { return '業務システムです。'; }
+    $last = function_exists('mb_substr') ? mb_substr($first, -1, 1, 'UTF-8') : substr($first, -1);
+    if ($last !== '。') { $first .= 'です。'; }
+    return $first;
+}
+
 function kapp_price_parts($amount) {
     $amount = (int)$amount;
     $tax = (int)floor($amount * KAPP_TAX_RATE);

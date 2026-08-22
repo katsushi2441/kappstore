@@ -36,6 +36,9 @@ $product_ld = array(
     'image'       => !empty($app['image'])
         ? 'https://kappstore.exbridge.jp/kapp_media/' . $app['image'] : null,
     'brand'       => array('@type' => 'Organization', 'name' => '株式会社エクスブリッジ'),
+    // 鮮度の申告。台帳の updated_at をそのまま使う（無ければ created_at）。
+    'dateModified' => date('c', (int)(!empty($app['updated_at']) ? $app['updated_at']
+                                     : (!empty($app['created_at']) ? $app['created_at'] : time()))),
     'offers'      => array(
         '@type'         => 'Offer',
         'price'         => (string)$p_head['total'],
@@ -88,6 +91,8 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
 <section>
   <p style="font-size:12.5px"><a href="index.php">← アプリ一覧</a></p>
   <h1><?php echo kapp_h($app['name']); ?></h1>
+  <?php /* 「○○とは、〜です」の定義文。AI検索はこの形の1文を引用するため、
+           要約の先頭文から機械的に組む（kgeo監査の definitions が0点だった対策）。 */ ?>
   <p class="lead" style="overflow-wrap:anywhere"><?php echo nl2br(kapp_h($app['summary'])); ?></p>
 
 <?php if (isset($app['status']) && $app['status'] !== 'published'): ?>
@@ -179,12 +184,15 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
   </div>
 <?php endif; ?>
 
-<?php if (!empty($app['body'])): ?>
+  <?php /* AEOの定義文判定は「見出しの直後の本文」を見る。だから定義文は
+           h2 のすぐ下に置く（h1直下のリード文では拾われなかった）。 */ ?>
   <div class="card">
-    <h2>このアプリについて</h2>
-    <p style="font-size:14px;overflow-wrap:anywhere"><?php echo nl2br(kapp_h($app['body'])); ?></p>
-  </div>
+    <h2><?php echo kapp_h(kapp_short_name($app)); ?>とは</h2>
+    <p style="font-size:14px;overflow-wrap:anywhere"><b><?php echo kapp_h(kapp_short_name($app)); ?>とは、</b><?php echo kapp_h(kapp_definition_sentence($app)); ?></p>
+<?php if (!empty($app['body'])): ?>
+    <p style="font-size:14px;overflow-wrap:anywhere;margin-top:12px"><?php echo nl2br(kapp_h($app['body'])); ?></p>
 <?php endif; ?>
+  </div>
 
   <div class="card plain">
     <h2>販売情報</h2>
@@ -247,11 +255,13 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
 
 <section style="max-width:760px;margin:18px auto 0;background:var(--foam);border:1px solid var(--panel-line);border-radius:16px;padding:18px 20px;box-shadow:var(--shadow)">
   <h2 style="font-size:18px;margin:0 0 6px;color:var(--abyss)">よくある質問</h2>
+  <?php /* 質問は必ず見出しタグで出す。details/summary は見出しとして解釈されず、
+           AI検索・AEOの「質問見出し」判定に入らない（kgeo監査で0点だった原因）。 */ ?>
   <?php foreach ($faq_items as $qa): ?>
-    <details style="border-top:1px solid var(--panel-line);padding:11px 0">
-      <summary style="font-weight:800;cursor:pointer;color:var(--abyss)"><?php echo kapp_h($qa[0]); ?></summary>
-      <p style="margin:8px 0 0;color:var(--abyss-soft);overflow-wrap:anywhere;line-height:1.7"><?php echo kapp_h($qa[1]); ?></p>
-    </details>
+    <div style="border-top:1px solid var(--panel-line);padding:11px 0">
+      <h3 style="font-size:15px;font-weight:800;margin:0;color:var(--abyss)"><?php echo kapp_h($qa[0]); ?></h3>
+      <p style="margin:6px 0 0;color:var(--abyss-soft);overflow-wrap:anywhere;line-height:1.7"><?php echo kapp_h($qa[1]); ?></p>
+    </div>
   <?php endforeach; ?>
 </section>
 </main>
