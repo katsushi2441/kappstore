@@ -82,7 +82,7 @@ $jsonld = json_encode(array(
               'name' => 'Kurage App Store',
               'url'  => 'https://kappstore.exbridge.jp/',
               'logo' => 'https://kappstore.exbridge.jp/assets/kurage_avatar.webp',
-              'description' => 'AIエージェントが見つけて、導入し、AIエージェントで育てる業務システムのダウンロードストア。Kurage Projectの一部。',
+              'description' => '買い切り業務システムとオープンソース日本語導入キットのダウンロードストア。Kurage Projectの一部。',
               'sameAs' => array(
                   'https://kurage.exbridge.jp/',
                   'https://github.com/katsushi2441',
@@ -91,7 +91,7 @@ $jsonld = json_encode(array(
         array('@type' => 'WebSite', 'name' => 'Kurage App Store',
               'url' => 'https://kappstore.exbridge.jp/',
               'publisher' => array('@id' => 'https://kappstore.exbridge.jp/#org'),
-              'description' => 'AIエージェントが見つけて、導入し、AIエージェントで育てる業務システムのダウンロードストア。全商品にClaude Codeが読める設計マニュアルとMITライセンスのソースを同梱。llms.txtと機械可読カタログ(catalog.json)を公開し、AIエージェントからも探せます。'),
+              'description' => '買い切りの業務システムと、海外オープンソースの日本語導入キットのダウンロードストア。業務アプリはClaude Codeが読める設計マニュアルとMITライセンスのソースを同梱。導入キットは共有レンタルサーバー向けの実測手順書。llms.txtと機械可読カタログ(catalog.json)を公開し、AIエージェントからも探せます。'),
         array('@type' => 'ItemList', 'itemListElement' => $item_list),
         array('@type' => 'FAQPage', 'mainEntity' => $faq_list),
     ),
@@ -99,12 +99,12 @@ $jsonld = json_encode(array(
 
 kapp_head(
     '非エンジニアが自分で改変できる業務システム | Kurage App Store',
-    'AIエージェントが見つけて、導入し、AIエージェントで育てる業務システムのダウンロードストア。全商品にClaude Codeが読める設計マニュアルを同梱し、コードが読めなくてもAIに頼んで改変・拡張できます。MITライセンス・DB不要・デモを触ってから購入。llms.txt/catalog.jsonでAIエージェントからも探せます。',
+    '買い切りの業務システムと、海外オープンソースの日本語導入キットのダウンロードストア。業務アプリはClaude Codeが読める設計マニュアル同梱・MITライセンスで、AIに頼んで改変・拡張できます。導入キットはEspoCRM・FreeScout等を共有レンタルサーバーに日本語で立てる実測手順書。デモを触ってから購入。llms.txt/catalog.jsonでAIエージェントからも探せます。',
     'https://kappstore.exbridge.jp/',
     false,
     $jsonld
 );
-kapp_header('改変できる業務システムのお店', $logged_in, $user, $is_seller, $is_admin);
+kapp_header('業務システムと導入キットのお店', $logged_in, $user, $is_seller, $is_admin);
 ?>
 <main class="wrap">
 <section>
@@ -114,7 +114,9 @@ kapp_header('改変できる業務システムのお店', $logged_in, $user, $is
       業務システムの構築・導入は、これまでエンジニアだけのものでした。
       <b>Kurage App Store は、その敷居を下げるためのお店です。</b><br>
       ここで販売しているのは完成品ではなく、<b>あなたの会社の業務に合わせて「育てられる土台」</b>
-      ——実際に動く、業務システムのプロトタイプです。
+      ——実際に動く、業務システムのプロトタイプです。<br>
+      現在は業務アプリに加えて、<b>海外オープンソースの「日本語導入キット」</b>
+      （EspoCRM・Krayin・FreeScoutなどを共有レンタルサーバーに日本語で立てる実測手順書＋ツール一式）も扱っています。
     </p>
     <div class="pillars">
       <div class="pillar">
@@ -133,6 +135,18 @@ kapp_header('改変できる業務システムのお店', $logged_in, $user, $is
         <b>🔧 設置も改変も自由</b>
         <span><b>MITライセンス</b>で改変・再販は自由。多くはデータベース不要で、
           お手元のレンタルサーバーにそのまま設置できます。購入前にデモを触って確かめられます。</span>
+      </div>
+    </div>
+    <div class="pillars" style="margin-top:6px">
+      <div class="pillar">
+        <b>🧩 買い切り業務アプリ</b>
+        <span>予約受付・勤怠・AI議事録・請求書などの「育てられる土台」。ソースコード込み・MITライセンス・月額なし。</span>
+      </div>
+      <div class="pillar">
+        <b>📘 日本語導入キット</b>
+        <span>アプリ以外の商品です。EspoCRM・Krayin・FreeScoutなど<b>無料の海外オープンソース</b>を、
+          共有レンタルサーバーに日本語で立てるための<b>実測手順書＋チェックツール＋AI用指示書</b>のセット。
+          ソフト本体は無料で入手し、つまずく所だけキットが先回りします。</span>
       </div>
     </div>
     <p class="agent-strip">🔎 この店自体、AIエージェントが読める作りです —
