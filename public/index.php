@@ -98,8 +98,8 @@ $jsonld = json_encode(array(
 ), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
 kapp_head(
-    '非エンジニアが自分で改変できる業務システム | Kurage App Store',
-    '買い切りの業務システム、海外オープンソースの日本語導入キット、AI開発ツールのダウンロードストア。業務アプリはClaude Codeが読める設計マニュアル同梱・MITライセンスで、AIに頼んで改変・拡張できます。導入キットはEspoCRM・FreeScout等を共有レンタルサーバーに日本語で立てる実測手順書。AI開発ツールはAIと対話して設計書を作るなど開発の前工程を助けます。デモを触ってから購入。llms.txt/catalog.jsonでAIエージェントからも探せます。',
+    '買い切りの業務システムとOSS日本語導入キット｜Kurage App Store',
+    '買い切りの業務システムと、EspoCRM・FreeScout等の日本語導入キットを売るダウンロードストアです。月額はなく、ソースコード同梱・MITライセンスでAIに頼んで改変できます。全商品にデモがあり、触ってから購入を判断できます。',
     'https://kappstore.exbridge.jp/',
     false,
     $jsonld

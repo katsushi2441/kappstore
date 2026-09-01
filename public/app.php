@@ -50,6 +50,16 @@ $product_ld = array(
 );
 // 商品データから正確なFAQを組む（可視のFAQ節と一致させる＝ガイドライン準拠）。
 $faq_items = array();
+// 「どんなときに使うか」。人が検索するのは商品名ではなく困りごとなので、
+// その言葉が本文に1度も無いと検索にも引っかからず、AIも用途を答えられない。
+// 用途の一覧は kapp_usecases.php に1か所だけ持つ（llms.txtと同じもの）。
+require_once __DIR__ . '/kapp_usecases.php';
+$use_case = kapp_use_case_of($app['id']);
+if ($use_case !== '') {
+    $faq_items[] = array('どんなときに使いますか？',
+        $use_case . '——そんなときのための商品です。'
+        . 'デモを操作してから購入をご判断ください。');
+}
 $faq_items[] = array('ライセンスは？',
     (!empty($app['license']) ? $app['license'] : 'MIT') . 'ライセンスです。ソースコードを同梱し、商用利用・改変・再配布が自由に行えます。');
 if (!empty($app['requires'])) {
@@ -70,16 +80,35 @@ foreach ($faq_items as $qa) {
         '@type' => 'Question', 'name' => $qa[0],
         'acceptedAnswer' => array('@type' => 'Answer', 'text' => $qa[1]));
 }
-$jsonld = json_encode(array($product_ld, $faq_ld), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+$breadcrumb_ld = array(
+    '@context' => 'https://schema.org', '@type' => 'BreadcrumbList',
+    'itemListElement' => array(
+        array('@type' => 'ListItem', 'position' => 1, 'name' => 'Kurage App Store',
+              'item' => 'https://kappstore.exbridge.jp/'),
+        array('@type' => 'ListItem', 'position' => 2, 'name' => $app['name'],
+              'item' => $canonical),
+    ),
+);
+$jsonld = json_encode(array($product_ld, $faq_ld, $breadcrumb_ld),
+                      JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
 // OGPは商品画像を使う。出品者がSNSで紹介したとき、店のロゴではなく
 // その商品が出るようにする（宣伝してもらう前提の店なので、ここは要）。
 $ogp = !empty($app['image'])
     ? 'https://kappstore.exbridge.jp/kapp_media/' . $app['image'] : '';
 
+// title/description は台帳の seo_title / seo_desc を優先する。
+// 商品名は「何であるか」を表す名前で、検索で打たれている語とは限らない。
+// 実際に検索されている語(キーワードプランナー実測)を先頭に置いた文言を
+// 台帳側に持たせ、無ければ従来どおり商品名と要約から組む。
+$seo_title = !empty($app['seo_title'])
+    ? $app['seo_title'] : $app['name'] . ' | Kurage App Store';
+$seo_desc  = !empty($app['seo_desc'])
+    ? $app['seo_desc'] : mb_strimwidth($app['summary'], 0, 110, '…', 'UTF-8');
+
 kapp_head(
-    $app['name'] . ' | Kurage App Store',
-    mb_strimwidth($app['summary'], 0, 110, '…', 'UTF-8'),
+    $seo_title,
+    $seo_desc,
     $canonical,
     false,
     $jsonld,

@@ -40,7 +40,7 @@ for f in index.php app.php order.php orders.php download.php register.php seller
 done
 
 # --- 部品 ---
-for f in kapp_boot.php kapp_lib.php kapp_ui.php kapp_invoice.php kapp_payout.php kapp_statement.php kapp_config.php simpletrack_config.php; do
+for f in kapp_boot.php kapp_lib.php kapp_ui.php kapp_usecases.php kapp_invoice.php kapp_payout.php kapp_statement.php kapp_config.php simpletrack_config.php; do
   upload "public/$f" "$f"
 done
 
@@ -49,6 +49,16 @@ upload public/assets/ogp.png            assets/ogp.png
 upload public/assets/kurage_avatar.png  assets/kurage_avatar.png
 upload public/assets/kurage_avatar.webp assets/kurage_avatar.webp
 upload public/robots.txt                robots.txt
+
+# --- IndexNow の鍵（Bing・Yandex等に更新を通知するのに要る）---
+#     public/<32桁hex>.txt を、中身が鍵そのものの状態で公開しておく。
+#     これが無いと scripts/indexnow_submit.py の送信が全件拒否される。
+for k in public/*.txt; do
+  b=$(basename "$k")
+  case "$b" in
+    ????????????????????????????????.txt) upload "$k" "$b" ;;
+  esac
+done
 
 # --- 保護（台帳と配布ファイルをWebから直接読ませない）---
 upload public/kapp_data/.htaccess  kapp_data/.htaccess

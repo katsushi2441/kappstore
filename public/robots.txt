@@ -5,4 +5,125 @@ Disallow: /orders.php
 Disallow: /register.php
 Disallow: /download.php
 Disallow: /kapp_data/
-Sitemap: https://kappstore.exbridge.jp/sitemap.php
+
+# --- AIクローラー ---------------------------------------------------------
+# 上の * ですでに許可しているが、自分の名前の節しか読まないクローラーが
+# あるため名指しでも書く。学習・検索の両方を歓迎する。名指しの節は * を
+# 置き換えてしまうので、購入・ダウンロード系の除外もここに書き写す
+# (書き忘れると注文画面までクロールされる)。
+# AIエージェント向けの入口: /llms.txt（店と全商品の説明）
+#                          /catalog.json（買い方・導入方法つき機械可読カタログ）
+
+User-agent: GPTBot
+Allow: /
+Disallow: /order.php
+Disallow: /orders.php
+Disallow: /register.php
+Disallow: /download.php
+Disallow: /kapp_data/
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /order.php
+Disallow: /orders.php
+Disallow: /register.php
+Disallow: /download.php
+Disallow: /kapp_data/
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /order.php
+Disallow: /orders.php
+Disallow: /register.php
+Disallow: /download.php
+Disallow: /kapp_data/
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /order.php
+Disallow: /orders.php
+Disallow: /register.php
+Disallow: /download.php
+Disallow: /kapp_data/
+
+User-agent: Claude-Web
+Allow: /
+Disallow: /order.php
+Disallow: /orders.php
+Disallow: /register.php
+Disallow: /download.php
+Disallow: /kapp_data/
+
+User-agent: anthropic-ai
+Allow: /
+Disallow: /order.php
+Disallow: /orders.php
+Disallow: /register.php
+Disallow: /download.php
+Disallow: /kapp_data/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /order.php
+Disallow: /orders.php
+Disallow: /register.php
+Disallow: /download.php
+Disallow: /kapp_data/
+
+User-agent: Perplexity-User
+Allow: /
+Disallow: /order.php
+Disallow: /orders.php
+Disallow: /register.php
+Disallow: /download.php
+Disallow: /kapp_data/
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /order.php
+Disallow: /orders.php
+Disallow: /register.php
+Disallow: /download.php
+Disallow: /kapp_data/
+
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /order.php
+Disallow: /orders.php
+Disallow: /register.php
+Disallow: /download.php
+Disallow: /kapp_data/
+
+User-agent: CCBot
+Allow: /
+Disallow: /order.php
+Disallow: /orders.php
+Disallow: /register.php
+Disallow: /download.php
+Disallow: /kapp_data/
+
+User-agent: Bytespider
+Allow: /
+Disallow: /order.php
+Disallow: /orders.php
+Disallow: /register.php
+Disallow: /download.php
+Disallow: /kapp_data/
+
+User-agent: Meta-ExternalAgent
+Allow: /
+Disallow: /order.php
+Disallow: /orders.php
+Disallow: /register.php
+Disallow: /download.php
+Disallow: /kapp_data/
+
+User-agent: Amazonbot
+Allow: /
+Disallow: /order.php
+Disallow: /orders.php
+Disallow: /register.php
+Disallow: /download.php
+Disallow: /kapp_data/
+
+Sitemap: https://kappstore.exbridge.jp/sitemap.xml

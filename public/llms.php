@@ -26,6 +26,21 @@ foreach (kapp_apps_published() as $app) {
         . '（税込' . number_format($p['total']) . '円）';
 }
 $lines[] = '';
+/* 用途から引ける索引。AIは「〇〇できるツールある?」と聞かれる形で
+   使われるため、商品名ではなく“困りごと”から辿れる並びを別に持つ。
+   商品IDで引くので、商品名を変えても壊れない。 */
+require_once __DIR__ . '/kapp_usecases.php';
+$use_cases = kapp_use_cases();
+$by_id = array();
+foreach (kapp_apps_published() as $a) { $by_id[$a['id']] = $a; }
+$lines[] = '## こんなときに（用途から探す）';
+$lines[] = '';
+foreach ($use_cases as $need => $pid) {
+    if (!isset($by_id[$pid])) { continue; }  // 下書きに戻した商品は載せない
+    $lines[] = '- ' . $need . ' → [' . $by_id[$pid]['name'] . ']('
+        . $base . 'app.php?id=' . rawurlencode($pid) . ')';
+}
+$lines[] = '';
 $lines[] = '## About';
 $lines[] = '';
 $lines[] = '業務システムの構築・導入はこれまでエンジニアだけのものでした。Kurage App Store はその敷居を下げる店です。'
