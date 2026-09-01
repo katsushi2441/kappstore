@@ -80,6 +80,18 @@ foreach ($faq_items as $qa) {
         '@type' => 'Question', 'name' => $qa[0],
         'acceptedAnswer' => array('@type' => 'Answer', 'text' => $qa[1]));
 }
+$video_ld = null;
+if (!empty($app['video_url'])) {
+    $video_ld = array(
+        '@context' => 'https://schema.org', '@type' => 'VideoObject',
+        'name' => $app['name'] . ' 紹介動画（15秒）',
+        'description' => mb_strimwidth($app['summary'], 0, 200, '…', 'UTF-8'),
+        'contentUrl' => $app['video_url'],
+        'thumbnailUrl' => !empty($app['image'])
+            ? 'https://kappstore.exbridge.jp/kapp_media/' . $app['image'] : null,
+        'uploadDate' => date('c', (int)(!empty($app['updated_at']) ? $app['updated_at'] : time())),
+    );
+}
 $breadcrumb_ld = array(
     '@context' => 'https://schema.org', '@type' => 'BreadcrumbList',
     'itemListElement' => array(
@@ -89,7 +101,9 @@ $breadcrumb_ld = array(
               'item' => $canonical),
     ),
 );
-$jsonld = json_encode(array($product_ld, $faq_ld, $breadcrumb_ld),
+$ld_items = array($product_ld, $faq_ld, $breadcrumb_ld);
+if ($video_ld) { $ld_items[] = $video_ld; }
+$jsonld = json_encode($ld_items,
                       JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
 // OGPは商品画像を使う。出品者がSNSで紹介したとき、店のロゴではなく
@@ -128,7 +142,15 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
   <p class="ok">この出品は<b>下書き</b>です。公開するまで一覧には表示されません。</p>
 <?php endif; ?>
 
-<?php if (!empty($app['image'])): ?>
+<?php if (!empty($app['video_url'])): ?>
+  <?php /* 15秒PV。台帳の video_url に絶対URLを入れると画像の代わりに出す。
+           自動再生はしない（ナレーション付きなので、音を消して勝手に流す意味がない）。 */ ?>
+  <p style="margin-bottom:18px">
+    <video src="<?php echo kapp_h($app['video_url']); ?>" controls playsinline preload="metadata"
+           <?php if (!empty($app['image'])): ?>poster="kapp_media/<?php echo kapp_h($app['image']); ?>"<?php endif; ?>
+           style="width:100%;border-radius:16px;border:1.5px solid var(--panel-line);display:block;background:#000"></video>
+  </p>
+<?php elseif (!empty($app['image'])): ?>
   <p style="margin-bottom:18px">
     <img src="kapp_media/<?php echo kapp_h($app['image']); ?>" alt="<?php echo kapp_h($app['name']); ?>"
          style="border-radius:16px;border:1.5px solid var(--panel-line);display:block">
