@@ -7,6 +7,7 @@
  * 事実に無いこと(自律決済など)は書かない — 決済は人間が行う。
  */
 require_once __DIR__ . '/kapp_lib.php';
+require_once __DIR__ . '/kapp_usecases.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
@@ -21,6 +22,10 @@ foreach (kapp_apps_published() as $app) {
         'name'        => $app['name'],
         'url'         => $base . 'app.php?id=' . rawurlencode($app['id']),
         'summary'     => isset($app['summary']) ? $app['summary'] : '',
+        // AIは商品名ではなく困りごとで探される。用途の文を機械可読側にも出す
+        // (人向けの llms.txt と同じ対応表 kapp_usecases.php を使う)。
+        'use_case'    => kapp_use_case_of($app['id']),
+        'seo_title'   => isset($app['seo_title']) ? $app['seo_title'] : null,
         'image'       => !empty($app['image']) ? $base . 'kapp_media/' . rawurlencode($app['image']) : null,
         'price_jpy'   => $p['total'],
         'price_note'  => '税込(本体' . number_format($p['amount']) . '円+消費税)',

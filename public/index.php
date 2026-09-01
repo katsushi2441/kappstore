@@ -175,6 +175,12 @@ kapp_header('業務システムと導入キットのお店', $logged_in, $user, 
     <?php echo $q !== '' ? '「' . kapp_h($q) . '」に一致するアプリはありませんでした。' : 'まだ公開中のアプリがありません。'; ?>
   </p>
 <?php else: ?>
+  <?php /* 商品カードは h3。h1 の次が h3 だと見出しの階層が飛ぶので、
+           一覧そのものの見出しをここに置く（自社のkseo診断の指摘）。 */ ?>
+  <h2 style="font-size:17px;margin:0 0 12px">
+    買い切りの業務システムとオープンソース日本語導入キット
+    <span style="font-size:13px;font-weight:400;color:var(--abyss-soft)">（全<?php echo count($apps); ?>商品・月額なし・ソースコード同梱）</span>
+  </h2>
   <div class="grid">
   <?php foreach ($apps as $app): $p = kapp_price_parts($app['price']); ?>
     <article class="item">
