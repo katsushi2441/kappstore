@@ -147,7 +147,8 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
            自動再生はしない（ナレーション付きなので、音を消して勝手に流す意味がない）。 */ ?>
   <p style="margin-bottom:18px">
     <video src="<?php echo kapp_h($app['video_url']); ?>" controls playsinline preload="metadata"
-           <?php if (!empty($app['image'])): ?>poster="kapp_media/<?php echo kapp_h($app['image']); ?>"<?php endif; ?>
+           <?php /* 台帳の video_poster(絶対URL・製品名入りサムネ)を優先。無ければ商品画像。 */ ?>
+           <?php if (!empty($app['video_poster'])): ?>poster="<?php echo kapp_h($app['video_poster']); ?>"<?php elseif (!empty($app['image'])): ?>poster="kapp_media/<?php echo kapp_h($app['image']); ?>"<?php endif; ?>
            style="width:100%;border-radius:16px;border:1.5px solid var(--panel-line);display:block;background:#000"></video>
   </p>
 <?php elseif (!empty($app['image'])): ?>
