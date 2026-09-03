@@ -122,8 +122,8 @@ input[type=file]{font-size:13px;margin-top:6px}
 .item{background:var(--panel);border:1.5px solid var(--panel-line);border-radius:16px;overflow:hidden;
   display:flex;flex-direction:column;box-shadow:var(--shadow)}
 .item:hover{border-color:var(--teal)}
-.item .thumb{aspect-ratio:16/10;background:var(--foam);overflow:hidden;border-bottom:1px solid var(--panel-line)}
-.item .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.item .thumb{aspect-ratio:16/9;background:var(--foam);overflow:hidden;border-bottom:1px solid var(--panel-line)}
+.item .thumb img{width:100%;height:100%;object-fit:cover;object-position:center;display:block}
 .item .thumb.empty{display:flex;align-items:center;justify-content:center;color:var(--abyss-soft);font-size:34px}
 .item .body{padding:15px 17px 17px;display:flex;flex-direction:column;gap:6px;flex:1}
 .item .body h3{font-size:15.5px;margin:0;line-height:1.45}
