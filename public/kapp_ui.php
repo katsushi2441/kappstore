@@ -44,11 +44,8 @@ function kapp_head($title, $description, $canonical, $noindex = false, $jsonld =
   --teal:#12a99f; --teal-deep:#0a726b; --gold:#c98a1e; --gold-bg:#fbf2db; --gold-line:#ecd9a8;
   --shadow:0 14px 40px rgba(10,40,45,.10);
 }
-@media(prefers-color-scheme:dark){:root{
-  --abyss:#eaf3f3; --abyss-soft:#9fb3ba; --foam:#0c1720; --panel:#12242a; --panel-line:#1f3a3f;
-  --teal:#2bd4c6; --teal-deep:#1c9e93; --gold:#f2c766; --gold-bg:#241b08; --gold-line:#4c3c17;
-  --shadow:0 14px 40px rgba(0,0,0,.38);
-}}
+/* ダークテーマは使わない（サイト全体でライト固定）。端末の設定で色が変わると
+   スクリーンショットや資料と食い違い、確認ができなくなるため。 */
 *{box-sizing:border-box;margin:0;padding:0}
 body{color:var(--abyss);background:var(--foam);line-height:1.9;
   font-family:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",Meiryo,sans-serif}
@@ -116,7 +113,7 @@ input[type=file]{font-size:13px;margin-top:6px}
 .hint{font-size:12px;color:var(--abyss-soft);margin-top:5px}
 .err{background:#fdecea;border:1.5px solid #f5c6c2;color:#a3261b;border-radius:10px;
   padding:12px 14px;font-size:13.5px;margin-bottom:16px}
-@media(prefers-color-scheme:dark){.err{background:#2a1512;border-color:#5c2a24;color:#ff9d92}}
+
 .ok{background:var(--gold-bg);border:1.5px solid var(--gold-line);border-radius:12px;padding:14px 16px;font-size:13.5px;margin-bottom:16px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:18px}
 .item{background:var(--panel);border:1.5px solid var(--panel-line);border-radius:16px;overflow:hidden;

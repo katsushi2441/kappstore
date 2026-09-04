@@ -26,16 +26,24 @@ function kapp_download_deny($code, $message, $link_label, $link_href) {
 $app = kapp_find_app($id);
 if (!$app) { kapp_download_deny(404, 'アプリが見つかりません。', 'アプリ一覧へ', 'index.php'); }
 
-if (!$logged_in) {
-    kapp_download_deny(401, 'ダウンロードには 𝕏 でのログインが必要です。',
-        '𝕏 でログイン', '?login=1&id=' . rawurlencode($id));
+$p = kapp_price_parts($app['price']);
+
+// 購入者へ送ったURLのトークン。𝕏 にログインしない購入者はこれで受け取る。
+// 注文ごとに発行した32桁で、その注文の商品しか開かない。
+$token    = isset($_GET['t']) ? (string)$_GET['t'] : '';
+$by_token = ($token !== '') ? kapp_paid_order_by_token($token, $app['id']) : null;
+
+if (!$logged_in && !$by_token && $p['total'] > 0) {
+    kapp_download_deny(401,
+        'ダウンロードのURLを確認できませんでした。ご注文時にお送りしたメールのリンクからお進みください。',
+        '𝕏 でログインして購入履歴から取得する', '?login=1&id=' . rawurlencode($id));
 }
 
-$p = kapp_price_parts($app['price']);
-$is_seller_of_app = (kapp_norm_user($app['seller']) === $user);
+$is_seller_of_app = ($logged_in && kapp_norm_user($app['seller']) === $user);
 
-// 落とせるのは「購入済み」「無料」「出品者本人」「管理者」だけ。
-$allowed = kapp_has_paid($user, $app['id']) || $p['total'] === 0 || $is_seller_of_app || $is_admin;
+// 落とせるのは「メールのURLを持っている」「購入済み」「無料」「出品者本人」「管理者」だけ。
+$allowed = $by_token || ($logged_in && kapp_has_paid($user, $app['id']))
+        || $p['total'] === 0 || $is_seller_of_app || $is_admin;
 if (!$allowed) {
     kapp_download_deny(403, 'このアプリはまだご購入いただいていません。',
         '購入手続きへ', 'order.php?app=' . rawurlencode($app['id']));

@@ -25,6 +25,25 @@ if (!defined('KAPP_ADMIN')) { define('KAPP_ADMIN', 'xb_bittensor'); }
 
 define('KAPP_TAX_RATE', 0.10);
 
+/**
+ * 紹介した販売代理店へ支払う手数料の率。
+ *
+ * reseller.html / auto-monetization.html / exbridge.jp の recruit.html で
+ * 「Kurage App Store 商品は成約額の10%」と公開している。ここを変えるときは
+ * その3ページも直すこと（食い違うと支払いで揉める）。
+ */
+if (!defined('KAPP_AGENT_RATE')) { define('KAPP_AGENT_RATE', 0.10); }
+
+/**
+ * 代理店の台帳。kurage 側（vibe）と同じものを1つだけ持つ。
+ *
+ * 代理店の登録・審査は vibe-agent.php で行うので、ここでは読むだけにする。
+ * 二重に持つと、片方で解除した代理店へ払い続ける事故になる。
+ */
+if (!defined('KAPP_AGENTS_JSON')) {
+    define('KAPP_AGENTS_JSON', __DIR__ . '/../kurage_exbridge_jp/vibe_data/agents.json');
+}
+
 // 出品条件の版。文面を変えたらここを上げる。過去に同意した人が
 // 「どの条件に同意したのか」を後から辿れなくなるため。
 if (!defined('KAPP_SELLER_TERMS_VERSION')) { define('KAPP_SELLER_TERMS_VERSION', '2026-08-07'); }
@@ -88,6 +107,33 @@ function kapp_ledger_load($path, $key) {
 
 /** Xのユーザー名は大文字小文字を区別しない。台帳側で正規化しておく。 */
 function kapp_norm_user($user) { return strtolower(ltrim(trim((string)$user), '@')); }
+
+/**
+ * 紹介した販売代理店を、kurage 側の台帳から引く。
+ *
+ * 有効（active）な代理店だけを返す。審査待ち・停止中を返すと、
+ * 支払えない相手に手数料が積み上がる。
+ * 台帳が読めないときは null（＝紹介なし扱い）。紹介の記録が消えるより、
+ * 誤って手数料を付けるほうが後で揉めるため、安全側に倒す。
+ */
+function kapp_find_agent($handle) {
+    $handle = kapp_norm_user($handle);
+    if ($handle === '' || !preg_match('/^[0-9a-z_]{1,20}$/', $handle)) { return null; }
+    if (!is_readable(KAPP_AGENTS_JSON)) { return null; }
+    $raw = @file_get_contents(KAPP_AGENTS_JSON);
+    if ($raw === false) { return null; }
+    $d = json_decode((string)$raw, true);
+    if (!is_array($d)) { return null; }
+    $list = isset($d['agents']) && is_array($d['agents']) ? $d['agents'] : $d;
+    if (!is_array($list)) { return null; }
+    foreach ($list as $a) {
+        if (!is_array($a) || !isset($a['x'])) { continue; }
+        if (kapp_norm_user($a['x']) !== $handle) { continue; }
+        $status = isset($a['status']) ? (string)$a['status'] : '';
+        return ($status === 'active') ? $a : null;
+    }
+    return null;
+}
 
 function kapp_sellers() { return kapp_ledger_load(KAPP_SELLERS, 'sellers'); }
 
@@ -489,15 +535,30 @@ function kapp_has_paid($user, $app_id) {
     return false;
 }
 
-function kapp_create_order($user, $app, $billing, $contact, $method, $email = '') {
+function kapp_create_order($user, $app, $billing, $contact, $method, $email = '', $agent = '') {
     $price = kapp_price_parts(isset($app['price']) ? $app['price'] : 0);
+    // 紹介した代理店と、そのときの率を注文に控える。あとから率を変えても
+    // 過去の成約の手数料が動かないようにする（vibe 側と同じ考え方）。
+    $a = kapp_find_agent($agent);
+    $agent_key  = $a ? kapp_norm_user($a['x']) : '';
+    $agent_rate = $a ? (float)KAPP_AGENT_RATE : 0.0;
+    $agent_type = ($a && isset($a['type'])) ? (string)$a['type'] : '';
+    // 渡された紹介元は、照合できなくても必ず控える。
+    // 台帳が読めない・審査待ちだった、という取りこぼしを後から拾えるようにする。
+    $agent_ref  = kapp_norm_user($agent);
+    // ログインしない購入者を識別する鍵。注文完了メールのダウンロードURLに使う。
+    $token = kapp_random_hex(16);
     return kapp_ledger_update(KAPP_ORDERS, 'orders',
-        function (&$data) use ($user, $app, $billing, $contact, $method, $email, $price) {
+        function (&$data) use ($user, $app, $billing, $contact, $method, $email, $price,
+                               $agent_key, $agent_rate, $agent_type, $agent_ref, $token) {
             $data['seq'] = (int)$data['seq'] + 1;
             $order = array(
                 'id'           => kapp_random_hex(8),
                 'invoice_no'   => 'KAS-' . date('Ymd') . '-' . sprintf('%04d', $data['seq']),
+                // 𝕏 でログインした場合のみ入る。未ログインの購入では空。
                 'user'         => kapp_norm_user($user),
+                // 未ログインの購入者はこの鍵で自分の注文だけを開ける
+                'token'        => $token,
                 'app_id'       => $app['id'],
                 'app_name'     => $app['name'],
                 'seller'       => $app['seller'],
@@ -509,6 +570,12 @@ function kapp_create_order($user, $app, $billing, $contact, $method, $email = ''
                 'amount'       => $price['amount'],
                 'tax'          => $price['tax'],
                 'total'        => $price['total'],
+                // 紹介した代理店（有効な登録がある場合のみ）と、そのときの率
+                'agent'        => $agent_key,
+                'agent_rate'   => $agent_rate,
+                'agent_type'   => $agent_type,
+                // 照合できたかに関わらず、渡された紹介元を控える
+                'agent_ref'    => $agent_ref,
                 // 無料アプリは注文と同時に購入済みにする（決済を挟まない）
                 'status'       => $price['total'] === 0 ? 'paid' : 'unpaid',
                 'created_at'   => time(),
@@ -516,8 +583,40 @@ function kapp_create_order($user, $app, $billing, $contact, $method, $email = ''
             );
             if ($order['status'] === 'paid') { $order['paid_at'] = time(); }
             $data['orders'][] = $order;
-            return array(true, $order['id']);
+            // 3つ目にトークンを返す。未ログインの購入者は、これが無いと
+            // 自分の注文（＝ダウンロード）へ戻れなくなる。
+            return array(true, $order['id'], $order['token']);
         });
+}
+
+/**
+ * 注文をトークンで引く。𝕏 にログインしない購入者の唯一の経路。
+ *
+ * id とトークンの両方が一致したときだけ返す。トークンは注文ごとに
+ * 発行した32桁で、当てずっぽうでは引けない。
+ */
+function kapp_find_order_by_token($id, $token) {
+    $id = (string)$id; $token = (string)$token;
+    if ($id === '' || $token === '') { return null; }
+    foreach (kapp_orders_all() as $o) {
+        if ((string)$o['id'] !== $id) { continue; }
+        if (!isset($o['token']) || !is_string($o['token']) || $o['token'] === '') { return null; }
+        return hash_equals($o['token'], $token) ? $o : null;
+    }
+    return null;
+}
+
+/** 購入済みの注文をトークンで引く。ダウンロードの可否判定に使う。 */
+function kapp_paid_order_by_token($token, $app_id) {
+    $token = (string)$token;
+    if ($token === '') { return null; }
+    foreach (kapp_orders_all() as $o) {
+        if (!isset($o['token']) || !is_string($o['token']) || $o['token'] === '') { continue; }
+        if (!hash_equals($o['token'], $token)) { continue; }
+        if ((string)$o['app_id'] !== (string)$app_id) { return null; }
+        return ($o['status'] === 'paid') ? $o : null;
+    }
+    return null;
 }
 
 /** 全注文（管理者用）。新しい順。 */
@@ -565,11 +664,21 @@ function kapp_admin_unmark_paid($order_id) {
     });
 }
 
-function kapp_mark_paid($user, $order_id, $paypal_id) {
+/**
+ * PayPal の決済完了を記録する。
+ *
+ * $user はログインしている購入者、$token は未ログインの購入者。
+ * どちらか一方がその注文のものと一致すれば購入済みにする。
+ */
+function kapp_mark_paid($user, $order_id, $paypal_id, $token = '') {
     $user = kapp_norm_user($user);
-    return kapp_ledger_update(KAPP_ORDERS, 'orders', function (&$data) use ($user, $order_id, $paypal_id) {
+    $token = (string)$token;
+    return kapp_ledger_update(KAPP_ORDERS, 'orders', function (&$data) use ($user, $order_id, $paypal_id, $token) {
         foreach ($data['orders'] as $i => $order) {
-            if ($order['id'] === $order_id && kapp_norm_user($order['user']) === $user) {
+            $by_user  = ($user !== '' && kapp_norm_user($order['user']) === $user);
+            $by_token = ($token !== '' && isset($order['token']) && is_string($order['token'])
+                         && $order['token'] !== '' && hash_equals($order['token'], $token));
+            if ($order['id'] === $order_id && ($by_user || $by_token)) {
                 $data['orders'][$i]['status'] = 'paid';
                 $data['orders'][$i]['paid_at'] = time();
                 $data['orders'][$i]['paypal_order_id'] = $paypal_id;
@@ -581,6 +690,25 @@ function kapp_mark_paid($user, $order_id, $paypal_id) {
 }
 
 /* ---------------- 通知メール ---------------- */
+
+/**
+ * 購入者に渡すダウンロードURL。
+ *
+ * 𝕏 にログインしない購入者も受け取れるよう、注文ごとのトークンを付ける。
+ * トークンが無い古い注文は、従来どおりログイン前提のURLになる。
+ */
+function kapp_download_url($order) {
+    $u = 'https://kappstore.exbridge.jp/download.php?id=' . rawurlencode($order['app_id']);
+    if (!empty($order['token'])) { $u .= '&t=' . rawurlencode($order['token']); }
+    return $u;
+}
+
+/** 注文の確認画面のURL（請求書PDF・支払い状況）。 */
+function kapp_order_url($order) {
+    $u = 'https://kappstore.exbridge.jp/order.php?order=' . rawurlencode($order['id']);
+    if (!empty($order['token'])) { $u .= '&t=' . rawurlencode($order['token']); }
+    return $u;
+}
 
 /**
  * 入金確認をお知らせして、ダウンロードURLを渡す。
@@ -716,11 +844,13 @@ function kapp_send_buyer_order_mail($order) {
                . "  ご入金を確認しましたら、ダウンロードのご案内をお送りします。\n\n";
     } elseif ($order['status'] === 'paid') {
         $body .= "▼ ダウンロードはこちら\n"
-               . "  https://kappstore.exbridge.jp/download.php?id=" . rawurlencode($order['app_id']) . "\n\n";
+               . "  " . kapp_download_url($order) . "\n\n"
+               . "  このURLはお客様専用です。何度でもダウンロードいただけます。\n\n";
     }
 
-    $body .= "ご注文の状況は購入履歴からご確認いただけます。\n"
-           . "  https://kappstore.exbridge.jp/orders.php\n\n"
+    $body .= "▼ ご注文の確認・請求書PDF\n"
+           . "  " . kapp_order_url($order) . "\n\n"
+           . "  このURLは大切に保管してください。ログインなしでご確認いただけます。\n\n"
            . "──────────────────────────\n"
            . "Kurage App Store — 株式会社エクスブリッジ\n"
            . kapp_mail_from() . "\n";
@@ -730,7 +860,7 @@ function kapp_send_buyer_order_mail($order) {
 function kapp_send_paid_mail($order) {
     $to = isset($order['email']) ? trim((string)$order['email']) : '';
     if ($to === '' || !filter_var($to, FILTER_VALIDATE_EMAIL)) { return false; }
-    $dl = 'https://kappstore.exbridge.jp/download.php?id=' . rawurlencode($order['app_id']);
+    $dl = kapp_download_url($order);
     $subject = '【Kurage App Store】ご入金を確認しました（' . $order['invoice_no'] . '）';
 
     $body = $order['billing_name'] . " 様\n\n"
@@ -742,10 +872,13 @@ function kapp_send_paid_mail($order) {
           . "  金額     : " . number_format((int)$order['total']) . " 円（税込）\n"
           . "──────────────────────────\n\n"
           . "▼ ダウンロードはこちら\n"
-          . $dl . "\n\n"
-          . "ダウンロードには、ご注文時の 𝕏 アカウント（@" . $order['user'] . "）での\n"
-          . "ログインが必要です。購入履歴からいつでも再ダウンロードいただけます。\n"
-          . "  https://kappstore.exbridge.jp/orders.php\n\n"
+          . "  " . $dl . "\n\n"
+          . "  このURLはお客様専用です。何度でもダウンロードいただけます。\n"
+          . "  他の方に転送しないでください。\n\n"
+          . (kapp_norm_user(isset($order['user']) ? $order['user'] : '') !== ''
+              ? "𝕏 アカウント（@" . $order['user'] . "）でログインすると、購入履歴からも取得できます。\n"
+                . "  https://kappstore.exbridge.jp/orders.php\n\n"
+              : "")
           . "──────────────────────────\n"
           . "Kurage App Store — 株式会社エクスブリッジ\n"
           . kapp_mail_from() . "\n";

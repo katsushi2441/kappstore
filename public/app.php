@@ -7,6 +7,15 @@ require_once __DIR__ . '/kapp_boot.php';
 $id = isset($_GET['id']) ? (string)$_GET['id'] : '';
 kapp_handle_auth_links('app.php?id=' . rawurlencode($id));
 
+// 紹介した販売代理店。?agent=<Xのアカウント> で来たら注文ページまで引き継ぐ。
+// これが無いと、代理店が紹介した成約に手数料を付けられない。
+$agent_q = isset($_GET['agent']) ? (string)$_GET['agent'] : '';
+$agent_q = preg_match('/^@?[0-9A-Za-z_]{1,20}$/', $agent_q) ? kapp_norm_user($agent_q) : '';
+if ($agent_q !== '' && session_status() === PHP_SESSION_ACTIVE) { $_SESSION['kapp_agent'] = $agent_q; }
+$order_qs = function ($id) use ($agent_q) {
+    return 'order.php?app=' . rawurlencode($id) . ($agent_q !== '' ? '&amp;agent=' . rawurlencode($agent_q) : '');
+};
+
 $app = kapp_find_app($id);
 if (!$app || (isset($app['status']) && $app['status'] !== 'published'
         && !($logged_in && (kapp_norm_user($app['seller']) === $user || $is_admin)))) {
@@ -178,9 +187,9 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
       <?php elseif ($external && !empty($app['demo_url'])): ?>
         <a class="btn" href="<?php echo kapp_h($app['demo_url']); ?>" target="_blank" rel="noopener">公式サイトで入手する</a>
       <?php elseif ($p['total'] === 0): ?>
-        <a class="btn" href="order.php?app=<?php echo kapp_h($app['id']); ?>">無料で受け取る</a>
+        <a class="btn" href="<?php echo $order_qs($app['id']); ?>">無料で受け取る</a>
       <?php else: ?>
-        <a class="btn" href="order.php?app=<?php echo kapp_h($app['id']); ?>">購入する</a>
+        <a class="btn" href="<?php echo $order_qs($app['id']); ?>">購入する</a>
       <?php endif; ?>
     </p>
     <?php if ($owned): ?>
