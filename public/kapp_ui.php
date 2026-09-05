@@ -268,6 +268,7 @@ function kapp_footer() {
        . '<a href="https://kurage.exbridge.jp/terms.html">利用規約</a> · '
        . '<a href="https://kurage.exbridge.jp/tokusho.php">特定商取引法に基づく表記</a> · '
        . '<a href="https://kurage.exbridge.jp/reseller.html">販売代理店募集</a> · '
+       . '<a href="https://exbridge.jp/outsourcing/">業務のAI自動化</a> · '
        . '<a href="https://kurage.exbridge.jp/">Kurage シリーズ</a> · '
        . '<a href="https://exbridge.jp/contact.php">お問い合わせ</a>'
        . '</div></footer>'
