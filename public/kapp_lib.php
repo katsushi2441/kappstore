@@ -927,7 +927,7 @@ function kapp_notify_seller_invited($seller, $approved = false) {
           . kapp_seller_invite_url($seller) . "\n\n"
           . "※ @" . $seller['x'] . " で 𝕏 にログインしてお進みください。\n"
           . "  お振込先のご登録まで済みますと、ご出品いただけます。\n\n"
-          . "出品手数料は 販売価格（税抜）の10％ ＋ 40,000円（税別）です。\n"
+          . "出品手数料は 販売価格（税抜）の50％（税別）です。\n"
           . "初期費用はいただかず、売れたときだけ発生します。\n\n"
           . "──────────────────────────\n"
           . "Kurage App Store — 株式会社エクスブリッジ\n"

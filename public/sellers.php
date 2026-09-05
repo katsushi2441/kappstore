@@ -263,7 +263,7 @@ if ($logged_in) { kapp_subnav($admin_view ? 'sellers.php?admin=1' : 'sellers.php
     <h2>開発元として出品する</h2>
     <p style="font-size:14px">まずはご連絡先をお知らせください。審査のうえ、
       残りの情報のご登録をご案内します。</p>
-    <p class="hint">出品手数料は <b>販売価格（税抜）の10％ ＋ 40,000円（税別）</b>で、
+    <p class="hint">出品手数料は <b>販売価格（税抜）の50％（税別）</b>で、
       初期費用はいただきません。売れたときだけ発生します。販売価格は 100,000円（税別）からです。</p>
     <?php $show_apply = true; ?>
   <?php endif; ?>

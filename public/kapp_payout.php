@@ -12,6 +12,7 @@
  *
  * 【手数料】
  *   手数料(税別) = 販売価格(税抜) × KAPP_FEE_RATE ＋ KAPP_FEE_FIXED
+ *   現行: 販売価格(税抜) × 50%（固定額なし）
  * 税抜で積み上げてから消費税を足す。インボイス制度では税抜金額と消費税を
  * 分けて記録する必要があり、あとから支払明細を出すときに困らないため。
  *
@@ -20,8 +21,9 @@
 require_once __DIR__ . '/kapp_lib.php';
 
 // 出品手数料。vibe-prototype の案内と同じ値にすること（食い違うと請求で揉める）。
-if (!defined('KAPP_FEE_RATE'))  { define('KAPP_FEE_RATE', 0.10); }
-if (!defined('KAPP_FEE_FIXED')) { define('KAPP_FEE_FIXED', 40000); }
+// 2026-09-05 改定: 販売価格の10%＋40,000円 → 販売価格の50%（固定額は廃止）
+if (!defined('KAPP_FEE_RATE'))  { define('KAPP_FEE_RATE', 0.50); }
+if (!defined('KAPP_FEE_FIXED')) { define('KAPP_FEE_FIXED', 0); }
 
 define('KAPP_PAYOUTS', KAPP_DATA_DIR . '/payouts.json');
 
