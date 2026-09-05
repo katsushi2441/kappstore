@@ -226,7 +226,7 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
 <?php if (!$external && $p['total'] > 0): /* 入手方法の3択（手順書があれば3つ・なければ2つ） */
   $has_guide = !empty($app['guide_url']); $opt = 1; ?>
   <div class="card plain">
-    <h2>入手方法は<?php echo $has_guide ? '3' : '2'; ?>つあります</h2>
+    <h2>入手方法は<?php echo $has_guide ? '4' : '3'; ?>つあります</h2>
     <p style="font-size:13.5px;color:var(--ink-soft);margin:0 0 10px">同じゴールに、あなたに合う入口からどうぞ。</p>
     <div class="scroll">
     <table class="kv" style="min-width:0">
@@ -237,9 +237,12 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
         <td>作る力を手に入れたい方向け。開発手順書（同価格・55,000円）を購入し、Claude CodeなどのAIエージェントで自分の手で開発します。<br>
           <a href="<?php echo kapp_h($app['guide_url']); ?>" target="_blank" rel="noopener">開発手順書を見る（Brain）</a></td></tr>
       <?php endif; ?>
-      <tr><th><?php echo $has_guide ? '③' : '②'; ?>自社仕様に制作</th>
-        <td>「うちの業種・業務に合わせてほしい」方向け。バイブプロトタイピング（110,000円税込）で当社が開発し、最短1営業日で動くデモをお出しします。<br>
-          <a href="https://kurage.exbridge.jp/vibe-prototype.html?ref=kappstore" target="_blank" rel="noopener">バイブプロトタイピングを見る</a></td></tr>
+      <tr><th><?php echo $has_guide ? '③' : '②'; ?>この商品を自社仕様に</th>
+          <td>「うちの業種・業務に合わせてほしい」方向け。<b>バイブカスタマイズ</b>（110,000円税込）で、この商品を土台に当社が変更します。動くデモを確認してからのお支払いです。<br>
+            <a href="https://kurage.exbridge.jp/vibe-customize.html?ref=kappstore" target="_blank" rel="noopener">バイブカスタマイズを見る</a></td></tr>
+        <tr><th><?php echo $has_guide ? '④' : '③'; ?>ゼロから作る</th>
+          <td>近い商品が無い、または業務そのものが特殊な方向け。設計書から作る<b>バイブプロトタイプ制作</b>（330,000円税込）です。<br>
+            <a href="https://kurage.exbridge.jp/vibe-prototype.html?ref=kappstore" target="_blank" rel="noopener">バイブプロトタイプ制作を見る</a></td></tr>
     </table>
     </div>
   </div>
@@ -251,7 +254,9 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
     <h2><?php echo kapp_h(kapp_short_name($app)); ?>とは</h2>
     <p style="font-size:14px;overflow-wrap:anywhere"><b><?php echo kapp_h(kapp_short_name($app)); ?>とは、</b><?php echo kapp_h(kapp_definition_sentence($app)); ?></p>
 <?php if (!empty($app['body'])): ?>
-    <p style="font-size:14px;overflow-wrap:anywhere;margin-top:12px"><?php echo nl2br(kapp_h($app['body'])); ?></p>
+    <?php /* 商品説明はMarkdownで書かれている。段落・見出し・表を含むので p ではなく div で受ける
+             （p の中に h4/ul/table は置けず、ブラウザが勝手に閉じて崩れる）。 */ ?>
+    <div class="md-body"><?php echo kapp_md($app['body']); ?></div>
 <?php endif; ?>
   </div>
 

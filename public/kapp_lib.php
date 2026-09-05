@@ -949,3 +949,93 @@ function kapp_notify_seller_active($seller) {
           . "https://kappstore.exbridge.jp/sellers.php?admin=1\n";
     return kapp_mail_admins('[kappstore] 出品者の情報登録が完了 @' . $seller['x'], $body);
 }
+
+/**
+ * 商品説明のMarkdownを最小限だけHTMLにする。
+ *
+ * なぜ必要か（2026-09-05 実測）: 商品説明は nl2br(htmlspecialchars()) で
+ * 出していたため、「## 見出し」「**強調**」「| 表 |」がそのまま画面に出ていた。
+ * 公開37商品のうち29件が該当していた。
+ *
+ * 外部ライブラリは入れない（heteml・Composer無し・PHP 5.x が前提）。
+ * **先にHTMLエスケープしてから**記法を変換するので、本文にタグを書かれても
+ * そのまま出力されることはない。対応するのは見出し・強調・箇条書き・番号付き・
+ * 表・リンク・コード・引用・水平線だけ。
+ */
+function kapp_md($text) {
+    $text = str_replace(array("\r\n", "\r"), "\n", (string)$text);
+    $lines = explode("\n", kapp_h($text));   // 先にエスケープ
+    $out = array();
+    $list = null;          // 'ul' | 'ol' | null
+    $in_table = false;
+    $close_list = function () use (&$out, &$list) {
+        if ($list !== null) { $out[] = '</' . $list . '>'; $list = null; }
+    };
+    $close_table = function () use (&$out, &$in_table) {
+        if ($in_table) { $out[] = '</tbody></table></div>'; $in_table = false; }
+    };
+    $inline = function ($s) {
+        // 太字 → 斜体 → コード → リンク の順。順番を変えると入れ子で壊れる。
+        $s = preg_replace('/\*\*(.+?)\*\*/u', '<strong>$1</strong>', $s);
+        $s = preg_replace('/(?<![\*\w])\*([^\*\n]+?)\*(?![\*\w])/u', '<em>$1</em>', $s);
+        $s = preg_replace('/`([^`\n]+?)`/u', '<code>$1</code>', $s);
+        // リンクは href を http/https に限る（javascript: を通さない）
+        $s = preg_replace('/\[([^\]\n]+)\]\((https?:\/\/[^\s\)]+)\)/u',
+                          '<a href="$2" target="_blank" rel="noopener">$1</a>', $s);
+        return $s;
+    };
+    $n = count($lines);
+    for ($i = 0; $i < $n; $i++) {
+        $ln = rtrim($lines[$i]);
+        $t  = trim($ln);
+
+        // 表: 「| a | b |」の次が「| --- |」なら表として組む
+        if (strpos($t, '|') === 0 && $i + 1 < $n && preg_match('/^\s*\|[\s\|:-]+\|\s*$/', $lines[$i + 1])) {
+            $close_list(); $close_table();
+            $cells = array_map('trim', explode('|', trim($t, '|')));
+            $out[] = '<div class="md-table-wrap"><table class="md-table"><thead><tr>';
+            foreach ($cells as $c) { $out[] = '<th>' . $inline($c) . '</th>'; }
+            $out[] = '</tr></thead><tbody>';
+            $in_table = true; $i++;   // 区切り行を飛ばす
+            continue;
+        }
+        if ($in_table) {
+            if (strpos($t, '|') === 0) {
+                $cells = array_map('trim', explode('|', trim($t, '|')));
+                $out[] = '<tr>';
+                foreach ($cells as $c) { $out[] = '<td>' . $inline($c) . '</td>'; }
+                $out[] = '</tr>';
+                continue;
+            }
+            $close_table();
+        }
+
+        if ($t === '') { $close_list(); continue; }
+
+        if (preg_match('/^(#{1,4})\s+(.+)$/u', $t, $m)) {
+            $close_list();
+            $lv = min(4, strlen($m[1])) + 2;      // ## → h4 相当。商品ページのh2/h3と競合させない
+            if ($lv > 6) { $lv = 6; }
+            $out[] = '<h' . $lv . ' class="md-h">' . $inline($m[2]) . '</h' . $lv . '>';
+            continue;
+        }
+        if (preg_match('/^(?:---+|___+|\*\*\*+)$/', $t)) { $close_list(); $out[] = '<hr class="md-hr">'; continue; }
+        if (preg_match('/^&gt;\s?(.*)$/u', $t, $m)) {
+            $close_list(); $out[] = '<blockquote class="md-q">' . $inline($m[1]) . '</blockquote>'; continue;
+        }
+        if (preg_match('/^[-*・]\s+(.+)$/u', $t, $m)) {
+            if ($list !== 'ul') { $close_list(); $out[] = '<ul class="md-ul">'; $list = 'ul'; }
+            $out[] = '<li>' . $inline($m[1]) . '</li>';
+            continue;
+        }
+        if (preg_match('/^\d+\.\s+(.+)$/u', $t, $m)) {
+            if ($list !== 'ol') { $close_list(); $out[] = '<ol class="md-ol">'; $list = 'ol'; }
+            $out[] = '<li>' . $inline($m[1]) . '</li>';
+            continue;
+        }
+        $close_list();
+        $out[] = '<p class="md-p">' . $inline($t) . '</p>';
+    }
+    $close_list(); $close_table();
+    return implode("\n", $out);
+}

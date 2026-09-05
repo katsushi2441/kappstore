@@ -147,6 +147,22 @@ table.kv th{color:var(--abyss-soft);font-size:12px;white-space:nowrap;font-weigh
 .empty-note{text-align:center;color:var(--abyss-soft);font-size:14px;padding:50px 20px}
 footer.site{text-align:center;color:var(--abyss-soft);font-size:12.5px;padding:36px 20px 48px;
   border-top:1px solid var(--panel-line);margin-top:20px;line-height:2.2}
+
+/* 商品説明のMarkdown描画（kapp_md）。見出しはページのh2/h3より控えめにする。 */
+.md-body{font-size:14.5px;overflow-wrap:anywhere;margin-top:12px;line-height:1.85}
+.md-body .md-p{margin:10px 0}
+.md-body .md-h{margin:22px 0 8px;font-size:16.5px;font-weight:800;padding-left:10px;border-left:4px solid #0a9a8f}
+.md-body h5.md-h{font-size:15.5px}
+.md-body h6.md-h{font-size:15px}
+.md-body .md-ul,.md-body .md-ol{margin:8px 0;padding-left:22px}
+.md-body .md-ul li,.md-body .md-ol li{margin:4px 0}
+.md-body .md-q{margin:10px 0;padding:8px 14px;border-left:4px solid #cfe0e4;background:#f6fafb;color:#4a5b6a}
+.md-body .md-hr{border:0;border-top:1px solid #e3eaee;margin:18px 0}
+.md-body code{background:#f1f5f7;border-radius:4px;padding:1px 5px;font-size:13px}
+.md-table-wrap{overflow-x:auto;margin:12px 0}
+.md-table{width:100%;border-collapse:collapse;font-size:13.5px}
+.md-table th,.md-table td{border:1px solid #e3eaee;padding:7px 10px;text-align:left;vertical-align:top}
+.md-table th{background:#f5f9fa;font-weight:700;white-space:nowrap}
 </style>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-BP0650KDFR"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','G-BP0650KDFR');</script>
