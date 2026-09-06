@@ -9,3 +9,5 @@ outputs/
 *.pyc
 __pycache__/
 public/simpletrack_config.php
+apps_live.json
+apps_new*.json
