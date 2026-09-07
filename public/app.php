@@ -82,7 +82,11 @@ if (!empty($app['demo_url'])) {
 $faq_items[] = array('AIエージェントで改造・拡張できますか？',
     'できます。Claude Code等のAIエージェント向けの設計マニュアルが付属し、触れてよい範囲を宣言したうえで安全に変更を頼めます。');
 $faq_items[] = array('買い切りですか？月額はありますか？',
-    ((int)$p_head['total'] === 0 ? '無料です。月額料金はありません。' : '買い切りです。月額料金はありません。'));
+    ((int)$p_head['total'] === 0 ? '無料です。月額料金はありません。' : '買い切りです。月額料金はありません。価格はデジタルコンテンツ（ソフトウェア一式）の商品代金で、ライセンス料・使用料ではありません。'));
+if ((int)$p_head['total'] > 0) {
+$faq_items[] = array('AI-IT顧問契約を結ぶと無料になりますか？',
+    'なります（キャンペーン・期限未定）。名古屋市内限定のAI-IT顧問契約（月15時間・税別150,000円）の期間中に構築できる商品は、デジタルコンテンツの商品代金をいただかず、当社が構築・設定します。ソースコードごと御社の資産として残ります。詳細は https://exbridge.jp/ai-it-komon.html をご覧ください。');
+}
 $faq_ld = array('@context' => 'https://schema.org', '@type' => 'FAQPage', 'mainEntity' => array());
 foreach ($faq_items as $qa) {
     $faq_ld['mainEntity'][] = array(
@@ -175,6 +179,8 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
       <p class="price"><?php echo number_format($p['total']); ?>円<small>税込</small></p>
       <p style="font-size:13.5px;margin-top:6px">
         本体 <?php echo number_format($p['amount']); ?>円 ＋ 消費税 <?php echo number_format($p['tax']); ?>円</p>
+      <p style="font-size:12.5px;color:var(--abyss-soft);margin-top:8px">価格はデジタルコンテンツ（ソフトウェア一式：ソースコード・同梱データ・手順書）の商品代金です。ソフトウェアは<?php echo kapp_h(!empty($app['license']) ? $app['license'] : 'MIT'); ?>ライセンスなので、ライセンス料・使用料ではありません。</p>
+      <p style="font-size:13px;margin-top:10px;padding:10px 12px;background:#fff;border:1.5px dashed var(--gold-line);border-radius:10px">🎁 <b>キャンペーン（期限未定）</b>：<a href="https://exbridge.jp/ai-it-komon.html?ref=kappstore-campaign-<?php echo kapp_h($app['id']); ?>#price">AI-IT顧問契約</a>（名古屋市内限定・月15時間）の期間中に構築できる商品は、商品代金なしで当社が構築します。</p>
     <?php endif; ?>
 
     <p style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
@@ -236,6 +242,10 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
       <tr><th>②手順書で自作</th>
         <td>作る力を手に入れたい方向け。開発手順書（同価格・55,000円）を購入し、Claude CodeなどのAIエージェントで自分の手で開発します。<br>
           <a href="<?php echo kapp_h($app['guide_url']); ?>" target="_blank" rel="noopener">開発手順書を見る（Brain）</a></td></tr>
+      <?php endif; ?>
+      <?php if ($p['total'] > 0): ?>
+      <tr><th>🎁 AI-IT顧問契約で無料</th>
+        <td>キャンペーン（期限未定）。名古屋市内限定の<a href="https://exbridge.jp/ai-it-komon.html?ref=kappstore-campaign-<?php echo kapp_h($app['id']); ?>#price">AI-IT顧問契約</a>（月15時間・税別150,000円）の期間中に構築できる商品は、商品代金なしで当社が構築・設定します。</td></tr>
       <?php endif; ?>
       <tr><th><?php echo $has_guide ? '③' : '②'; ?>この商品を自社仕様に</th>
           <td>「うちの業種・業務に合わせてほしい」方向け。<b>バイブカスタマイズ</b>（110,000円税込）で、この商品を土台に当社が変更します。動くデモを確認してからのお支払いです。<br>
