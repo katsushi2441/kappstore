@@ -55,6 +55,11 @@ foreach ($data['apps'] as $i => $a) {
     if (isset($a['name']) && $a['name'] === $name) {
         $app['id']         = $a['id'];
         $app['created_at'] = $a['created_at'];
+        // 既存レコードにあって新レコードに無い欄（video_url / video_poster など、出品後に別の手順で足した値）は引き継ぐ。
+        // 2026-09-08: 再出品で kflood の PV 設定（video_url）が消えた事故の再発防止。
+        foreach ($a as $k => $v) {
+            if (!array_key_exists($k, $app)) { $app[$k] = $v; }
+        }
         $data['apps'][$i]  = $app;
         $replaced = true;
         break;
