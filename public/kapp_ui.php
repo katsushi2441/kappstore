@@ -264,7 +264,7 @@ function kapp_subnav($current, $user, $is_seller, $is_admin) {
 
 function kapp_footer() {
     echo '<footer class="site"><div class="wrap">'
-       . 'Kurage App Store — <a href="https://exbridge.jp/">株式会社エクスブリッジ</a><br>'
+       . 'Kurage App Store — <a href="https://exbridge.jp/">株式会社エクスブリッジ</a>（<a href="https://exbridge.jp/leaflet.html?ref=kappstore-leaflet">会社案内</a>）<br>'
        . '<a href="https://kurage.exbridge.jp/terms.html">利用規約</a> · '
        . '<a href="https://kurage.exbridge.jp/tokusho.php">特定商取引法に基づく表記</a> · '
        . '<a href="https://kurage.exbridge.jp/reseller.html">販売代理店募集</a> · '
