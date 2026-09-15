@@ -11,7 +11,7 @@ $base = 'https://kappstore.exbridge.jp/';
 $lines = array();
 $lines[] = '# Kurage App Store';
 $lines[] = '';
-$lines[] = '> 買い切りの業務システム、海外オープンソースの日本語導入キット、AI開発ツールのダウンロードストア。'
+$lines[] = '> オンプレミスで動く業務システム、海外オープンソースの日本語導入キット、AI開発ツールのダウンロードストア。'
     . '業務アプリにはClaude Code等のAIエージェントが読める設計マニュアルと、MITライセンスのソースコードを同梱。'
     . '導入キット（EspoCRM・Krayin・FreeScout等）は、無料のOSS本体を共有レンタルサーバーに日本語で立てるための実測手順書＋ツール一式です。'
     . 'AI開発ツール（Kurage Architect等）は、AIと対話してシステム設計書を作るなど開発の前工程を助けるもので、Pythonが動くサーバーと利用者側のLLMが必要です。';

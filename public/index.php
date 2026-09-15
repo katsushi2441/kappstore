@@ -82,7 +82,7 @@ $jsonld = json_encode(array(
               'name' => 'Kurage App Store',
               'url'  => 'https://kappstore.exbridge.jp/',
               'logo' => 'https://kappstore.exbridge.jp/assets/kurage_avatar.webp',
-              'description' => '買い切り業務システム・オープンソース日本語導入キット・AI開発ツールのダウンロードストア。Kurage Projectの一部。',
+              'description' => 'オンプレミスで動く業務システム・オープンソース日本語導入キット・AI開発ツールのダウンロードストア。Kurage Projectの一部。',
               'sameAs' => array(
                   'https://kurage.exbridge.jp/',
                   'https://github.com/katsushi2441',
@@ -91,15 +91,15 @@ $jsonld = json_encode(array(
         array('@type' => 'WebSite', 'name' => 'Kurage App Store',
               'url' => 'https://kappstore.exbridge.jp/',
               'publisher' => array('@id' => 'https://kappstore.exbridge.jp/#org'),
-              'description' => '買い切りの業務システム、海外オープンソースの日本語導入キット、AI開発ツールのダウンロードストア。業務アプリはClaude Codeが読める設計マニュアルとMITライセンスのソースを同梱。導入キットは共有レンタルサーバー向けの実測手順書。AI開発ツールは設計書づくりなど開発の前工程を助けます。llms.txtと機械可読カタログ(catalog.json)を公開し、AIエージェントからも探せます。'),
+              'description' => 'オンプレミスで動く業務システム、海外オープンソースの日本語導入キット、AI開発ツールのダウンロードストア。業務アプリはClaude Codeが読める設計マニュアルとMITライセンスのソースを同梱。導入キットは共有レンタルサーバー向けの実測手順書。AI開発ツールは設計書づくりなど開発の前工程を助けます。llms.txtと機械可読カタログ(catalog.json)を公開し、AIエージェントからも探せます。'),
         array('@type' => 'ItemList', 'itemListElement' => $item_list),
         array('@type' => 'FAQPage', 'mainEntity' => $faq_list),
     ),
 ), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
 kapp_head(
-    '買い切りの業務システムとOSS日本語導入キット｜Kurage App Store',
-    '買い切りの業務システムと、EspoCRM・FreeScout等の日本語導入キットを売るダウンロードストアです。月額はなく、ソースコード同梱・MITライセンスでAIに頼んで改変できます。全商品にデモがあり、触ってから購入を判断できます。',
+    'オンプレミスで内製化する業務システムとOSS日本語導入キット',
+    '自社のサーバーに置いて内製化できる業務システムと、EspoCRM・FreeScout等の日本語導入キットを売るダウンロードストアです。月額はなく、ソースコード同梱・MITライセンスでAIに頼んで改変できます。全商品にデモがあり、触ってから購入を判断できます。',
     'https://kappstore.exbridge.jp/',
     false,
     $jsonld
@@ -145,7 +145,7 @@ kapp_header('業務システムと導入キットのお店', $logged_in, $user, 
     </div>
     <div class="pillars" style="margin-top:6px">
       <div class="pillar">
-        <b>🧩 買い切り業務アプリ</b>
+        <b>🧩 オンプレミス業務アプリ</b>
         <span>予約受付・勤怠・AI議事録・請求書などの「育てられる土台」。ソースコード込み・MITライセンス・月額なし。</span>
       </div>
       <div class="pillar">
@@ -183,7 +183,7 @@ kapp_header('業務システムと導入キットのお店', $logged_in, $user, 
   <?php /* 商品カードは h3。h1 の次が h3 だと見出しの階層が飛ぶので、
            一覧そのものの見出しをここに置く（自社のkseo診断の指摘）。 */ ?>
   <h2 style="font-size:17px;margin:0 0 12px">
-    買い切りの業務システムとオープンソース日本語導入キット
+    オンプレミスの業務システムとオープンソース日本語導入キット
     <span style="font-size:13px;font-weight:400;color:var(--abyss-soft)">（全<?php echo count($apps); ?>商品・月額なし・ソースコード同梱）</span>
   </h2>
   <div class="grid">
@@ -254,7 +254,7 @@ kapp_header('業務システムと導入キットのお店', $logged_in, $user, 
     <?php /* AEOの定義文判定は「見出しの直後の本文」を見るので、h2の直下に置く。 */ ?>
     <h2>Kurage App Store とは</h2>
     <p>
-      <b>Kurage App Store とは、</b>買い切りの業務システムをダウンロードで販売するストアです。
+      <b>Kurage App Store とは、</b>自社のサーバーに置いて内製化できる業務システムを、ダウンロードで販売するストアです。
       全商品にソースコードとAIエージェント向けの設計マニュアルが付き、購入後は自分やAIで改変できます。
       月額料金はありません。購入前にデモを触って確認できます。
     </p>
