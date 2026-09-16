@@ -271,6 +271,7 @@ function kapp_footer() {
        . '<a href="https://exbridge.jp/outsourcing/">業務のAI自動化</a> · '
        . '<a href="https://exbridge.jp/system-development-cost.html?ref=kappstore-cost">業務システムの受託開発（名古屋）</a> · '
        . '<a href="https://kurage.exbridge.jp/bousai-giin.html">議員・事務所むけ防災</a> · '
+       . '<a href="https://exbridge.jp/politech/?ref=kappstore-politech">住民の困りごと181語から探す</a> · '
        . '<a href="https://kurage.exbridge.jp/">Kurage シリーズ</a> · '
        . '<a href="https://exbridge.jp/contact.php">お問い合わせ</a>'
        . '</div></footer>'
