@@ -294,7 +294,9 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
 
   <?php /* AEOの定義文判定は「見出しの直後の本文」を見る。だから定義文は
            h2 のすぐ下に置く（h1直下のリード文では拾われなかった）。 */ ?>
-  <div class="card">
+  <?php /* #about は商品説明の入口。PVのキャプチャや外部からの深いリンクで使う
+           （価格欄を写さずに説明だけを撮りたいときの足がかり）。 */ ?>
+  <div class="card" id="about">
     <h2><?php echo kapp_h(kapp_short_name($app)); ?>とは</h2>
     <p style="font-size:14px;overflow-wrap:anywhere"><b><?php echo kapp_h(kapp_short_name($app)); ?>とは、</b><?php echo kapp_h(kapp_definition_sentence($app)); ?></p>
 <?php if (!empty($app['body'])): ?>
