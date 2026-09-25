@@ -218,9 +218,25 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
         項目を足す、帳票を社内様式に合わせる、AIで判定や下書きを自動化する——
         その時間が取れないときは、当社が代わりに変更します。</p>
       <p class="vcc-b">動くデモを確認してからのお支払いで、1回110,000円（税込）です。</p>
-      <a class="btn ghost vcc-btn"
-         href="https://kurage.exbridge.jp/vibe-customize.html?ref=kappstore-app-<?php echo kapp_h($app['id']); ?>"
-         target="_blank" rel="noopener">この商品を自社仕様に変える（バイブカスタマイズ）</a>
+      <?php
+      /* この商品を実際にどう変えたか、という例がある商品だけ、そこへ直接飛ばす。
+         「できます」より「こう変えた」のほうが伝わる。例が増えたらここに足す。 */
+      $vc_cases = array(
+        '224e141f77bd07a8' => array(
+          'anchor' => '#cases',
+          'text'   => 'この商品を、社内の文書管理の検索結果から答えるように変えた例があります',
+        ),
+      );
+      $vc_case = isset($vc_cases[$app['id']]) ? $vc_cases[$app['id']] : null;
+      $vc_url  = 'https://kurage.exbridge.jp/vibe-customize.html?ref=kappstore-app-'
+                 . rawurlencode($app['id']) . ($vc_case ? $vc_case['anchor'] : '');
+      ?>
+      <?php if ($vc_case): ?>
+        <p class="vcc-b" style="margin-bottom:10px">▸ <?php echo kapp_h($vc_case['text']); ?></p>
+      <?php endif; ?>
+      <a class="btn ghost vcc-btn" href="<?php echo kapp_h($vc_url); ?>"
+         target="_blank" rel="noopener"><?php
+         echo $vc_case ? 'その実例を見る（バイブカスタマイズ）' : 'この商品を自社仕様に変える（バイブカスタマイズ）'; ?></a>
     </div>
     <?php endif; ?>
 
