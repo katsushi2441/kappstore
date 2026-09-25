@@ -99,6 +99,15 @@ h3{font-size:15px;font-weight:900;margin-bottom:6px}
 .card{background:var(--panel);border:1.5px solid var(--panel-line);border-radius:18px;
   padding:26px;box-shadow:var(--shadow);margin-bottom:18px}
 .card.plain{background:var(--foam)}
+/* 商品ページ：購入ボタンのすぐ下に置く「自社仕様に変える」の箱。
+   買ったあと自社仕様にするのが普通の使い方なので、決める場所の隣に置く。 */
+.vibe-customize-cta{margin-top:18px;padding:16px 18px;border-radius:14px;
+  background:#fff;border:1.5px dashed var(--teal);}
+.vibe-customize-cta .vcc-h{margin:0 0 6px;font-size:14.5px;font-weight:900;color:var(--teal-deep)}
+.vibe-customize-cta .vcc-b{margin:0 0 8px;font-size:12.8px;line-height:1.9;color:var(--abyss-soft)}
+.vibe-customize-cta .vcc-btn{margin-top:4px;padding:9px 18px;font-size:12.5px;
+  border-color:var(--teal);color:var(--teal-deep)}
+.vibe-customize-cta .vcc-btn:hover{background:var(--teal);color:#fff;border-color:var(--teal)}
 .gate{background:var(--gold-bg);border:1.5px solid var(--gold-line);border-radius:18px;padding:24px;margin-bottom:18px}
 .price{font-size:clamp(26px,4.4vw,36px);font-weight:900;font-family:"Zen Maru Gothic",sans-serif}
 .price small{font-size:14px;font-weight:700;color:var(--abyss-soft);margin-left:8px}

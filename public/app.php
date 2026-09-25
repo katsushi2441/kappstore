@@ -209,6 +209,21 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
       <p class="hint">デモでご確認のうえ、ご納得いただいてからご購入ください。</p>
     <?php endif; ?>
 
+    <?php /* 買ったあと自社仕様に変えるのが普通の使い方なので、買う場所の隣に置く。
+             入手方法の表にも同じ導線があるが、そこは購入ボタンより1,000px以上下で読まれない。 */ ?>
+    <?php if (!$external && !$owned): ?>
+    <div class="vibe-customize-cta">
+      <p class="vcc-h">このまま使うか、自社仕様に変えるか</p>
+      <p class="vcc-b">ソースコード同梱のMITライセンスなので、購入後はご自身で改変できます。
+        項目を足す、帳票を社内様式に合わせる、AIで判定や下書きを自動化する——
+        その時間が取れないときは、当社が代わりに変更します。</p>
+      <p class="vcc-b">動くデモを確認してからのお支払いで、1回110,000円（税込）です。</p>
+      <a class="btn ghost vcc-btn"
+         href="https://kurage.exbridge.jp/vibe-customize.html?ref=kappstore-app-<?php echo kapp_h($app['id']); ?>"
+         target="_blank" rel="noopener">この商品を自社仕様に変える（バイブカスタマイズ）</a>
+    </div>
+    <?php endif; ?>
+
     <?php
     /* 共有ボタン。出品者が自分の商品を広めることが、この店の集客そのもの。
        紹介文まで用意しておかないと「URLをコピーして文章を考える」で止まる。 */
@@ -252,7 +267,7 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
       <?php endif; ?>
       <tr><th><?php echo $has_guide ? '③' : '②'; ?>この商品を自社仕様に</th>
           <td>「うちの業種・業務に合わせてほしい」方向け。<b>バイブカスタマイズ</b>（110,000円税込）で、この商品を土台に当社が変更します。動くデモを確認してからのお支払いです。<br>
-            <a href="https://kurage.exbridge.jp/vibe-customize.html?ref=kappstore" target="_blank" rel="noopener">バイブカスタマイズを見る</a></td></tr>
+            <a href="https://kurage.exbridge.jp/vibe-customize.html?ref=kappstore-table-<?php echo kapp_h($app['id']); ?>" target="_blank" rel="noopener">バイブカスタマイズを見る</a></td></tr>
         <tr><th><?php echo $has_guide ? '④' : '③'; ?>ゼロから作る</th>
           <td>近い商品が無い、または業務そのものが特殊な方向け。設計書から作る<b>バイブプロトタイプ制作</b>（330,000円税込）です。<br>
             <a href="https://kurage.exbridge.jp/vibe-prototype.html?ref=kappstore" target="_blank" rel="noopener">バイブプロトタイプ制作を見る</a></td></tr>
