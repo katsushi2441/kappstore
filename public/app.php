@@ -219,6 +219,21 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
         その時間が取れないときは、当社が代わりに変更します。</p>
       <p class="vcc-b">動くデモを確認してからのお支払いで、1回110,000円（税込）です。</p>
       <?php
+      /* 使い方の実例ページがある商品は、カスタマイズ欄より前にそこへ案内する。
+         「できます」より「こう使った」のほうが伝わる。例が増えたらここに足す。 */
+      $app_examples = array(
+        '9701841975d2ed6a' => array(
+          'url'  => 'https://kurage.exbridge.jp/kshuisho-example.html?ref=kappstore-app-9701841975d2ed6a',
+          'text' => 'この道具で、まだ聞かれていない論点を見つけて質問主意書を起案した例',
+        ),
+      );
+      $app_ex = isset($app_examples[$app['id']]) ? $app_examples[$app['id']] : null;
+      ?>
+      <?php if ($app_ex): ?>
+        <p class="vcc-b" style="margin:0 0 10px"><a href="<?php echo kapp_h($app_ex['url']); ?>"
+           target="_blank" rel="noopener">▸ <?php echo kapp_h($app_ex['text']); ?></a></p>
+      <?php endif; ?>
+      <?php
       /* この商品を実際にどう変えたか、という例がある商品だけ、そこへ直接飛ばす。
          「できます」より「こう変えた」のほうが伝わる。例が増えたらここに足す。 */
       $vc_cases = array(
