@@ -255,6 +255,19 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
     </div>
     <?php endif; ?>
 
+    <?php /* 買う人だけでなく、売りたい人・紹介したい人にも「この商品を扱える」と知ってもらう（2026-09-29）。
+             App Store の商品の販売手数料は10%（reseller.html の条件どおり）。無料の商品は手数料が出ないので出さない。 */ ?>
+    <?php if (!$external && !$owned && $p['total'] > 0): ?>
+    <div class="partner-cta">
+      <p class="pc-h">この商品を、紹介・販売しませんか</p>
+      <p class="pc-b">お客様を紹介するだけの「取次」でも、ご自身で提案して売る「販売代理」でもかまいません。
+        登録無料・ノルマなし・仕入れなし。成約したら販売価格（税別）の10%を販売手数料としてお支払いします。
+        士業・コンサルタント・システム販売の方に。</p>
+      <a class="btn ghost pc-btn" href="https://kurage.exbridge.jp/reseller.html?ref=kapp-partner-<?php echo kapp_h($app['id']); ?>"
+         target="_blank" rel="noopener">販売代理店・紹介パートナーの条件を見る</a>
+    </div>
+    <?php endif; ?>
+
     <?php
     /* 共有ボタン。出品者が自分の商品を広めることが、この店の集客そのもの。
        紹介文まで用意しておかないと「URLをコピーして文章を考える」で止まる。 */
