@@ -112,6 +112,20 @@ h3{font-size:15px;font-weight:900;margin-bottom:6px}
 .partner-cta .pc-h{margin:0 0 6px;font-size:14.5px;font-weight:900;color:#8a5a12}
 .partner-cta .pc-b{margin:0 0 8px;font-size:12.8px;line-height:1.9;color:var(--abyss-soft)}
 .partner-cta .pc-btn{margin-top:4px;padding:9px 18px;font-size:12.5px}
+.vb-share{margin:4px 0 14px}
+.vb-copy{display:inline-flex;align-items:center;gap:8px;background:#fff;
+  border:1.5px solid #dcebe9;border-radius:99px;padding:8px 16px;
+  font:inherit;font-size:13px;font-weight:700;color:#0a726b;cursor:pointer;
+  transition:border-color .15s,background .15s}
+.vb-copy:hover{border-color:#0a9a8f;background:#f3faf9}
+.vb-copy:focus-visible{outline:2px solid #0a9a8f;outline-offset:2px}
+.vb-copy::before{content:"";width:14px;height:14px;flex:none;
+  border:1.5px solid currentColor;border-radius:3px;
+  box-shadow:3px -3px 0 -1.5px #fff, 3px -3px 0 0 currentColor}
+.vb-copy[data-done="1"]{border-color:#0a9a8f;background:#e8f6f4}
+.vb-copy[data-done="1"]::before{box-shadow:none;border:none;
+  width:12px;height:7px;border-left:2px solid currentColor;
+  border-bottom:2px solid currentColor;transform:rotate(-45deg);margin-bottom:3px}
 .gate{background:var(--gold-bg);border:1.5px solid var(--gold-line);border-radius:18px;padding:24px;margin-bottom:18px}
 .price{font-size:clamp(26px,4.4vw,36px);font-weight:900;font-family:"Zen Maru Gothic",sans-serif}
 .price small{font-size:14px;font-weight:700;color:var(--abyss-soft);margin-left:8px}

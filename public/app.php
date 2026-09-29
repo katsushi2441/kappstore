@@ -150,6 +150,39 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
 <section>
   <p style="font-size:12.5px"><a href="index.php">← アプリ一覧</a></p>
   <h1><?php echo kapp_h($app['name']); ?></h1>
+  <?php /* 「タイトルとURLをコピー」。X や LINE で紹介するときに使う（VWork Blog と同じ作り・kpayload/scripts/build-vibeblog.ts）。
+           コピーする中身は data-copy に入れて、スクリプトで組み立て直さない（題の記号や改行で壊れないように）。 */ ?>
+  <div class="vb-share"><button type="button" class="vb-copy" data-copy="<?php echo kapp_h($app['name'] . "\n" . $canonical); ?>">
+    <span class="vb-copy-label">タイトルとURLをコピー</span></button></div>
+  <script>
+  (function(){
+    var DONE='コピーしました', FAIL='コピーできませんでした';
+    function flash(b,msg){
+      var l=b.querySelector('.vb-copy-label'), keep=b.getAttribute('data-orig')||l.textContent;
+      b.setAttribute('data-orig',keep); b.setAttribute('data-done','1'); l.textContent=msg;
+      clearTimeout(b._t); b._t=setTimeout(function(){ l.textContent=keep; b.removeAttribute('data-done'); },1800);
+    }
+    function legacy(text){
+      var a=document.createElement('textarea');
+      a.value=text; a.setAttribute('readonly','');
+      a.style.position='fixed'; a.style.left='-9999px';
+      document.body.appendChild(a); a.select();
+      var ok=false; try{ ok=document.execCommand('copy'); }catch(e){}
+      document.body.removeChild(a); return ok;
+    }
+    document.addEventListener('click', function(ev){
+      var b=ev.target.closest && ev.target.closest('.vb-copy');
+      if(!b) return;
+      var text=b.getAttribute('data-copy')||'';
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(function(){ flash(b,DONE); },
+          function(){ flash(b, legacy(text)?DONE:FAIL); });
+      } else {
+        flash(b, legacy(text)?DONE:FAIL);
+      }
+    });
+  })();
+  </script>
   <?php /* 「○○とは、〜です」の定義文。AI検索はこの形の1文を引用するため、
            要約の先頭文から機械的に組む（kgeo監査の definitions が0点だった対策）。 */ ?>
   <p class="lead" style="overflow-wrap:anywhere"><?php echo nl2br(kapp_h($app['summary'])); ?></p>
