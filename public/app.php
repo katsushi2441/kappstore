@@ -261,7 +261,10 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
     <div class="partner-cta">
       <p class="pc-h">この商品を、紹介・販売しませんか</p>
       <p class="pc-b">お客様を紹介するだけの「取次」でも、ご自身で提案して売る「販売代理」でもかまいません。
-        登録無料・ノルマなし・仕入れなし。成約したら販売価格（税別）の10%を販売手数料としてお支払いします。
+        登録無料・ノルマなし・仕入れなし。</p>
+      <p class="pc-b">販売手数料は、この商品の販売価格（税別）の<b>10%</b>。
+        導入のときに自社仕様への改修（バイブカスタマイズ・税別10万円）も決まれば、その<b>30%（3万円）</b>が上乗せになります。
+        この商品は業種や業務に合わせて手を入れて使うことが多いので、あわせてご提案いただけます。
         士業・コンサルタント・システム販売の方に。</p>
       <a class="btn ghost pc-btn" href="https://kurage.exbridge.jp/reseller.html?ref=kapp-partner-<?php echo kapp_h($app['id']); ?>"
          target="_blank" rel="noopener">販売代理店・紹介パートナーの条件を見る</a>
