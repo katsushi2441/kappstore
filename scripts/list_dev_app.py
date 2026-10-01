@@ -16,7 +16,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SOL = "/home/kojima/work/kpayload/data/solution-list.json"
 OGP = "/home/kojima/work/exbridge_jp/images/ogp/sol-{}.png"
 REMOTE = "/web/kappstore_exbridge_jp"
-PHP = ["app.php", "index.php", "llms.php", "catalog.php", "kapp_usecases.php"]   # 開発中の表示に合わせて直したもの
+PHP = ["app.php", "index.php", "llms.php", "catalog.php", "kapp_usecases.php", "kapp_categories.php"]   # 開発中の表示に合わせて直したもの
 
 
 def env():
