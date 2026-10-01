@@ -459,8 +459,15 @@ function kapp_seller_apps($user) {
  */
 function kapp_short_name($app) {
     $name = isset($app['name']) ? (string)$app['name'] : '';
-    if (preg_match('/[（(]([^）)]+)[）)]\s*$/u', $name, $m)) {
-        $inner = trim($m[1]);
+    if (preg_match('/^(.*?)\s*[（(]([^）)]+)[）)]\s*$/u', $name, $m)) {
+        $outer = trim($m[1]); $inner = trim($m[2]);
+        // 括弧の中が製品名（「〜をオンプレミスで（Kurage 予約・受付 kreserve）」）のときだけ中を使う。
+        // 「Kurage 〇〇ナビ（説明…）」「FreeScout 日本語導入キット（共有レンタルサーバー編）」は外が名前
+        // （2026-10-01: キットの見出しが「共有レンタルサーバー編とは」になっていた）
+        if ($outer !== '' && (preg_match('/^Kurage\s/u', $outer) || mb_strpos($outer, 'キット') !== false
+                              || !preg_match('/[A-Za-z]/', $inner))) {
+            return $outer;
+        }
         if ($inner !== '') { return $inner; }
     }
     return $name;

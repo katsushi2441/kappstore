@@ -34,6 +34,13 @@ require_once __DIR__ . '/kapp_usecases.php';
 $use_cases = kapp_use_cases();
 $by_id = array();
 foreach (kapp_apps_published() as $a) { $by_id[$a['id']] = $a; }
+require_once __DIR__ . '/kapp_categories.php';
+$lines[] = '## 分野から探す';
+$lines[] = '';
+foreach (kapp_categories() as $cs => $cc) {
+    $lines[] = '- [' . $cc['name'] . '](' . kapp_category_url($cs) . '): ' . $cc['desc'];
+}
+$lines[] = '';
 $lines[] = '## こんなときに（用途から探す）';
 $lines[] = '';
 foreach ($use_cases as $need => $pid) {

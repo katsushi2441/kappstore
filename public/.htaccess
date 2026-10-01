@@ -7,6 +7,8 @@ RewriteRule ^sitemap\.xml$ sitemap.php [L]
 # AIエージェント向けの発見ファイル(実体はPHPで台帳から動的生成)
 RewriteRule ^llms\.txt$ llms.php [L]
 RewriteRule ^catalog\.json$ catalog.php [L]
+# 分野ページ /c-<slug>（フォルダを掘ると共通ヘッダーの相対リンクが壊れるので平らな形）
+RewriteRule ^c-([a-z-]+)$ c.php?c=$1 [L,QSA]
 
 # 実行時設定と台帳は直接読ませない（PHPが止まったときにソースが出るため）
 <FilesMatch "^(kapp_config\.php|simpletrack_config\.php)$">

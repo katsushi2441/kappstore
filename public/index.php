@@ -181,6 +181,19 @@ kapp_header('業務システムと導入キットのお店', $logged_in, $user, 
     <?php echo $q !== '' ? '「' . kapp_h($q) . '」に一致するアプリはありませんでした。' : 'まだ公開中のアプリがありません。'; ?>
   </p>
 <?php else: ?>
+  <?php /* 分野から探す（2026-10-01）。分野ページが語の受け皿と内部リンクを兼ねる */
+  require_once __DIR__ . '/kapp_categories.php'; ?>
+  <?php if ($q === ''): ?>
+  <h2 style="font-size:17px;margin:0 0 10px">分野から探す</h2>
+  <div class="grid" style="margin-bottom:26px">
+  <?php foreach (kapp_categories() as $cs => $cc): ?>
+    <a class="item" href="c-<?php echo kapp_h($cs); ?>" style="text-decoration:none;color:inherit">
+      <div class="body"><h3><?php echo kapp_h($cc['name']); ?>（<?php echo count($cc['ids']); ?>）</h3>
+      <p class="sum"><?php echo kapp_h(mb_strimwidth($cc['lead'], 0, 70, '…', 'UTF-8')); ?></p></div>
+    </a>
+  <?php endforeach; ?>
+  </div>
+  <?php endif; ?>
   <?php /* 商品カードは h3。h1 の次が h3 だと見出しの階層が飛ぶので、
            一覧そのものの見出しをここに置く（自社のkseo診断の指摘）。 */ ?>
   <h2 style="font-size:17px;margin:0 0 12px">

@@ -30,6 +30,11 @@ if (!$app || (isset($app['status']) && $app['status'] !== 'published'
 }
 
 $p = kapp_price_parts($app['price']);
+// 分野（kapp_categories.php）。パンくず・「同じ分野の商品」に使う
+require_once __DIR__ . '/kapp_categories.php';
+$app_cats = kapp_categories_of($app['id']);
+$all_cats = kapp_categories();
+$short = kapp_short_name($app);
 // 開発中の掲載（台帳の dev に「開発中」などを入れる）。システムはまだ無く、導入の相談だけを受け付ける。
 // 価格・購入・ダウンロードを出さず、問い合わせへ案内する（2026-10-01 ユーザー決定: 需要が見えてから開発する）
 $dev = !empty($app['dev']);
@@ -134,6 +139,14 @@ $breadcrumb_ld = array(
               'item' => $canonical),
     ),
 );
+if ($app_cats) {   // 分野をはさむ（Kurage App Store › 分野 › 商品）
+    $c0 = $app_cats[0];
+    $breadcrumb_ld['itemListElement'] = array(
+        $breadcrumb_ld['itemListElement'][0],
+        array('@type' => 'ListItem', 'position' => 2, 'name' => $all_cats[$c0]['name'], 'item' => kapp_category_url($c0)),
+        array('@type' => 'ListItem', 'position' => 3, 'name' => $app['name'], 'item' => $canonical),
+    );
+}
 $ld_items = array($product_ld, $faq_ld, $breadcrumb_ld);
 if ($video_ld) { $ld_items[] = $video_ld; }
 $jsonld = json_encode($ld_items,
@@ -165,7 +178,7 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
 ?>
 <main class="wrap narrow">
 <section>
-  <p style="font-size:12.5px"><a href="index.php">← アプリ一覧</a></p>
+  <p style="font-size:12.5px"><a href="index.php">Kurage App Store</a><?php if ($app_cats): ?> › <a href="c-<?php echo kapp_h($app_cats[0]); ?>"><?php echo kapp_h($all_cats[$app_cats[0]]['name']); ?></a><?php endif; ?></p>
   <h1><?php echo kapp_h($app['name']); ?></h1>
   <?php /* 「タイトルとURLをコピー」。X や LINE で紹介するときに使う（VWork Blog と同じ作り・kpayload/scripts/build-vibeblog.ts）。
            コピーする中身は data-copy に入れて、スクリプトで組み立て直さない（題の記号や改行で壊れないように）。 */ ?>
@@ -354,10 +367,24 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
     </p>
   </div>
 
+  <?php /* AEOの定義文判定は「見出しの直後の本文」を見る。だから定義文は
+           h2 のすぐ下に置く（h1直下のリード文では拾われなかった）。 */ ?>
+  <?php /* #about は商品説明の入口。PVのキャプチャや外部からの深いリンクで使う
+           （価格欄を写さずに説明だけを撮りたいときの足がかり）。 */ ?>
+  <div class="card" id="about">
+    <h2><?php echo kapp_h(kapp_short_name($app)); ?>とは</h2>
+    <p style="font-size:14px;overflow-wrap:anywhere"><b><?php echo kapp_h(kapp_short_name($app)); ?>とは、</b><?php echo kapp_h(kapp_definition_sentence($app)); ?></p>
+<?php if (!empty($app['body'])): ?>
+    <?php /* 商品説明はMarkdownで書かれている。段落・見出し・表を含むので p ではなく div で受ける
+             （p の中に h4/ul/table は置けず、ブラウザが勝手に閉じて崩れる）。 */ ?>
+    <div class="md-body"><?php echo kapp_md($app['body']); ?></div>
+<?php endif; ?>
+  </div>
+
 <?php if (!$external && $p['total'] > 0): /* 入手方法の3択（手順書があれば3つ・なければ2つ） */
   $has_guide = !empty($app['guide_url']); $opt = 1; ?>
   <div class="card plain">
-    <h2>入手方法は<?php echo $has_guide ? '4' : '3'; ?>つあります</h2>
+    <h2><?php echo kapp_h($short); ?>の入手方法（<?php echo $has_guide ? '4' : '3'; ?>つ）</h2>
     <p style="font-size:13.5px;color:var(--ink-soft);margin:0 0 10px">同じゴールに、あなたに合う入口からどうぞ。</p>
     <div class="scroll">
     <table class="kv" style="min-width:0">
@@ -383,22 +410,8 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
   </div>
 <?php endif; ?>
 
-  <?php /* AEOの定義文判定は「見出しの直後の本文」を見る。だから定義文は
-           h2 のすぐ下に置く（h1直下のリード文では拾われなかった）。 */ ?>
-  <?php /* #about は商品説明の入口。PVのキャプチャや外部からの深いリンクで使う
-           （価格欄を写さずに説明だけを撮りたいときの足がかり）。 */ ?>
-  <div class="card" id="about">
-    <h2><?php echo kapp_h(kapp_short_name($app)); ?>とは</h2>
-    <p style="font-size:14px;overflow-wrap:anywhere"><b><?php echo kapp_h(kapp_short_name($app)); ?>とは、</b><?php echo kapp_h(kapp_definition_sentence($app)); ?></p>
-<?php if (!empty($app['body'])): ?>
-    <?php /* 商品説明はMarkdownで書かれている。段落・見出し・表を含むので p ではなく div で受ける
-             （p の中に h4/ul/table は置けず、ブラウザが勝手に閉じて崩れる）。 */ ?>
-    <div class="md-body"><?php echo kapp_md($app['body']); ?></div>
-<?php endif; ?>
-  </div>
-
   <div class="card plain">
-    <h2>販売情報</h2>
+    <h2><?php echo kapp_h($short); ?>の販売情報</h2>
     <div class="scroll">
     <table class="kv" style="min-width:0">
       <tr><th>開発元</th><td>
@@ -430,7 +443,7 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
 
   <?php if (!$dev): ?>
   <div class="gate">
-    <h2 style="margin-top:0">ご購入前に必ずお読みください</h2>
+    <h2 style="margin-top:0"><?php echo kapp_h($short); ?>をご購入前に必ずお読みください</h2>
     <ul>
       <li><b>これはプロトタイプです。動作を保証していません。</b>お客様の環境
         （サーバー・PHPのバージョン・通信の制限など）によっては、そのままでは動かない可能性があります。</li>
@@ -458,8 +471,29 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
   <?php endif; ?>
 </section>
 
+<?php if ($app_cats):
+  /* 同じ分野の商品（最大6件）。商品どうしのリンクが1本ずつしか無かった（2026-10-01） */
+  $rel = array(); $seen = array($app['id'] => true);
+  $pub = array(); foreach (kapp_apps_published() as $a) { $pub[$a['id']] = $a; }
+  foreach ($app_cats as $cs) { foreach ($all_cats[$cs]['ids'] as $rid) {
+      if (count($rel) >= 6) { break 2; }
+      if (isset($seen[$rid]) || !isset($pub[$rid])) { continue; }
+      $seen[$rid] = true; $rel[] = $pub[$rid];
+  } } ?>
+<section style="max-width:760px;margin:18px auto 0">
+  <h2 style="font-size:18px;margin:0 0 8px">同じ分野の商品</h2>
+  <p style="font-size:13px;margin:0 0 10px">分野: <?php foreach ($app_cats as $cs): ?><a href="c-<?php echo kapp_h($cs); ?>" style="margin-right:10px"><?php echo kapp_h($all_cats[$cs]['name']); ?></a><?php endforeach; ?></p>
+  <ul style="margin:0;padding-left:1.2em;line-height:1.9">
+  <?php foreach ($rel as $r): ?>
+    <li><a href="app.php?id=<?php echo kapp_h($r['id']); ?>"><?php echo kapp_h(kapp_short_name($r)); ?></a>
+      <span style="font-size:12.5px;color:var(--abyss-soft)">— <?php echo kapp_h(mb_strimwidth($r['summary'], 0, 60, '…', 'UTF-8')); ?></span></li>
+  <?php endforeach; ?>
+  </ul>
+</section>
+<?php endif; ?>
+
 <section style="max-width:760px;margin:18px auto 0;background:var(--foam);border:1px solid var(--panel-line);border-radius:16px;padding:18px 20px;box-shadow:var(--shadow)">
-  <h2 style="font-size:18px;margin:0 0 6px;color:var(--abyss)">よくある質問</h2>
+  <h2 style="font-size:18px;margin:0 0 6px;color:var(--abyss)"><?php echo kapp_h($short); ?>のよくある質問</h2>
   <?php /* 質問は必ず見出しタグで出す。details/summary は見出しとして解釈されず、
            AI検索・AEOの「質問見出し」判定に入らない（kgeo監査で0点だった原因）。 */ ?>
   <?php foreach ($faq_items as $qa): ?>

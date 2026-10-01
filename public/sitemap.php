@@ -11,6 +11,14 @@ foreach ($fixed as $f) {
     echo "  <url><loc>" . htmlspecialchars($base . $f[0], ENT_QUOTES, 'UTF-8') . "</loc>"
        . "<changefreq>{$f[2]}</changefreq><priority>{$f[1]}</priority></url>\n";
 }
+// 分野ページ（2026-10-01）。中身は商品の追加で変わるので、載っている商品の最新の更新日を lastmod にする
+require_once __DIR__ . '/kapp_categories.php';
+$upd = array(); foreach (kapp_apps_published() as $a) { $upd[$a['id']] = (int)(isset($a['updated_at']) ? $a['updated_at'] : $a['created_at']); }
+foreach (kapp_categories() as $cs => $cc) {
+    $m = 0; foreach ($cc['ids'] as $i) { if (isset($upd[$i]) && $upd[$i] > $m) { $m = $upd[$i]; } }
+    echo "  <url><loc>" . htmlspecialchars(kapp_category_url($cs), ENT_QUOTES, 'UTF-8') . "</loc>"
+       . ($m ? "<lastmod>" . date('Y-m-d', $m) . "</lastmod>" : '') . "<changefreq>weekly</changefreq><priority>0.9</priority></url>\n";
+}
 foreach (kapp_apps_published() as $app) {
     $loc = $base . 'app.php?id=' . rawurlencode($app['id']);
     $mod = date('Y-m-d', isset($app['updated_at']) ? (int)$app['updated_at'] : (int)$app['created_at']);
