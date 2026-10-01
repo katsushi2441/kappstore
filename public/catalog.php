@@ -27,13 +27,16 @@ foreach (kapp_apps_published() as $app) {
         'use_case'    => kapp_use_case_of($app['id']),
         'seo_title'   => isset($app['seo_title']) ? $app['seo_title'] : null,
         'image'       => !empty($app['image']) ? $base . 'kapp_media/' . rawurlencode($app['image']) : null,
-        'price_jpy'   => $p['total'],
-        'price_note'  => '税込(本体' . number_format($p['amount']) . '円+消費税)',
+        'price_jpy'   => !empty($app['dev']) ? null : $p['total'],
+        'price_note'  => !empty($app['dev']) ? $app['dev'] . '・価格は要お問い合わせ（導入のご相談を受付中）'
+                                             : '税込(本体' . number_format($p['amount']) . '円+消費税)',
+        'status'      => !empty($app['dev']) ? 'in_development' : 'available',
         'demo_url'    => !empty($app['demo_url']) ? $app['demo_url'] : null,
         'guide_url'   => !empty($app['guide_url']) ? $app['guide_url'] : null,  // 自作派向けの開発手順書(Brain)
-        'license'     => 'MIT',
-        'includes'    => array('source_code', 'claude_code_manual', 'install_guide'),
-        'requires'    => 'PHP rental server (no DB, no Composer, no npm)',
+        'license'     => !empty($app['dev']) ? null : 'MIT',
+        'includes'    => !empty($app['dev']) ? array() : array('source_code', 'claude_code_manual', 'install_guide'),
+        'requires'    => !empty($app['dev']) ? null : 'PHP rental server (no DB, no Composer, no npm)',
+        'contact_url' => !empty($app['dev']) ? 'https://exbridge.jp/contact.php?ref=kappstore-dev-' . rawurlencode($app['id']) : null,
         'published_at'=> date('c', isset($app['created_at']) ? (int)$app['created_at'] : 0),
         'updated_at'  => date('c', isset($app['updated_at']) ? (int)$app['updated_at']
                                    : (isset($app['created_at']) ? (int)$app['created_at'] : 0)),

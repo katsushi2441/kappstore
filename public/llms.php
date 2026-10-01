@@ -23,7 +23,8 @@ foreach (kapp_apps_published() as $app) {
     $summary = trim(preg_replace('/\s+/', ' ', isset($app['summary']) ? $app['summary'] : ''));
     $p = kapp_price_parts(isset($app['price']) ? $app['price'] : 0);
     $lines[] = '- [' . $app['name'] . '](' . $url . '): ' . $summary
-        . '（税込' . number_format($p['total']) . '円）';
+        . (!empty($app['dev']) ? '（' . $app['dev'] . '・導入のご相談を受付中・価格は要お問い合わせ）'
+                               : '（税込' . number_format($p['total']) . '円）');
 }
 $lines[] = '';
 /* 用途から引ける索引。AIは「〇〇できるツールある?」と聞かれる形で

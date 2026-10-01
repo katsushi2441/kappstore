@@ -48,6 +48,7 @@ foreach ($all as $i => $app) {
             ),
         ),
     );
+    if (!empty($app['dev'])) { unset($item_list[count($item_list) - 1]['item']['offers']); }  // 開発中は価格を書かない
 }
 $faq = array(
     array('プログラミングができなくても使えますか。',
@@ -199,7 +200,9 @@ kapp_header('業務システムと導入キットのお店', $logged_in, $user, 
         <h3><a href="app.php?id=<?php echo kapp_h($app['id']); ?>"><?php echo kapp_h($app['name']); ?></a></h3>
         <p class="sum"><?php echo kapp_h(mb_strimwidth($app['summary'], 0, 84, '…', 'UTF-8')); ?></p>
         <div class="foot">
-          <?php if ($p['total'] === 0): ?>
+          <?php if (!empty($app['dev'])): ?>
+            <span class="yen"><?php echo kapp_h($app['dev']); ?></span><span class="tag">要お問い合わせ</span>
+          <?php elseif ($p['total'] === 0): ?>
             <span class="yen">無料</span><span class="tag free">FREE</span>
           <?php else: ?>
             <span class="yen"><?php echo number_format($p['total']); ?>円<small>税込</small></span>

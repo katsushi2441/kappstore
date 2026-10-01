@@ -30,6 +30,12 @@ if (!$app || (isset($app['status']) && $app['status'] !== 'published'
 }
 
 $p = kapp_price_parts($app['price']);
+// 開発中の掲載（台帳の dev に「開発中」などを入れる）。システムはまだ無く、導入の相談だけを受け付ける。
+// 価格・購入・ダウンロードを出さず、問い合わせへ案内する（2026-10-01 ユーザー決定: 需要が見えてから開発する）
+$dev = !empty($app['dev']);
+// contact.php は ?subject= で相談内容の欄を埋める（どの商品からの相談かが残る。ref は simpletrack で数える）
+$contact_url = 'https://exbridge.jp/contact.php?ref=kappstore-dev-' . rawurlencode($app['id'])
+             . '&subject=' . rawurlencode('「' . $app['name'] . '」の導入について相談したい') . '#form';
 $seller = kapp_find_seller($app['seller']);
 $owned = $logged_in && ($p['total'] === 0 ? false : kapp_has_paid($user, $app['id']));
 $canonical = 'https://kappstore.exbridge.jp/app.php?id=' . rawurlencode($app['id']);
@@ -58,6 +64,7 @@ $product_ld = array(
     ),
 );
 // 商品データから正確なFAQを組む（可視のFAQ節と一致させる＝ガイドライン準拠）。
+if ($dev) { unset($product_ld['offers']); }   // 価格は未定。偽の価格を構造化データに書かない
 $faq_items = array();
 // 「どんなときに使うか」。人が検索するのは商品名ではなく困りごとなので、
 // その言葉が本文に1度も無いと検索にも引っかからず、AIも用途を答えられない。
@@ -89,6 +96,16 @@ $faq_items[] = array('月額はありますか？オンプレミスで使えま�
 if ((int)$p_head['total'] > 0) {
 $faq_items[] = array('AI-IT顧問契約を結ぶと無料になりますか？',
     'なります（キャンペーン・期限未定）。名古屋市内限定のAI-IT顧問契約（月15時間・税別150,000円）の期間中に構築できる商品は、デジタルコンテンツの商品代金をいただかず、当社が構築・設定します。ソースコードごと御社の資産として残ります。詳細は https://exbridge.jp/ai-it-komon.html をご覧ください。');
+}
+if ($dev) {
+    // 開発中の商品は、ライセンス・設置・月額の定型FAQが当てはまらない。台帳の faq（[質問, 答え] の配列）と、開発状況の1問だけにする
+    $faq_items = array();
+    if (!empty($app['faq']) && is_array($app['faq'])) {
+        foreach ($app['faq'] as $qa) { if (is_array($qa) && count($qa) === 2) { $faq_items[] = $qa; } }
+    }
+    $faq_items[] = array('いつから使えますか？導入の相談はできますか？',
+        '現在開発中です。導入を検討している自治体・会社・事務所からのご相談を受け付けており、ご要望に合わせて開発の順番と仕様を決めます。'
+        . '問い合わせ先: ' . $contact_url);
 }
 $faq_ld = array('@context' => 'https://schema.org', '@type' => 'FAQPage', 'mainEntity' => array());
 foreach ($faq_items as $qa) {
@@ -209,7 +226,10 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
 
   <?php $external = empty($app['file']); /* 配布ファイルを持たない=公式サイト(LP)で配布する掲載 */ ?>
   <div class="gate">
-    <?php if ($p['total'] === 0): ?>
+    <?php if ($dev): ?>
+      <p class="price"><?php echo kapp_h($app['dev']); ?><small>導入のご相談を受付中</small></p>
+      <p style="font-size:13.5px;margin-top:6px">このシステムは開発中です。使いたい自治体・会社・事務所のご要望を伺い、開発の順番と仕様を決めます。価格はご相談のうえでお見積りします。</p>
+    <?php elseif ($p['total'] === 0): ?>
       <p class="price">無料<small><?php echo $external ? '公式サイトで配布' : 'ダウンロードいただけます'; ?></small></p>
     <?php else: ?>
       <p class="price"><?php echo number_format($p['total']); ?>円<small>税込</small></p>
@@ -220,7 +240,12 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
     <?php endif; ?>
 
     <p style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
-      <?php if (!empty($app['demo_url']) && !$external): ?>
+      <?php if ($dev): ?>
+        <a class="btn" href="<?php echo kapp_h($contact_url); ?>" target="_blank" rel="noopener">導入について問い合わせる</a>
+        <?php if (!empty($app['demo_url'])): ?>
+        <a class="btn ghost" href="<?php echo kapp_h($app['demo_url']); ?>" target="_blank" rel="noopener"><?php echo kapp_h(!empty($app['demo_label']) ? $app['demo_label'] : '関連するシステムを見る'); ?></a>
+        <?php endif; ?>
+      <?php elseif (!empty($app['demo_url']) && !$external): ?>
         <a class="btn ghost" href="<?php echo kapp_h($app['demo_url']); ?>" target="_blank" rel="noopener">
           デモを触ってみる</a>
       <?php endif; ?>
@@ -234,7 +259,9 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
         <a class="btn" href="<?php echo $order_qs($app['id']); ?>">購入する</a>
       <?php endif; ?>
     </p>
-    <?php if ($owned): ?>
+    <?php if ($dev): ?>
+      <p class="hint">お問い合わせは無料です。開発中のため、仕様や時期はご相談のうえで決めます。</p>
+    <?php elseif ($owned): ?>
       <p class="hint">ご購入済みです。何度でもダウンロードいただけます。</p>
     <?php elseif ($external): ?>
       <p class="hint">公式サイト（LP）から iPhone 版・Android 版を入手できます。</p>
@@ -244,7 +271,7 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
 
     <?php /* 買ったあと自社仕様に変えるのが普通の使い方なので、買う場所の隣に置く。
              入手方法の表にも同じ導線があるが、そこは購入ボタンより1,000px以上下で読まれない。 */ ?>
-    <?php if (!$external && !$owned): ?>
+    <?php if (!$external && !$owned && !$dev): ?>
     <div class="vibe-customize-cta">
       <p class="vcc-h">このまま使うか、自社仕様に変えるか</p>
       <p class="vcc-b">ソースコード同梱のMITライセンスなので、購入後はご自身で改変できます。
@@ -387,7 +414,7 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
         <a href="https://x.com/<?php echo kapp_h($app['seller']); ?>" target="_blank" rel="noopener nofollow">@<?php echo kapp_h($app['seller']); ?></a>
       </td></tr>
       <?php if (!empty($app['demo_url'])): ?>
-      <tr><th>デモサイト</th><td>
+      <tr><th><?php echo $dev ? '詳しい説明' : 'デモサイト'; ?></th><td>
         <a href="<?php echo kapp_h($app['demo_url']); ?>" target="_blank" rel="noopener"><?php echo kapp_h($app['demo_url']); ?></a>
       </td></tr>
       <?php endif; ?>
@@ -401,6 +428,7 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
     </div>
   </div>
 
+  <?php if (!$dev): ?>
   <div class="gate">
     <h2 style="margin-top:0">ご購入前に必ずお読みください</h2>
     <ul>
@@ -427,6 +455,7 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
       <a href="https://kurage.exbridge.jp/terms.html">利用規約</a> ／
       <a href="https://kurage.exbridge.jp/tokusho.php">特定商取引法に基づく表記</a></p>
   </div>
+  <?php endif; ?>
 </section>
 
 <section style="max-width:760px;margin:18px auto 0;background:var(--foam);border:1px solid var(--panel-line);border-radius:16px;padding:18px 20px;box-shadow:var(--shadow)">
