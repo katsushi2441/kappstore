@@ -85,6 +85,25 @@ def rows(since=None):
             yield {'ts': ts, 'vid': p[1], 'url': p[2], 'ref': p[3], 'ua': p[4],
                    'title': p[5] if len(p) > 5 else ''}
 
+SEARCH_REF = re.compile(r'^https?://(www\.)?(google\.|bing\.com|search\.yahoo\.|duckduckgo\.com)', re.I)
+
+def mark_fake_search(data):
+    """検索エンジンを参照元に名乗るだけの巡回を 'fake' にする（2026-10-02 追加）。
+
+    その日1回だけ来て、参照元が Google 等で、さらに
+      - 着地URLに ?ref= が付いている（人が検索結果から当社の計測タグ付きURLに着くことはない）か、
+      - UA が「X11; Linux x86_64」の Chrome（10/1〜2 の該当は全部これ）
+    のもの。10/1〜2 の kappstore で「検索から」と見えた人の大半、10/1 の kuragev.php?q= の61人がこの型だった。
+    """
+    hits = Counter((r['ts'].date(), r['vid']) for r in data if r['kind'] == 'human')
+    n = 0
+    for r in data:
+        if r['kind'] != 'human' or hits[(r['ts'].date(), r['vid'])] != 1: continue
+        if not SEARCH_REF.search(r['ref'] or ''): continue
+        if re.search(r'[?&]ref=', r['url']) or 'X11; Linux x86_64' in r['ua']:
+            r['kind'], r['label'] = 'fake', '検索を名乗る巡回'; n += 1
+    return n
+
 def page_of(url):
     u = re.sub(r'^https?://[^/]+', '', url)
     m = re.search(r'app\.php\?id=([0-9a-f]{8,})', u)
@@ -108,10 +127,11 @@ def main():
     if not data:
         print('ログがありません（--fetch を付けて取得してください）'); return
     for r in data: r['kind'], r['label'] = classify(r['ua'])
+    mark_fake_search(data)
     print('期間: %s 〜 %s / 行 %d' % (data[0]['ts'], data[-1]['ts'], len(data)))
     kinds = Counter(r['kind'] for r in data)
-    print('内訳: 人 %d / 検索bot %d / AI bot %d / その他bot %d'
-          % (kinds['human'], kinds['search'], kinds['ai'], kinds['bot']))
+    print('内訳: 人 %d / 検索bot %d / AI bot %d / その他bot %d / 検索を名乗る巡回 %d'
+          % (kinds['human'], kinds['search'], kinds['ai'], kinds['bot'], kinds['fake']))
 
     human = [r for r in data if r['kind'] == 'human']
     pv, uu = Counter(), defaultdict(set)
