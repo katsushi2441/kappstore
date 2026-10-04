@@ -102,6 +102,13 @@ def mark_fake_search(data):
         if not SEARCH_REF.search(r['ref'] or ''): continue
         if re.search(r'[?&]ref=', r['url']) or 'X11; Linux x86_64' in r['ua']:
             r['kind'], r['label'] = 'fake', '検索を名乗る巡回'; n += 1
+    # 当社のリンクは全部 https。http:// の ref 付きURLに「店のトップ」を参照元として着くのは、
+    # /oss/ の誘導枠のリンクを書き換えてたどる巡回（2026-10-04 に97件。同じ訪問者IDが時間をおいて戻る）
+    for r in data:
+        if r['kind'] != 'human': continue
+        if r['url'].startswith('http://') and re.search(r'[?&]ref=', r['url']) \
+                and re.match(r'^https?://kappstore\.exbridge\.jp/?$', r['ref'] or ''):
+            r['kind'], r['label'] = 'fake', '検索を名乗る巡回'; n += 1
     return n
 
 def page_of(url):
