@@ -105,7 +105,7 @@ function kapp_categories() {
         'ids'   => array('88acc4be142bd444', '63000166082c7a26', 'ef52a62e1c6bbe7a', '362c94ab4e1384f2', 'f0f56c6e4da881be', '15abb025dc2ee4f6', '5b55bb2c808eead4', '61febea74f9c74b0',
                          '4679d4cf90699580', 'f6fab083d826739f', '0e723e981c922df6', 'c1864cba4ab726b0', 'cd1eda3248c87920',
                          '224e141f77bd07a8', '56bf3ddd46b5a457', '43950141618ddb02', '2186dc017968081c', '754c7ddb5f1c8f26',
-                         '6ae90e27bf778a42', '719429354f079793', 'cfb7c4a69621600f', '4bd9a6f3f99cdc05', 'e8d0518e44c29a60'),
+                         '6ae90e27bf778a42', '719429354f079793', 'cfb7c4a69621600f', '4bd9a6f3f99cdc05', 'e8d0518e44c29a60', 'c8a24775df796de6'),
     ),
     'oss-kit' => array(
         'name'  => 'オープンソースの日本語導入キット',
