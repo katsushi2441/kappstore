@@ -100,13 +100,13 @@ def mark_fake_search(data):
     for r in data:
         if r['kind'] != 'human' or hits[(r['ts'].date(), r['vid'])] != 1: continue
         if not SEARCH_REF.search(r['ref'] or ''): continue
-        if re.search(r'[?&]ref=', r['url']) or 'X11; Linux x86_64' in r['ua']:
+        if re.search(r'[?&#]ref=', r['url']) or 'X11; Linux x86_64' in r['ua']:
             r['kind'], r['label'] = 'fake', '検索を名乗る巡回'; n += 1
     # 当社のリンクは全部 https。http:// の ref 付きURLに「店のトップ」を参照元として着くのは、
     # /oss/ の誘導枠のリンクを書き換えてたどる巡回（2026-10-04 に97件。同じ訪問者IDが時間をおいて戻る）
     for r in data:
         if r['kind'] != 'human': continue
-        if r['url'].startswith('http://') and re.search(r'[?&]ref=', r['url']) \
+        if r['url'].startswith('http://') and re.search(r'[?&#]ref=', r['url']) \
                 and re.match(r'^https?://kappstore\.exbridge\.jp/?$', r['ref'] or ''):
             r['kind'], r['label'] = 'fake', '検索を名乗る巡回'; n += 1
     return n
@@ -116,7 +116,7 @@ def page_of(url):
     m = re.search(r'app\.php\?id=([0-9a-f]{8,})', u)
     if m: return 'app:' + m.group(1)
     u = u.split('#')[0]
-    u = re.sub(r'[?&]ref=[^&]*', '', u)
+    u = re.sub(r'[?&#]ref=[^&]*', '', u)
     return u or '/'
 
 def main():
@@ -183,7 +183,7 @@ def main():
     print('\n== ?ref= タグ（人のみ） ==')
     tags = Counter()
     for r in human:
-        m = re.search(r'[?&]ref=([^&\s]+)', r['url'])
+        m = re.search(r'[?&#]ref=([^&\s]+)', r['url'])
         if m: tags[m.group(1)] += 1
     for t, n in tags.most_common(15): print('%5d  %s' % (n, t))
     print('\n== 日別（人のみ） ==')
