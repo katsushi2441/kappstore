@@ -316,11 +316,22 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
         ),
       );
       $vc_case = isset($vc_cases[$app['id']]) ? $vc_cases[$app['id']] : null;
+      /* まだ受けていないが、この商品なら1回で足せる機能の例。実例（$vc_cases）とは書き分ける。
+         広聴の3商品は、自治体のブロードリスニングで「聞いたあとに経過を返す」欄が求められている（2026-10-11 田川市の事例）。 */
+      $vc_ideas = array(
+        'b80a258f26c448d5' => '集まった意見の話題ごとに、議会や自治体が「その後どう検討したか」を書いて返す「進捗」の欄を足す。',
+        '10cb19eab638123f' => '話題の地図の話題ごとに、議会や自治体が「その後どう検討したか」を書いて返す「進捗」の欄を足す。',
+        'd88a943736386fb3' => '見つかった合意点ごとに、議会や自治体が「その後どう扱ったか」を書いて返す「進捗」の欄を足す。',
+      );
+      $vc_idea = (!$vc_case && isset($vc_ideas[$app['id']])) ? $vc_ideas[$app['id']] : null;
       $vc_url  = 'https://kurage.exbridge.jp/vibe-customize.html?ref=kappstore-app-'
-                 . rawurlencode($app['id']) . ($vc_case ? $vc_case['anchor'] : '');
+                 . rawurlencode($app['id']) . ($vc_case ? $vc_case['anchor'] : ($vc_idea ? '#scope' : ''));
       ?>
       <?php if ($vc_case): ?>
         <p class="vcc-b" style="margin-bottom:10px">▸ <?php echo kapp_h($vc_case['text']); ?></p>
+      <?php elseif ($vc_idea): ?>
+        <p class="vcc-b" style="margin-bottom:10px">たとえば、<?php echo kapp_h($vc_idea); ?>
+          意見を聞きっぱなしにせず、住民への説明までを同じ画面で済ませる変更です。こうした機能の追加も、バイブカスタマイズでお受けします。</p>
       <?php endif; ?>
       <a class="btn ghost vcc-btn" href="<?php echo kapp_h($vc_url); ?>"
          target="_blank" rel="noopener"><?php
