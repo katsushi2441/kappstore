@@ -28,7 +28,8 @@ foreach (kapp_apps_published() as $app) {
         'seo_title'   => isset($app['seo_title']) ? $app['seo_title'] : null,
         'image'       => !empty($app['image']) ? $base . 'kapp_media/' . rawurlencode($app['image']) : null,
         'price_jpy'   => !empty($app['dev']) ? null : $p['total'],
-        'price_note'  => !empty($app['dev']) ? $app['dev'] . '・価格は要お問い合わせ（導入のご相談を受付中）'
+        'price_note'  => !empty($app['dev']) ? ($p['amount'] > 0 ? $app['dev'] . '・本体' . number_format($p['amount']) . '円（税別）・お申し込みはお問い合わせから'
+                                                                  : $app['dev'] . '・価格は要お問い合わせ（導入のご相談を受付中）')
                                              : '税込(本体' . number_format($p['amount']) . '円+消費税)',
         'status'      => !empty($app['dev']) ? 'in_development' : 'available',
         'demo_url'    => !empty($app['demo_url']) ? $app['demo_url'] : null,

@@ -241,7 +241,12 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
   <div class="gate">
     <?php if ($dev): ?>
       <p class="price"><?php echo kapp_h($app['dev']); ?><small>導入のご相談を受付中</small></p>
+      <?php if ($p['amount'] > 0): /* 開発中でも価格を決めてある商品（2026-10-23 ktrackloop）。購入ボタンは出さず相談で受ける */ ?>
+      <p style="font-size:15px;font-weight:700;margin-top:8px"><?php echo number_format($p['amount']); ?>円（税別）<small style="font-weight:400">／税込 <?php echo number_format($p['total']); ?>円</small></p>
+      <p style="font-size:13.5px;margin-top:6px">このシステムは開発中です。ご要望を伺い、御社の業界に合わせて構築します。お申し込みはお問い合わせから承ります。</p>
+      <?php else: ?>
       <p style="font-size:13.5px;margin-top:6px">このシステムは開発中です。使いたい自治体・会社・事務所のご要望を伺い、開発の順番と仕様を決めます。価格はご相談のうえでお見積りします。</p>
+      <?php endif; ?>
     <?php elseif ($p['total'] === 0): ?>
       <p class="price">無料<small><?php echo $external ? '公式サイトで配布' : 'ダウンロードいただけます'; ?></small></p>
     <?php else: ?>

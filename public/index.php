@@ -214,7 +214,7 @@ kapp_header('業務システムと導入キットのお店', $logged_in, $user, 
         <p class="sum"><?php echo kapp_h(mb_strimwidth($app['summary'], 0, 84, '…', 'UTF-8')); ?></p>
         <div class="foot">
           <?php if (!empty($app['dev'])): ?>
-            <span class="yen"><?php echo kapp_h($app['dev']); ?></span><span class="tag">要お問い合わせ</span>
+            <span class="yen"><?php echo kapp_h($app['dev']); ?><?php if ($p['amount'] > 0) { echo ' ' . number_format($p['amount']) . '円<small>税別</small>'; } ?></span><span class="tag">要お問い合わせ</span>
           <?php elseif ($p['total'] === 0): ?>
             <span class="yen">無料</span><span class="tag free">FREE</span>
           <?php else: ?>
