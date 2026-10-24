@@ -256,6 +256,7 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
       <p style="font-size:12.5px;color:var(--abyss-soft);margin-top:8px">価格はデジタルコンテンツ（ソフトウェア一式：ソースコード・同梱データ・手順書）の商品代金です。ソフトウェアは<?php echo kapp_h(!empty($app['license']) ? $app['license'] : 'MIT'); ?>ライセンスなので、ライセンス料・使用料ではありません。</p>
       <p style="font-size:13px;margin-top:10px;padding:10px 12px;background:#fff;border:1.5px dashed var(--gold-line);border-radius:10px">🎁 <b>キャンペーン（期限未定）</b>：<a href="https://exbridge.jp/ai-it-komon.html?ref=kappstore-campaign-<?php echo kapp_h($app['id']); ?>#price">AI-IT顧問契約</a>（名古屋市内限定・月15時間）の期間中に構築できる商品は、商品代金なしで当社が構築します。</p>
     <?php endif; ?>
+    <p style="font-size:13px;margin-top:10px;padding:10px 12px;background:#f1f7fb;border:1.5px solid #bcd4e6;border-radius:10px">🛠 <b>導入支援・カスタマイズは顧問契約で</b>：<a href="https://exbridge.jp/ai-it-komon.html?ref=kappstore-komon-<?php echo kapp_h($app['id']); ?>">AI-IT顧問</a>か<a href="https://exbridge.jp/ai-sns-komon.html?ref=kappstore-komon-<?php echo kapp_h($app['id']); ?>">AI-SNS顧問</a>（月15時間）の契約中は、この商品の御社サーバーへの設置・設定、自社仕様への変更、運用後の手直しを当社が顧問の時間の中で行います。</p>
 
     <p style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
       <?php if ($dev): ?>
@@ -415,6 +416,8 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
       <tr><th>🎁 AI-IT顧問契約で無料</th>
         <td>キャンペーン（期限未定）。名古屋市内限定の<a href="https://exbridge.jp/ai-it-komon.html?ref=kappstore-campaign-<?php echo kapp_h($app['id']); ?>#price">AI-IT顧問契約</a>（月15時間・税別150,000円）の期間中に構築できる商品は、商品代金なしで当社が構築・設定します。</td></tr>
       <?php endif; ?>
+      <tr><th>🛠 顧問契約で導入支援・カスタマイズ</th>
+        <td><a href="https://exbridge.jp/ai-it-komon.html?ref=kappstore-table-komon-<?php echo kapp_h($app['id']); ?>">AI-IT顧問</a>（社内の業務システム・サーバー向け）または<a href="https://exbridge.jp/ai-sns-komon.html?ref=kappstore-table-komon-<?php echo kapp_h($app['id']); ?>">AI-SNS顧問</a>（ホームページとXの運用向け）。どちらも月15時間で、契約中はこの商品の設置・設定、自社の業務に合わせた変更、運用後の手直しを当社が行います。契約中は Pro の機能も使えます。</td></tr>
       <tr><th><?php echo $has_guide ? '③' : '②'; ?>この商品を自社仕様に</th>
           <td>「うちの業種・業務に合わせてほしい」方向け。<b>バイブカスタマイズ</b>（110,000円税込）で、この商品を土台に当社が変更します。動くデモを確認してからのお支払いです。<br>
             <a href="https://kurage.exbridge.jp/vibe-customize.html?ref=kappstore-table-<?php echo kapp_h($app['id']); ?>" target="_blank" rel="noopener">バイブカスタマイズを見る</a></td></tr>

@@ -125,6 +125,13 @@ kapp_header('業務システムと導入キットのお店', $logged_in, $user, 
       名古屋市内限定・月15時間・税別15万円の顧問契約の期間中に構築できる商品は、商品代金なしで当社が構築・設定します（ソースコードごと御社の資産）。
       <a href="https://exbridge.jp/ai-it-komon.html?ref=kappstore-campaign#price" style="font-weight:800;white-space:nowrap">AI-IT顧問契約の詳細 →</a>
     </div>
+    <div class="komon-note" style="background:#f1f7fb;border:1.5px solid #bcd4e6;border-radius:14px;padding:14px 18px;margin:0 0 18px;font-size:14px;line-height:1.7">
+      🛠 <b>導入支援とカスタマイズは、顧問契約で。</b>
+      このお店の商品は、<b>AI-IT顧問</b>（社内の業務システム・サーバー向け）か<b>AI-SNS顧問</b>（ホームページとXの運用向け）の契約を結ぶと、
+      御社のサーバーへの設置・設定、自社の業務に合わせた変更（カスタマイズ）、運用が始まってからの手直しを、<b>当社が月15時間の顧問の時間の中で行います</b>。
+      契約中は Pro の機能（例：Kurage Security Check Pro）も使えます。
+      <span style="white-space:nowrap"><a href="https://exbridge.jp/ai-it-komon.html?ref=kappstore-komon" style="font-weight:800">AI-IT顧問 →</a>　<a href="https://exbridge.jp/ai-sns-komon.html?ref=kappstore-komon" style="font-weight:800">AI-SNS顧問 →</a></span>
+    </div>
     <div class="pillars">
       <div class="pillar">
         <b>🤖 AIが読めるマニュアルを同梱</b>
