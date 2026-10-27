@@ -132,7 +132,7 @@ function kapp_categories() {
             array('SEOの順位も分かりますか？', 'SEO診断（kseo）は、自分のサイトを見れば分かること（題名・説明文の長さ、見出し、構造化データなど）を日本語の基準で診断します。検索順位や被リンクは扱いません。'),
             array('AI検索への対策もできますか？', 'AIクローラー計測（ktrackgeo）で、GPTBot などのAIクローラーが自社サイトを読みに来ているかを実測できます。'),
         ),
-        'ids'   => array('c8ffa66502f7d905', '48ca584977698dcc', '232b3c1d11b6a730', 'a5ac4b9f1fdb6d19', 'a3b60acb11b65f47',
+        'ids'   => array('9dd7d5be638f9cb8', 'c8ffa66502f7d905', '48ca584977698dcc', '232b3c1d11b6a730', 'a5ac4b9f1fdb6d19', 'a3b60acb11b65f47',
                          '4bd9a6f3f99cdc05'),
     ),
     );
