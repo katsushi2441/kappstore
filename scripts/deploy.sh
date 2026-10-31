@@ -40,7 +40,7 @@ for f in index.php app.php order.php orders.php download.php register.php seller
 done
 
 # --- 部品 ---
-for f in kapp_boot.php kapp_lib.php kapp_ui.php kapp_usecases.php kapp_invoice.php kapp_payout.php kapp_statement.php kapp_config.php simpletrack_config.php; do
+for f in kapp_boot.php kapp_lib.php kapp_ui.php kapp_usecases.php kapp_answers.php kapp_invoice.php kapp_payout.php kapp_statement.php kapp_config.php simpletrack_config.php; do
   upload "public/$f" "$f"
 done
 

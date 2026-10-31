@@ -75,6 +75,12 @@ $faq_items = array();
 // その言葉が本文に1度も無いと検索にも引っかからず、AIも用途を答えられない。
 // 用途の一覧は kapp_usecases.php に1か所だけ持つ（llms.txtと同じもの）。
 require_once __DIR__ . '/kapp_usecases.php';
+// 買い手の言葉で聞かれる質問への答え（kapp_answers.php）。ChatGPT に聞く人の言い方に答える文を、FAQの先頭に置く（2026-10-31）
+require_once __DIR__ . '/kapp_answers.php';
+$answers = kapp_answers_of($app['id']);
+if (!empty($answers['qa'])) {
+    foreach ($answers['qa'] as $qa) { $faq_items[] = $qa; }
+}
 $use_case = kapp_use_case_of($app['id']);
 if ($use_case !== '') {
     $faq_items[] = array('どんなときに使いますか？',
@@ -398,6 +404,9 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
   <div class="card" id="about">
     <h2><?php echo kapp_h(kapp_short_name($app)); ?>とは</h2>
     <p style="font-size:14px;overflow-wrap:anywhere"><b><?php echo kapp_h(kapp_short_name($app)); ?>とは、</b><?php echo kapp_h(kapp_definition_sentence($app)); ?></p>
+<?php if (!empty($answers['guide'])): /* 同じ悩みの解説ページへ（kapp_answers.php）。解説→商品の一方向だったリンクを両方向に */ ?>
+    <p style="font-size:13.5px;margin-top:8px;overflow-wrap:anywhere">📖 くわしい解説：<a href="<?php echo kapp_h($answers['guide'][1]); ?>?ref=kappstore-guide-<?php echo kapp_h($app['id']); ?>"><?php echo kapp_h($answers['guide'][0]); ?></a></p>
+<?php endif; ?>
 <?php if (!empty($app['body'])): ?>
     <?php /* 商品説明はMarkdownで書かれている。段落・見出し・表を含むので p ではなく div で受ける
              （p の中に h4/ul/table は置けず、ブラウザが勝手に閉じて崩れる）。 */ ?>
