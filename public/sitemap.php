@@ -19,9 +19,15 @@ foreach (kapp_categories() as $cs => $cc) {
     echo "  <url><loc>" . htmlspecialchars(kapp_category_url($cs), ENT_QUOTES, 'UTF-8') . "</loc>"
        . ($m ? "<lastmod>" . date('Y-m-d', $m) . "</lastmod>" : '') . "<changefreq>weekly</changefreq><priority>0.9</priority></url>\n";
 }
+// 買い手の質問と答え（kapp_answers.php）を足した商品は、そのファイルを置いた日も更新日に数える（2026-11-02）。
+// 答えは台帳の外にあるので、台帳の updated_at だけだと Google・Gemini に「変わった」と伝わらなかった
+require_once __DIR__ . '/kapp_answers.php';
+$ans_m = (int)@filemtime(__DIR__ . '/kapp_answers.php');
 foreach (kapp_apps_published() as $app) {
     $loc = $base . 'app.php?id=' . rawurlencode($app['id']);
-    $mod = date('Y-m-d', isset($app['updated_at']) ? (int)$app['updated_at'] : (int)$app['created_at']);
+    $t = isset($app['updated_at']) ? (int)$app['updated_at'] : (int)$app['created_at'];
+    if ($ans_m > $t && kapp_answers_of($app['id'])) { $t = $ans_m; }
+    $mod = date('Y-m-d', $t);
     echo "  <url><loc>" . htmlspecialchars($loc, ENT_QUOTES, 'UTF-8') . "</loc>"
        . "<lastmod>{$mod}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>\n";
 }
