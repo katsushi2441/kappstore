@@ -122,7 +122,7 @@ kapp_header('業務システムと導入キットのお店', $logged_in, $user, 
     </p>
     <div class="campaign" style="background:var(--gold-bg);border:1.5px dashed var(--gold-line);border-radius:14px;padding:14px 18px;margin:0 0 18px;font-size:14px;line-height:1.7">
       🎁 <b>キャンペーン（期限未定）：AI-IT顧問契約を結ぶと、このお店のデジタルコンテンツ商品代金が無料。</b>
-      名古屋市内限定・月15時間・税別15万円の顧問契約の期間中に構築できる商品は、商品代金なしで当社が構築・設定します（ソースコードごと御社の資産）。
+      愛知県内・月15時間・税別15万円の顧問契約の期間中に構築できる商品は、商品代金なしで当社が構築・設定します（ソースコードごと御社の資産）。
       <a href="https://exbridge.jp/ai-it-komon.html?ref=kappstore-campaign#price" style="font-weight:800;white-space:nowrap">AI-IT顧問契約の詳細 →</a>
     </div>
     <?php /* 2026-10-31 ユーザー指示: 税別10万円以上の購入には5時間以内の導入支援・カスタマイズをリモートで付ける。トップと各商品ページに目立つように */ ?>
