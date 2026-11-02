@@ -51,7 +51,9 @@ function kapp_categories() {
         ),
         'ids'   => array('488e3b290d0db8a9', 'f0f1422b462508b4', '9701841975d2ed6a', 'dd868beae043026b', '237974724fb41216', 'f09c91eaf0a60a2b', '32502ed71cea6bcf',
                          'd88a943736386fb3', '53493d74a09cfd8c', '1e290ba90da9b3e9', '025aa9bee5dd411e', 'b34e36cfaad27a14',
-                         '8e76e53cf264cc1c', 'a2ddb1f2961a74d8', '5da3d8efae6ddd62'),
+                         '8e76e53cf264cc1c', 'a2ddb1f2961a74d8', '5da3d8efae6ddd62',
+                         // 2026-11-03 分野ページに入っていなかった10月以降の出品
+                         '5447675118edd258', '10cb19eab638123f', 'b80a258f26c448d5', 'a2f1706ca3edff6b'),
     ),
     'fudosan' => array(
         'name'  => '不動産・土地・都市計画',
@@ -105,7 +107,9 @@ function kapp_categories() {
         'ids'   => array('88acc4be142bd444', '63000166082c7a26', 'ef52a62e1c6bbe7a', '362c94ab4e1384f2', 'f0f56c6e4da881be', '15abb025dc2ee4f6', '5b55bb2c808eead4', '61febea74f9c74b0',
                          '4679d4cf90699580', 'f6fab083d826739f', '0e723e981c922df6', 'c1864cba4ab726b0', 'cd1eda3248c87920',
                          '224e141f77bd07a8', '56bf3ddd46b5a457', '43950141618ddb02', '2186dc017968081c', '754c7ddb5f1c8f26',
-                         '6ae90e27bf778a42', '719429354f079793', 'cfb7c4a69621600f', '4bd9a6f3f99cdc05', 'e8d0518e44c29a60', 'c8a24775df796de6'),
+                         '6ae90e27bf778a42', '719429354f079793', 'cfb7c4a69621600f', '4bd9a6f3f99cdc05', 'e8d0518e44c29a60', 'c8a24775df796de6',
+                         // 2026-11-03 分野ページに入っていなかった10月以降の出品
+                         '0ef9191df8969b56', '040964c27c153ec2'),
     ),
     'oss-kit' => array(
         'name'  => 'オープンソースの日本語導入キット',
@@ -133,7 +137,9 @@ function kapp_categories() {
             array('AI検索への対策もできますか？', 'AIクローラー計測（ktrackgeo）で、GPTBot などのAIクローラーが自社サイトを読みに来ているかを実測できます。'),
         ),
         'ids'   => array('9dd7d5be638f9cb8', 'c8ffa66502f7d905', '48ca584977698dcc', '232b3c1d11b6a730', 'a5ac4b9f1fdb6d19', 'a3b60acb11b65f47',
-                         '4bd9a6f3f99cdc05'),
+                         '4bd9a6f3f99cdc05',
+                         // 2026-11-03 分野ページに入っていなかった10月以降の出品
+                         '12ae317340f91d51', '6e3c38c7a92a5da8', '85d96326308722b1', 'cb0b3c587a75fc8a', 'a96e95e176b48800', '7c41e0b9d2a85f36'),
     ),
     );
 }
