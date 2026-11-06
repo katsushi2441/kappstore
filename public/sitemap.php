@@ -31,4 +31,24 @@ foreach (kapp_apps_published() as $app) {
     echo "  <url><loc>" . htmlspecialchars($loc, ENT_QUOTES, 'UTF-8') . "</loc>"
        . "<lastmod>{$mod}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>\n";
 }
+// AI・IT・DXニュース（2026-11-07）。lastmod はデータを作り直した日・日ごとのページはその日
+$nw = @json_decode((string)@file_get_contents(__DIR__ . '/kapp_data/news.json'), true);
+if ($nw && !empty($nw['items'])) {
+    $nmod = substr((string)$nw['generated_at'], 0, 10);
+    foreach (array('news', 'news-ai', 'news-security', 'news-dx') as $nu) {
+        echo "  <url><loc>{$base}{$nu}</loc><lastmod>{$nmod}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>\n";
+    }
+    $days = array(); foreach ($nw['items'] as $x) { $days[$x['day']] = 1; }
+    foreach (array_keys($days) as $dd) {
+        echo "  <url><loc>{$base}news-{$dd}</loc><lastmod>{$dd}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>\n";
+    }
+}
+// 業務の制度ニュース（2026-11-07）
+$sd = @json_decode((string)@file_get_contents(__DIR__ . '/kapp_data/seido.json'), true);
+if ($sd && !empty($sd['items'])) {
+    $smod = substr((string)$sd['generated_at'], 0, 10);
+    foreach (array('seido', 'seido-roumu', 'seido-joho', 'seido-shien', 'seido-torihiki', 'seido-tetsuzuki') as $su) {
+        echo "  <url><loc>{$base}{$su}</loc><lastmod>{$smod}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>\n";
+    }
+}
 echo '</urlset>';

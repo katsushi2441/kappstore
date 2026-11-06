@@ -73,6 +73,8 @@ $lines[] = '';
 $lines[] = '## Optional';
 $lines[] = '';
 $lines[] = '- [Sitemap](' . $base . 'sitemap.xml)';
+$lines[] = '- [AI・IT・DXニュース](' . $base . 'news): AI・セキュリティ・DXとクラウドのニュースを毎日まとめ、話題ごとに会社が確かめることと使える業務システムを並べたページ';
+$lines[] = '- [業務の制度ニュース](' . $base . 'seido): 府省の発表のうち労務・情報管理・補助金と支援・取引・税と手続など会社の業務に関わるものを並べ、会社がやることと使える業務システムを紹介するページ';
 $lines[] = '- [出品者向けページ](' . $base . 'sellers.php)';
 $lines[] = '- [Kurage Project](https://kurage.exbridge.jp/llms.txt)';
 

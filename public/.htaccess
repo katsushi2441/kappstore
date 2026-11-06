@@ -9,6 +9,13 @@ RewriteRule ^llms\.txt$ llms.php [L]
 RewriteRule ^catalog\.json$ catalog.php [L]
 # 分野ページ /c-<slug>（フォルダを掘ると共通ヘッダーの相対リンクが壊れるので平らな形）
 RewriteRule ^c-([a-z-]+)$ c.php?c=$1 [L,QSA]
+# AI・IT・DXニュース（2026-11-07）。/news・/news-<話題>・/news-<日付>（分野ページと同じく平らな形）
+RewriteRule ^news$ news.php [L,QSA]
+RewriteRule ^news-(ai|security|dx)$ news.php?t=$1 [L,QSA]
+RewriteRule ^news-([0-9]{4}-[0-9]{2}-[0-9]{2})$ news.php?d=$1 [L,QSA]
+# 業務の制度ニュース（2026-11-07）。/seido・/seido-<分類>
+RewriteRule ^seido$ seido.php [L,QSA]
+RewriteRule ^seido-(roumu|joho|shien|torihiki|tetsuzuki)$ seido.php?c=$1 [L,QSA]
 
 # 実行時設定と台帳は直接読ませない（PHPが止まったときにソースが出るため）
 <FilesMatch "^(kapp_config\.php|simpletrack_config\.php)$">

@@ -216,6 +216,8 @@ function kapp_header($subtitle, $logged_in, $user, $is_seller = false, $is_admin
     echo '<nav class="hnav">';
     echo '<a class="chip" href="index.php">アプリ一覧</a>';
     echo '<a class="chip" href="sellers.php">開発元一覧</a>';
+    echo '<a class="chip" href="news">AI・IT・DXニュース</a>';
+    echo '<a class="chip" href="seido">業務の制度ニュース</a>';
     if ($logged_in) {
         $badge = kapp_dashboard_badge($user, $is_admin);
         echo '<a class="chip" href="dashboard.php">ダッシュボード'
