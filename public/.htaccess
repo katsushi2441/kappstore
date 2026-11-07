@@ -9,6 +9,10 @@ RewriteRule ^llms\.txt$ llms.php [L]
 RewriteRule ^catalog\.json$ catalog.php [L]
 # 分野ページ /c-<slug>（フォルダを掘ると共通ヘッダーの相対リンクが壊れるので平らな形）
 RewriteRule ^c-([a-z-]+)$ c.php?c=$1 [L,QSA]
+# 末尾の / 付き（/news/・/seido/・/news-bousai/ など）は、/ なしへ 302 で移す（2026-11-08）。
+# 同じページを / 付きで返すと、ページ内の相対リンク（news-ai・app.php?id=…）が /news/news-ai にずれて壊れる。
+# 301 はブラウザが恒久にキャッシュして取り消せないので使わない（feedback_no_301_redirect）。
+RewriteRule ^((?:news|seido)(?:-[a-z0-9-]+)?)/$ /$1 [R=302,L]
 # AI・IT・DXニュース（2026-11-07）。/news・/news-<話題>・/news-<日付>（分野ページと同じく平らな形）
 RewriteRule ^news$ news.php [L,QSA]
 RewriteRule ^news-(ai|security|dx|bousai)$ news.php?t=$1 [L,QSA]
