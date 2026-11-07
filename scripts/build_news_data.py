@@ -31,6 +31,102 @@ TOPICS.append(
 EXCLUDE = re.compile(r'サイバートラック|見逃し配信|プレゼント|占い|今日の天気|地震計の|台風の目|(株|株価|相場|市場).{0,6}(大荒れ|嵐)')
 
 
+# ---------------------------------------------------------------- 見出しごとの関係する商品（2026-11-08）
+# ユーザー「プロダクトとニュースで言えばもっと、あると思うよね。AIのニュースなら、AIチャットボットでも関連づくしね」。
+# 話題ごとに商品を並べるだけでは、ニュース1件と商品がつながらない。見出しの語から、いちばん関係の深い商品を最大2つ選ぶ。
+# 上から順に当て、具体的なもの（地震→地震ハザード）を先、広いもの（国会の審議→国会トラッカー）を後に置く。
+APP_RULES = [
+    # 防災
+    (r'津波', '86b85a63bc426575'),
+    # 地震ハザードマップは名古屋版なので、名古屋・愛知・東海の地震だけ。ほかの地震は全国で使える避難所マップ
+    (r'(名古屋|愛知|東海|三河|尾張).{0,20}(地震|震度)|(地震|震度).{0,20}(名古屋|愛知|東海|三河|尾張)|南海トラフ', '51649180bea0fd57'),
+    (r'地震|震度|震源|首都直下|活断層', '162f155897390072'),
+    (r'土砂(災害|崩れ)|がけ崩れ|地すべり|土石流', '02b945f9c87c9d86'),
+    (r'盛り?土', '40efd031ba24c9d8'),
+    (r'大雨|豪雨|洪水|氾濫|浸水|冠水|線状降水帯|内水', '41a09acc163dcb7d'),
+    (r'避難(指示|所|情報|者)|避難生活', '162f155897390072'),
+    (r'被災|罹災|義援金|仮設住宅|災害救助|生活再建', 'a2ddb1f2961a74d8'),
+    (r'台風|警報|防災|大雪|竜巻|停電', 'cf817fdce13ee120'),
+    # 感染症
+    (r'インフルエンザ|新型コロナ|コロナ.{0,3}(感染|流行)|学級閉鎖|感染症|はしか|麻しん', 'f0f1422b462508b4'),
+    # セキュリティ・情報
+    (r'改ざん', '9dd7d5be638f9cb8'),
+    (r'不正アクセス|脆弱性|サイバー攻撃|ランサム|情報漏え?い|情報流出|個人情報.{0,6}(流出|漏)|フィッシング|なりすまし', 'a96e95e176b48800'),
+    (r'ファイル(共有|転送|送信)|PPAP|メール添付', '4003999985c45854'),
+    # AI・業務
+    (r'議事録|文字起こし', 'cd1eda3248c87920'),
+    (r'(?<!機械)受注(?!統計)|発注|FAX注文|ファクス', '88acc4be142bd444'),
+    (r'手書き|OCR|紙の(書類|申請|手続)|ペーパーレス|書類の電子化', 'ef52a62e1c6bbe7a'),
+    (r'AI検索|LLMO|AIO|生成AIに(勧め|推薦)', '6e3c38c7a92a5da8'),
+    (r'チャットボット|ChatGPT|チャットGPT|生成AI|生成ＡＩ|AIエージェント|Claude|クロード|Gemini|ジェミニ|LLM|大規模言語モデル|OpenAI|オープンAI|Anthropic|アンソロピック', '224e141f77bd07a8'),
+    (r'kintone|キントーン|サイボウズ|グループウェア', 'c1864cba4ab726b0'),
+    (r'電子契約|契約書', 'f543c9cbd613871b'),
+    (r'名刺', '4679d4cf90699580'),
+    (r'予約(システム|サイト|管理|受付)|無断キャンセル|ドタキャン', '362c94ab4e1384f2'),
+    (r'口コミ|やらせレビュー|星1|ステマ|ステルスマーケティング|景品表示法|景表法|誇大広告|No\.?1表示', 'cb0b3c587a75fc8a'),
+    (r'SEO|検索順位', 'c8ffa66502f7d905'),
+    (r'LINE(公式|ヤフー|で)', '0e723e981c922df6'),
+    (r'カスハラ|カスタマーハラスメント|コールセンター|問い合わせ(窓口|対応)', 'df2e650ed0c59bae'),
+    (r'テレアポ|営業電話', '0931d2dfecffc022'),
+    (r'メール配信|メルマガ|迷惑メール', '1cc9b2d4ba1a853f'),
+    (r'ネット通販|ネットショップ|ECサイト|(?<![A-Za-z])EC(?![A-Za-z])', '754c7ddb5f1c8f26'),
+    # 労務
+    (r'最低賃金', '0c438fde80e5c346'),
+    (r'保育(園|所|士)', 'b7e010bb0869cbde'),
+    (r'勤怠|残業|労働時間|長時間労働|打刻|36協定|過労死', 'f0f56c6e4da881be'),
+    (r'引き継ぎ|属人化|退職代行|離職|人手不足', '56bf3ddd46b5a457'),
+    # 取引・税・お金
+    (r'取適法|下請|価格転嫁|フリーランス(法|新法|保護)|優越的地位', '42866a2a798d09eb'),
+    (r'インボイス|適格請求書', '3925790d5cdbe66e'),
+    (r'請求書|領収書|電子帳簿', '15abb025dc2ee4f6'),
+    (r'入札|官公需|公共調達', '464a65ef3e6a3646'),
+    (r'補助金|助成金', '0ad3f1528024edcd'),
+    (r'給付金|支援金|給付付き税額控除', '5da3d8efae6ddd62'),
+    (r'NISA|ニーサ|iDeCo|イデコ', 'cb13df4a7769e84f'),
+    (r'相続|遺族年金|死亡後の手続|葬儀', '60a6c07508d735ac'),
+    # 土地・建設
+    (r'建設業許可', 'c8a24775df796de6'),
+    (r'民泊', 'c36227d2b62b8517'),
+    (r'重要事項説明|宅建|不動産取引', '01d71e3bd7f717a8'),
+    (r'用途地域|都市計画|市街化調整|建ぺい率|容積率', '4bb2a5775eaad593'),
+    (r'地価|土地取引|宅地', '3caa6a1697f5f568'),
+    (r'出店|閉店|新店舗|商圏|撤退', 'a5ac4b9f1fdb6d19'),
+    # 福祉・子ども
+    (r'要介護|介護認定', '0b560e1299f406a5'),
+    (r'訪問介護|ケアマネ', '57aebd041b7bab37'),
+    (r'訪問看護', '2bdf59a8795a50e8'),
+    (r'グループホーム', 'bf709cfc7b0bf51a'),
+    (r'放課後等デイ|児童発達支援', '38ed38e789c77ec2'),
+    (r'就労継続支援|就労支援', '790cee5b922df2e4'),
+    (r'学童', 'f2853d368ddf8e57'),
+    (r'不登校|フリースクール', 'a2f1706ca3edff6b'),
+    (r'介護', '9a5b83640c786d9b'),
+    (r'動物病院|獣医', '302ada8100bb954f'),
+    # 制度と政治（広いので最後）
+    (r'パブリックコメント|意見公募', 'b80a258f26c448d5'),
+    (r'選挙ポスター|ポスター掲示板', '488e3b290d0db8a9'),
+    (r'施行|法改正|改正法|義務化|制度変更|来年4月から|来年度から|消費税|減税|増税|税制|年収の?壁|106万|130万|社会保険|厚生年金|育休|育児休業|介護休業|賃上げ', 'bb4980bad6219e25'),
+    (r'国会|委員会で|法案|審議入り|答弁|質問主意書', '5447675118edd258'),
+]
+APP_RULES = [(re.compile(rx, re.I), aid) for rx, aid in APP_RULES]
+TOPIC_FALLBACK = {'ai': '224e141f77bd07a8', 'security': 'a96e95e176b48800', 'dx': 'c1864cba4ab726b0', 'bousai': 'cf817fdce13ee120'}
+
+
+def apps_for(text, topics=()):
+    t = STRIP.sub('', text)
+    out = []
+    for rx, aid in APP_RULES:
+        if aid not in out and rx.search(t):
+            out.append(aid)
+        if len(out) >= 2:
+            break
+    if not out:
+        for tp in topics:
+            if tp in TOPIC_FALLBACK:
+                out.append(TOPIC_FALLBACK[tp]); break
+    return out
+
+
 def topics_of(headline):
     t = STRIP.sub('', headline)
     if EXCLUDE.search(t):
@@ -86,7 +182,7 @@ def news_seido(news_items):
         if key in seen:
             continue
         seen.add(key)
-        out.append({'day': x['day'], 'time': x.get('time', ''), 'source': x.get('source', ''), 'headline': x['headline'], 'cats': cats,
+        out.append({'day': x['day'], 'time': x.get('time', ''), 'source': x.get('source', ''), 'headline': x['headline'], 'cats': cats, 'apps': apps_for(x['headline']),
                     'url': x.get('newsUrl') or x.get('post') or '',
                     'ex': f"https://exbridge.jp/news/{x['day']}/{x['id']}.html" if x.get('id') else ''})
     out.sort(key=lambda x: (x['day'], x['time']), reverse=True)
@@ -103,7 +199,7 @@ def build_seido():
         cats = [k for k, rx in SEIDO if rx.search(t)]
         if not cats:
             continue
-        out.append({'day': x.get('date', ''), 'ministry': x.get('ministry_name', ''), 'title': t, 'cats': cats,
+        out.append({'day': x.get('date', ''), 'ministry': x.get('ministry_name', ''), 'title': t, 'cats': cats, 'apps': apps_for(t),
                     'url': x.get('url', ''), 'ex': f"https://exbridge.jp/shocho/n/{x['id']}.html" if x.get('id') else ''})
     out.sort(key=lambda x: x['day'], reverse=True)
     nws = news_seido(None)
@@ -128,7 +224,7 @@ def main():
         seen.add(key)
         items.append({
             'day': x['day'], 'time': x.get('time', ''), 'source': x.get('source', ''),
-            'headline': x['headline'], 'topics': tp,
+            'headline': x['headline'], 'topics': tp, 'apps': apps_for(x['headline'], tp),
             'url': x.get('newsUrl') or x.get('post') or '',
             'ex': f"https://exbridge.jp/news/{x['day']}/{x['id']}.html" if x.get('id') else '',
         })

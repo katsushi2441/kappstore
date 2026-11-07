@@ -180,6 +180,7 @@ function kn_app_cards($ids, $by, $ref) {
       <div style="font-size:12px;color:#5b6b70"><?php echo kapp_h($x['time'] . '　' . $x['source']); ?>　<?php foreach ($x['topics'] as $k): ?><a href="news-<?php echo kapp_h($k); ?>" style="font-size:11.5px;border:1px solid var(--panel-line);border-radius:99px;padding:1px 8px;margin-right:4px;text-decoration:none"><?php echo kapp_h(kn_topic_label($k, $TOPICS)); ?></a><?php endforeach; ?></div>
       <div style="font-size:15px;font-weight:700;line-height:1.6;margin:3px 0"><?php if ($x['url'] !== ''): ?><a href="<?php echo kapp_h($x['url']); ?>" target="_blank" rel="noopener nofollow"><?php echo kapp_h($x['headline']); ?></a><?php else: echo kapp_h($x['headline']); endif; ?></div>
       <?php if ($x['ex'] !== ''): ?><div style="font-size:12.5px"><a href="<?php echo kapp_h($x['ex']); ?>">このニュースに関係する国会の記録</a></div><?php endif; ?>
+      <?php echo kapp_news_app_line(isset($x['apps']) ? $x['apps'] : array(), $by, 'news-item'); ?>
     </article>
   <?php endforeach; ?>
   <?php if (!$list): ?><p class="empty-note">まだありません。</p><?php endif; ?>

@@ -328,3 +328,25 @@ function kapp_handle_auth_links($self) {
         exit;
     }
 }
+
+/**
+ * ニュース1件の下に出す「関係する当社のシステム」の1行（2026-11-08）。
+ * ユーザー「プロダクトとニュースで言えばもっと、あると思うよね。AIのニュースなら、AIチャットボットでも関連づくしね」。
+ * $ids は scripts/build_news_data.py の apps_for() が見出しの語から選んだ商品（最大2つ）。名前は長いので呼び名だけにする。
+ */
+function kapp_news_short_name(string $name): string
+{
+    if (preg_match('/（(Kurage[^）]*)）/u', $name, $m)) { return $m[1]; }
+    $n = preg_split('/[（(]|——|—/u', $name)[0];
+    return trim($n) !== '' ? trim($n) : $name;
+}
+function kapp_news_app_line(array $ids, array $by, string $ref): string
+{
+    $links = array();
+    foreach ($ids as $id) {
+        if (!isset($by[$id])) { continue; }
+        $links[] = '<a href="app.php?id=' . kapp_h($id) . '#ref=' . kapp_h($ref) . '">' . kapp_h(kapp_news_short_name($by[$id]['name'])) . '</a>';
+    }
+    if (!$links) { return ''; }
+    return '<div style="font-size:12.5px;margin-top:2px">関係する当社のシステム：' . implode('　', $links) . '</div>';
+}

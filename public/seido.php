@@ -136,6 +136,7 @@ kapp_header('業務の制度ニュース', $logged_in, $user, $is_seller, $is_ad
       <div style="font-size:12px;color:#5b6b70"><?php echo kapp_h($x['day'] . ' ' . $x['time'] . '　' . $x['source']); ?>　<?php foreach ($x['cats'] as $k): if (!isset($CATS[$k])) { continue; } ?><a href="seido-<?php echo kapp_h($k); ?>" style="font-size:11.5px;border:1px solid var(--panel-line);border-radius:99px;padding:1px 8px;margin-right:4px;text-decoration:none"><?php echo kapp_h($CATS[$k]['name']); ?></a><?php endforeach; ?></div>
       <div style="font-size:15px;font-weight:700;line-height:1.6;margin:3px 0"><?php if ($x['url'] !== ''): ?><a href="<?php echo kapp_h($x['url']); ?>" target="_blank" rel="noopener nofollow"><?php echo kapp_h($x['headline']); ?></a><?php else: echo kapp_h($x['headline']); endif; ?></div>
       <?php if ($x['ex'] !== ''): ?><div style="font-size:12.5px"><a href="<?php echo kapp_h($x['ex']); ?>">このニュースに関係する国会の記録</a></div><?php endif; ?>
+      <?php echo kapp_news_app_line(isset($x['apps']) ? $x['apps'] : array(), $by, 'seido-news-item'); ?>
     </article>
   <?php endforeach; ?>
 </section>
@@ -148,6 +149,7 @@ kapp_header('業務の制度ニュース', $logged_in, $user, $is_seller, $is_ad
       <div style="font-size:12px;color:#5b6b70"><?php echo kapp_h($x['day'] . '　' . $x['ministry']); ?>　<?php foreach ($x['cats'] as $k): if (!isset($CATS[$k])) { continue; } ?><a href="seido-<?php echo kapp_h($k); ?>" style="font-size:11.5px;border:1px solid var(--panel-line);border-radius:99px;padding:1px 8px;margin-right:4px;text-decoration:none"><?php echo kapp_h($CATS[$k]['name']); ?></a><?php endforeach; ?></div>
       <div style="font-size:15px;font-weight:700;line-height:1.6;margin:3px 0"><a href="<?php echo kapp_h($x['url']); ?>" target="_blank" rel="noopener"><?php echo kapp_h($x['title']); ?></a></div>
       <?php if ($x['ex'] !== ''): ?><div style="font-size:12.5px"><a href="<?php echo kapp_h($x['ex']); ?>">この発表に関係する国会の記録</a></div><?php endif; ?>
+      <?php echo kapp_news_app_line(isset($x['apps']) ? $x['apps'] : array(), $by, 'seido-item'); ?>
     </article>
   <?php endforeach; ?>
   <?php if (!$list): ?><p class="empty-note">この分類の発表は、まだありません。</p><?php endif; ?>
