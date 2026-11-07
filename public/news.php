@@ -1,9 +1,9 @@
 <?php
 /**
- * Kurage App Store — AI・IT・DXニュース（/news・/news-<話題>・/news-<日付>。.htaccess で news.php へ）。2026-11-07。
+ * Kurage App Store — AI・IT・DX・防災ニュース（/news・/news-<話題>・/news-<日付>。.htaccess で news.php へ）。2026-11-07。
  *
  * ChatGPT などのAI検索が店を読みに来ないので、更新の多い、店に合った入口として作る。
- * 時事ニュース全部ではなく、AI・セキュリティ・DXとクラウドの3つの話題だけにして、
+ * 時事ニュース全部ではなく、AI・セキュリティ・DXとクラウド・防災の4つの話題だけにして、
  * 話題ごとに「会社が確かめること」と「使える当社のアプリ」を出す（ニュースを読んで終わりにしない）。
  * データは scripts/build_news_data.py が kapp_data/news.json に書く（元は exbridge.jp/news/ と同じニュースの見出し）。
  * 見出しは各媒体の投稿の見出しをそのまま出し、元記事へリンクする。本文の要約はしない。
@@ -45,6 +45,17 @@ $TOPICS = array(
         ),
         'apps' => array('88acc4be142bd444', '63000166082c7a26', 'c1864cba4ab726b0', 'f0f56c6e4da881be', '15abb025dc2ee4f6'),
     ),
+    // 防災（2026-11-08 ユーザー「大雨とか地震とか、ニュースに関連づくプロダクトあるからね」）
+    'bousai' => array(
+        'name' => '防災', 'title' => '防災ニュース｜地震・大雨・台風のあとに会社が確かめること',
+        'lead' => '地震・津波・大雨・台風・土砂災害・停電・避難のニュースです。よそで起きた災害を自社の備えに変えるための確認項目と、住所から危険と避難先を調べられる当社の防災システムを並べます。',
+        'check' => array(
+            '従業員と家族の安否を確かめる手順（連絡の方法・集まる場所）を決め、連絡先の一覧を紙でも持っておく',
+            '事業所・倉庫・取引先の所在地が、洪水・土砂・津波の区域にかかっていないかをハザードマップで確かめる',
+            '被災したときに使える国の支援（罹災証明書・助成金・融資など）と、申請に要る書類を先に調べておく',
+        ),
+        'apps' => array('cf817fdce13ee120', '162f155897390072', '51649180bea0fd57', '41a09acc163dcb7d', 'a2ddb1f2961a74d8', '01d71e3bd7f717a8'),
+    ),
 );
 
 $data = @json_decode((string)@file_get_contents(__DIR__ . '/kapp_data/news.json'), true);
@@ -54,8 +65,8 @@ $by = array(); foreach (kapp_apps_published() as $a) { $by[$a['id']] = $a; }
 function kn_not_found() {
     http_response_code(404);
     kapp_head('見つかりません | Kurage App Store', 'お探しのページは見つかりませんでした。', 'https://kappstore.exbridge.jp/news', true);
-    kapp_header('AI・IT・DXニュース', $GLOBALS['logged_in'], $GLOBALS['user'], $GLOBALS['is_seller'], $GLOBALS['is_admin']);
-    echo '<main class="wrap narrow"><p class="empty-note">お探しのページは見つかりませんでした。<br><a href="news">AI・IT・DXニュースへ</a></p></main>';
+    kapp_header('AI・IT・DX・防災ニュース', $GLOBALS['logged_in'], $GLOBALS['user'], $GLOBALS['is_seller'], $GLOBALS['is_admin']);
+    echo '<main class="wrap narrow"><p class="empty-note">お探しのページは見つかりませんでした。<br><a href="news">AI・IT・DX・防災ニュースへ</a></p></main>';
     kapp_footer();
     exit;
 }
@@ -76,26 +87,26 @@ if ($t !== '') {
     if (!$list) { kn_not_found(); }
     $ts = strtotime($d);
     $dj = date('Y年n月j日', $ts);
-    $title = $dj . 'のAI・IT・DXニュース｜Kurage App Store';
-    $desc = $dj . 'に報じられた、AI・セキュリティ・DXとクラウドのニュース' . count($list) . '件と、会社が確かめること。';
+    $title = $dj . 'のAI・IT・DX・防災ニュース｜Kurage App Store';
+    $desc = $dj . 'に報じられた、AI・セキュリティ・DXとクラウド・防災のニュース' . count($list) . '件と、会社が確かめること。';
     $canonical = $BASE . 'news-' . $d;
-    $h1 = $dj . 'のAI・IT・DXニュース';
+    $h1 = $dj . 'のAI・IT・DX・防災ニュース';
     $crumb = $dj;
 } else {
     $list = array_slice($items, 0, 60);
-    $title = 'AI・IT・DXニュース｜会社が確かめることと使える業務システム｜Kurage App Store';
-    $desc = 'AI・セキュリティ・DXとクラウドのニュースを毎日まとめ、話題ごとに会社が確かめることと、自社のサーバーで使える当社の業務システム（買い切り・月額なし）を並べます。';
+    $title = 'AI・IT・DX・防災ニュース｜会社が確かめることと使える業務システム｜Kurage App Store';
+    $desc = 'AI・セキュリティ・DXとクラウド・防災のニュースを毎日まとめ、話題ごとに会社が確かめることと、自社のサーバーで使える当社の業務システム（買い切り・月額なし）を並べます。';
     $canonical = $BASE . 'news';
-    $h1 = 'AI・IT・DXニュース';
+    $h1 = 'AI・IT・DX・防災ニュース';
     $crumb = '';
 }
 $updated = $data && isset($data['generated_at']) ? substr($data['generated_at'], 0, 10) : date('Y-m-d');
 $ogslug = $t !== '' ? 'news-' . $t : 'news';
-$answer = 'Kurage App Store の「AI・IT・DXニュース」とは、AI・セキュリティ・DXとクラウドについての報道を毎日まとめ、話題ごとに会社が確かめることと、自社のサーバーで使える当社の業務システム（買い切り・月額なし・ソースコード付き）を並べるページです。直近60日で' . count($items) . '件を載せています。';
+$answer = 'Kurage App Store の「AI・IT・DX・防災ニュース」とは、AI・セキュリティ・DXとクラウド・防災（地震・大雨・台風など）についての報道を毎日まとめ、話題ごとに会社が確かめることと、自社のサーバーで使える当社の業務システム（買い切り・月額なし・ソースコード付き）を並べるページです。直近60日で' . count($items) . '件を載せています。';
 if ($t !== '') { $answer = $TOPICS[$t]['name'] . 'のニュースを受けて会社が最初に確かめることは、' . implode('、', array_map(function ($v) { return rtrim($v, '。'); }, $TOPICS[$t]['check'])) . 'の3つです。直近60日の' . $TOPICS[$t]['name'] . 'のニュースは' . count($list) . '件です。'; }
 $faq = array(
-    array('AI・IT・DXニュースとは何ですか？', 'Kurage App Store（株式会社エクスブリッジ）が、AI・セキュリティ・DXとクラウドについての報道を毎日まとめ、話題ごとに会社が確かめることと、使える当社の業務システムを並べているページです。'),
-    array('どのニュースを載せていますか？', '報道各社が X に投稿したニュースの見出しを、見出しの語でAI・セキュリティ・DXとクラウドに分けて載せ、元の記事へリンクしています。本文の要約や評価はしていません。'),
+    array('AI・IT・DX・防災ニュースとは何ですか？', 'Kurage App Store（株式会社エクスブリッジ）が、AI・セキュリティ・DXとクラウド・防災（地震・大雨・台風など）についての報道を毎日まとめ、話題ごとに会社が確かめることと、使える当社の業務システムを並べているページです。'),
+    array('どのニュースを載せていますか？', '報道各社が X に投稿したニュースの見出しを、見出しの語でAI・セキュリティ・DXとクラウド・防災に分けて載せ、元の記事へリンクしています。本文の要約や評価はしていません。'),
     array('紹介している業務システムはどう使えますか？', '自社のサーバー（レンタルサーバーなど）に置いて使う買い切りの業務システムです。月額の利用料はかからず、ソースコードが付いています。価格は各商品のページに載っています。'),
 );
 if ($t !== '') { array_unshift($faq, array($TOPICS[$t]['name'] . 'のニュースを受けて、会社は何を確かめればよいですか？', implode('。', array_map(function ($v) { return rtrim($v, '。'); }, $TOPICS[$t]['check'])) . '。')); }
@@ -111,14 +122,14 @@ $ld = array(
           }, array_slice($list, 0, 50), array_keys(array_slice($list, 0, 50)))),
     array('@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => array_values(array_filter(array(
         array('@type' => 'ListItem', 'position' => 1, 'name' => 'Kurage App Store', 'item' => $BASE),
-        array('@type' => 'ListItem', 'position' => 2, 'name' => 'AI・IT・DXニュース', 'item' => $BASE . 'news'),
+        array('@type' => 'ListItem', 'position' => 2, 'name' => 'AI・IT・DX・防災ニュース', 'item' => $BASE . 'news'),
         $crumb !== '' ? array('@type' => 'ListItem', 'position' => 3, 'name' => $crumb, 'item' => $canonical) : null)))),
 );
 $ld[] = array('@context' => 'https://schema.org', '@type' => 'FAQPage', 'mainEntity' => array_map(function ($qa) {
     return array('@type' => 'Question', 'name' => $qa[0], 'acceptedAnswer' => array('@type' => 'Answer', 'text' => $qa[1]));
 }, $faq));
 kapp_head($title, $desc, $canonical, false, json_encode($ld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), $BASE . 'assets/og/' . $ogslug . '.png');
-kapp_header('AI・IT・DXニュース', $logged_in, $user, $is_seller, $is_admin);
+kapp_header('AI・IT・DX・防災ニュース', $logged_in, $user, $is_seller, $is_admin);
 
 function kn_topic_label($k, $TOPICS) { return isset($TOPICS[$k]) ? $TOPICS[$k]['name'] : $k; }
 function kn_app_cards($ids, $by, $ref) {
@@ -135,7 +146,7 @@ function kn_app_cards($ids, $by, $ref) {
 ?>
 <main class="wrap">
 <section>
-  <p style="font-size:12.5px"><a href="index.php">Kurage App Store</a> › <?php echo $crumb !== '' ? '<a href="news">AI・IT・DXニュース</a> › ' . kapp_h($crumb) : 'AI・IT・DXニュース'; ?></p>
+  <p style="font-size:12.5px"><a href="index.php">Kurage App Store</a> › <?php echo $crumb !== '' ? '<a href="news">AI・IT・DX・防災ニュース</a> › ' . kapp_h($crumb) : 'AI・IT・DX・防災ニュース'; ?></p>
   <h1><?php echo kapp_h($h1); ?></h1>
   <?php if ($d === ''): ?><p style="font-size:15px;line-height:1.85;overflow-wrap:anywhere;margin:0 0 6px"><?php echo kapp_h($answer); ?></p><?php endif; ?>
   <p class="lead" style="overflow-wrap:anywhere"><?php echo kapp_h($t !== '' ? $TOPICS[$t]['lead'] : $desc); ?>（更新 <?php echo kapp_h($updated); ?>）</p>

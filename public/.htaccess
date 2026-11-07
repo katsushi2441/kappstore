@@ -11,7 +11,7 @@ RewriteRule ^catalog\.json$ catalog.php [L]
 RewriteRule ^c-([a-z-]+)$ c.php?c=$1 [L,QSA]
 # AI・IT・DXニュース（2026-11-07）。/news・/news-<話題>・/news-<日付>（分野ページと同じく平らな形）
 RewriteRule ^news$ news.php [L,QSA]
-RewriteRule ^news-(ai|security|dx)$ news.php?t=$1 [L,QSA]
+RewriteRule ^news-(ai|security|dx|bousai)$ news.php?t=$1 [L,QSA]
 RewriteRule ^news-([0-9]{4}-[0-9]{2}-[0-9]{2})$ news.php?d=$1 [L,QSA]
 # 業務の制度ニュース（2026-11-07）。/seido・/seido-<分類>
 RewriteRule ^seido$ seido.php [L,QSA]

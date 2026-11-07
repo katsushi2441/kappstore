@@ -35,7 +35,7 @@ foreach (kapp_apps_published() as $app) {
 $nw = @json_decode((string)@file_get_contents(__DIR__ . '/kapp_data/news.json'), true);
 if ($nw && !empty($nw['items'])) {
     $nmod = substr((string)$nw['generated_at'], 0, 10);
-    foreach (array('news', 'news-ai', 'news-security', 'news-dx') as $nu) {
+    foreach (array('news', 'news-ai', 'news-security', 'news-dx', 'news-bousai') as $nu) {
         echo "  <url><loc>{$base}{$nu}</loc><lastmod>{$nmod}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>\n";
     }
     $days = array(); foreach ($nw['items'] as $x) { $days[$x['day']] = 1; }

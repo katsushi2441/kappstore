@@ -25,7 +25,10 @@ TOPICS = [
     ('security', re.compile(r'サイバー(攻撃|対策|セキュリティ|犯罪|防御|対処)|不正アクセス|情報(漏え?い|漏洩|流出)|個人情報.{0,6}(流出|漏)|ランサム|脆弱性|フィッシング|ハッカー|マルウェア|サイバー空間|なりすまし.{0,6}(メール|サイト)')),
     ('dx', re.compile(r'(?<![A-Za-zＡ-Ｚａ-ｚ])(DX|ＤＸ)(?![A-Za-zＡ-Ｚａ-ｚ])|デジタル(化|庁|改革|行政|人材|田園|社会)|クラウド|SaaS|ＳａａＳ|システム(障害|刷新|移行|統合|更新)|基幹システム|データセンター|マイナンバー|マイナ保険証|オープンソース|(?<![A-Za-z])OSS(?![A-Za-z])|ペーパーレス|電子(契約|帳簿|インボイス)|キャッシュレス|ローコード')),
 ]
-EXCLUDE = re.compile(r'サイバートラック|見逃し配信|プレゼント|占い|今日の天気')
+TOPICS.append(
+    # 防災（2026-11-08 ユーザー「大雨とか地震とか、ニュースに関連づくプロダクトあるからね」）。地震・大雨・台風・津波・土砂・停電・避難
+    ('bousai', re.compile(r'地震|震度|震源|津波|大雨|豪雨|線状降水帯|台風|土砂(災害|崩れ)|洪水|氾濫|浸水|冠水|避難(指示|所|情報|勧告)|停電|噴火|大雪|竜巻|防災|被災|罹災|災害(救助|対策|派遣)|緊急地震速報|南海トラフ|首都直下')))
+EXCLUDE = re.compile(r'サイバートラック|見逃し配信|プレゼント|占い|今日の天気|地震計の|台風の目|(株|株価|相場|市場).{0,6}(大荒れ|嵐)')
 
 
 def topics_of(headline):
@@ -50,6 +53,46 @@ SEIDO = [
 SEIDO_NOISE = re.compile(r'採用選考|看護教育|ねんりんピック|健康福祉祭|自治体向け|地方公共団体向け|WEBマガジン|大学|学部|免許|国家資格|ゲノム|憲法|地方債|交付税|放送コンテンツ|学園祭|つみたて投資枠|検討会|会議資料|タスクフォース|合同会議|政策会議|にご協力|核燃料税|記者会見|会見のお知らせ|開催します|開催案内|開催について|を開催|表彰|採用情報|職員(の)?募集|人事異動|募集情報|審議会.{0,20}(資料|議事録)|部会.{0,10}(資料|議事録)|専門委員会|調査結果の公表について$|統計調査報告|労働力調査|月例')
 
 
+# 制度に関わるニュースの見出し（2026-11-08 ユーザー「防災だけじゃなくて、制度に関連するニュースでもいいよね」）。
+# 府省の発表（上の SEIDO）とは別に、報道の見出しを /seido の分類に分ける。分類のキーは SEIDO と同じ。
+NEWS_SEIDO = [
+    ('roumu', re.compile(r'最低賃金|賃上げ|春闘|労働時間|働き方改革|残業|長時間労働|育休|育児休業|介護休業|社会保険|年収の壁|106万|130万|厚生年金|雇用保険|外国人労働者|技能実習|育成就労|ハラスメント|労災|過労死|有給休暇|週休3日')),
+    ('joho', re.compile(r'個人情報(保護|の漏|流出)|個人情報保護委員会|情報漏え?い|サイバー攻撃|不正アクセス|ランサム')),
+    ('shien', re.compile(r'補助金|助成金|支援金|給付金|資金繰り|中小企業.{0,10}(支援|融資)|事業再構築|持続化')),
+    ('torihiki', re.compile(r'取適法|下請|価格転嫁|フリーランス(法|新法|保護)|公正取引委員会|公取委|独占禁止法|優越的地位')),
+    ('tetsuzuki', re.compile(r'消費税|減税|増税|給付付き税額控除|インボイス|所得税|住民税|基礎控除|年末調整|電子帳簿|定額減税|税制(改正|大綱)|確定申告|ふるさと納税|マイナンバー')),
+]
+NEWS_SEIDO_NOISE = re.compile(r'サイバートラック|見逃し配信|プレゼント|占い|(米国|中国|韓国|英国|欧州|トランプ).{0,12}(減税|増税|関税)')
+
+
+from collections import Counter
+
+
+def news_seido(news_items):
+    """news-cards の見出し（直近60日）から、制度の分類に当たるものを返す。"""
+    d = json.load(open(SRC, encoding='utf-8'))
+    cutoff = time.strftime('%Y-%m-%d', time.localtime(time.time() - DAYS * 86400))
+    seen, out = set(), []
+    for x in d['items']:
+        if x['day'] < cutoff:
+            continue
+        t = STRIP.sub('', x['headline'])
+        if NEWS_SEIDO_NOISE.search(t):
+            continue
+        cats = [k for k, rx in NEWS_SEIDO if rx.search(t)]
+        if not cats:
+            continue
+        key = re.sub(r'\s+', '', x['headline'])
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append({'day': x['day'], 'time': x.get('time', ''), 'source': x.get('source', ''), 'headline': x['headline'], 'cats': cats,
+                    'url': x.get('newsUrl') or x.get('post') or '',
+                    'ex': f"https://exbridge.jp/news/{x['day']}/{x['id']}.html" if x.get('id') else ''})
+    out.sort(key=lambda x: (x['day'], x['time']), reverse=True)
+    return out
+
+
 def build_seido():
     L = list(json.load(open(SHOCHO, encoding='utf-8')).values())
     out = []
@@ -63,8 +106,9 @@ def build_seido():
         out.append({'day': x.get('date', ''), 'ministry': x.get('ministry_name', ''), 'title': t, 'cats': cats,
                     'url': x.get('url', ''), 'ex': f"https://exbridge.jp/shocho/n/{x['id']}.html" if x.get('id') else ''})
     out.sort(key=lambda x: x['day'], reverse=True)
-    json.dump({'generated_at': time.strftime('%Y-%m-%d %H:%M'), 'items': out}, open(SEIDO_OUT, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
-    from collections import Counter
+    nws = news_seido(None)
+    json.dump({'generated_at': time.strftime('%Y-%m-%d %H:%M'), 'items': out, 'news': nws}, open(SEIDO_OUT, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
+    print(f'seido のニュース: {len(nws)}件（{dict(Counter(c for x in nws for c in x["cats"]))}）')
     print(f'seido: {len(out)}件（{dict(Counter(c for x in out for c in x["cats"]))}）→ {SEIDO_OUT}')
 
 

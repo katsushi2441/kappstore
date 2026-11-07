@@ -37,14 +37,18 @@ $CATS = array(
 
 $data = @json_decode((string)@file_get_contents(__DIR__ . '/kapp_data/seido.json'), true);
 $items = ($data && isset($data['items'])) ? $data['items'] : array();
+// 制度に関わる報道の見出し（2026-11-08 追加。府省の発表だけだと件数が少なく、最低賃金・消費税減税などの動きが見えなかった）
+$news = ($data && isset($data['news'])) ? $data['news'] : array();
 $by = array(); foreach (kapp_apps_published() as $a) { $by[$a['id']] = $a; }
 $updated = $data && isset($data['generated_at']) ? substr($data['generated_at'], 0, 10) : date('Y-m-d');
 $ogslug = ($c !== '' && isset($CATS[$c])) ? 'seido-' . $c : 'seido';
 $c_list = $c !== '' ? array_values(array_filter($items, function ($x) use ($c) { return in_array($c, $x['cats'], true); })) : $items;
-$answer = 'Kurage App Store の「業務の制度ニュース」とは、府省の発表のうち、労務・情報管理・補助金と支援・取引・税と手続など会社の業務に関わるものを並べ、分類ごとに会社がやることと、使える当社の業務システムを紹介するページです。いま' . count($items) . '件の発表を載せています。';
-if ($c !== '' && isset($CATS[$c])) { $answer = $CATS[$c]['name'] . 'の発表を受けて会社がやることは、' . implode('、', array_map(function ($v) { return rtrim($v, '。'); }, $CATS[$c]['todo'])) . 'の3つです。' . $CATS[$c]['name'] . 'の発表はいま' . count($c_list) . '件です。'; }
+$c_news = $c !== '' ? array_values(array_filter($news, function ($x) use ($c) { return in_array($c, $x['cats'], true); })) : $news;
+$answer = 'Kurage App Store の「業務の制度ニュース」とは、府省の発表のうち、労務・情報管理・補助金と支援・取引・税と手続など会社の業務に関わるものを並べ、分類ごとに会社がやることと、使える当社の業務システムを紹介するページです。いま府省の発表' . count($items) . '件と、制度に関わる報道' . count($news) . '件を載せています。';
+if ($c !== '' && isset($CATS[$c])) { $answer = $CATS[$c]['name'] . 'の発表を受けて会社がやることは、' . implode('、', array_map(function ($v) { return rtrim($v, '。'); }, $CATS[$c]['todo'])) . 'の3つです。' . $CATS[$c]['name'] . 'の府省の発表はいま' . count($c_list) . '件、関係する報道は' . count($c_news) . '件です。'; }
 $faq = array(
     array('業務の制度ニュースとは何ですか？', 'Kurage App Store（株式会社エクスブリッジ）が、府省の発表のうち会社の業務に関わるもの（労務・情報管理・補助金と支援・取引・税と手続）を並べ、会社がやることと使える当社の業務システムを紹介しているページです。'),
+    array('報道のニュースも載せていますか？', '載せています。報道各社が X に投稿したニュースの見出しのうち、最低賃金・社会保険・消費税減税・給付付き税額控除・インボイス・価格転嫁・補助金・個人情報の漏えいなど、会社の業務に関わる制度の見出しを分類して並べ、元の記事へリンクしています（直近60日）。本文の要約や評価はしていません。'),
     array('どの府省の発表を載せていますか？', 'デジタル庁・国土交通省・厚生労働省・農林水産省・文部科学省・総務省・内閣府・金融庁・中小企業庁の新着情報（RSS）です。題名・日付・リンクは各府省の発表のとおりで、内容は公式ページでご確認ください。国税庁・公正取引委員会・個人情報保護委員会の発表は、まだ取り込めていません。'),
     array('紹介している業務システムはどう使えますか？', '自社のサーバー（レンタルサーバーなど）に置いて使う買い切りの業務システムです。月額の利用料はかからず、ソースコードが付いています。価格は各商品のページに載っています。'),
 );
@@ -67,8 +71,8 @@ if ($c !== '') {
     $h1 = $ct['name'] . 'の制度ニュース';
 } else {
     $list = $items;
-    $title = '業務の制度ニュース｜府省の発表から会社がやることと使える業務システム｜Kurage App Store';
-    $desc = '府省の発表のうち、労務・情報管理・補助金と支援・取引・税と手続など会社の業務に関わるものを並べ、分類ごとに会社がやることと、自社のサーバーで使える当社の業務システムを紹介します。';
+    $title = '業務の制度ニュース｜府省の発表と報道から会社がやることと使える業務システム｜Kurage App Store';
+    $desc = '最低賃金・消費税減税・給付付き税額控除・価格転嫁などの報道と、府省の発表のうち、労務・情報管理・補助金と支援・取引・税と手続など会社の業務に関わるものを並べ、分類ごとに会社がやることと、自社のサーバーで使える当社の業務システムを紹介します。';
     $canonical = $BASE . 'seido';
     $h1 = '業務の制度ニュース';
 }
@@ -124,8 +128,21 @@ kapp_header('業務の制度ニュース', $logged_in, $user, $is_seller, $is_ad
 </section>
 <?php endif; ?>
 
+<?php $nshow = array_slice($c_news, 0, 30); if ($nshow): ?>
 <section>
-  <h2 style="font-size:18px"><?php echo $c !== '' ? kapp_h($CATS[$c]['name']) . 'の発表（' . count($list) . '件）' : '新しい発表（' . count($list) . '件）'; ?></h2>
+  <h2 style="font-size:18px"><?php echo $c !== '' ? kapp_h($CATS[$c]['name']) . 'に関係するニュース（' . count($c_news) . '件・新しい順）' : '制度に関わるニュース（' . count($c_news) . '件・新しい順）'; ?></h2>
+  <?php foreach ($nshow as $x): ?>
+    <article style="border-top:1px solid var(--panel-line);padding:10px 0;overflow-wrap:anywhere">
+      <div style="font-size:12px;color:#5b6b70"><?php echo kapp_h($x['day'] . ' ' . $x['time'] . '　' . $x['source']); ?>　<?php foreach ($x['cats'] as $k): if (!isset($CATS[$k])) { continue; } ?><a href="seido-<?php echo kapp_h($k); ?>" style="font-size:11.5px;border:1px solid var(--panel-line);border-radius:99px;padding:1px 8px;margin-right:4px;text-decoration:none"><?php echo kapp_h($CATS[$k]['name']); ?></a><?php endforeach; ?></div>
+      <div style="font-size:15px;font-weight:700;line-height:1.6;margin:3px 0"><?php if ($x['url'] !== ''): ?><a href="<?php echo kapp_h($x['url']); ?>" target="_blank" rel="noopener nofollow"><?php echo kapp_h($x['headline']); ?></a><?php else: echo kapp_h($x['headline']); endif; ?></div>
+      <?php if ($x['ex'] !== ''): ?><div style="font-size:12.5px"><a href="<?php echo kapp_h($x['ex']); ?>">このニュースに関係する国会の記録</a></div><?php endif; ?>
+    </article>
+  <?php endforeach; ?>
+</section>
+<?php endif; ?>
+
+<section>
+  <h2 style="font-size:18px"><?php echo $c !== '' ? kapp_h($CATS[$c]['name']) . 'の府省の発表（' . count($list) . '件）' : '府省の発表（' . count($list) . '件）'; ?></h2>
   <?php foreach ($list as $x): ?>
     <article style="border-top:1px solid var(--panel-line);padding:10px 0;overflow-wrap:anywhere">
       <div style="font-size:12px;color:#5b6b70"><?php echo kapp_h($x['day'] . '　' . $x['ministry']); ?>　<?php foreach ($x['cats'] as $k): if (!isset($CATS[$k])) { continue; } ?><a href="seido-<?php echo kapp_h($k); ?>" style="font-size:11.5px;border:1px solid var(--panel-line);border-radius:99px;padding:1px 8px;margin-right:4px;text-decoration:none"><?php echo kapp_h($CATS[$k]['name']); ?></a><?php endforeach; ?></div>
@@ -155,7 +172,7 @@ kapp_header('業務の制度ニュース', $logged_in, $user, $is_seller, $is_ad
 </section>
 
 <section style="max-width:760px;margin:24px auto 0;font-size:13px;color:#5b6b70;line-height:1.8">
-  <p>題名・日付・リンクは各府省の新着情報（RSS）のとおりです（デジタル庁・国土交通省・厚生労働省・農林水産省・文部科学省・総務省・内閣府・金融庁・中小企業庁）。内容は必ず公式ページでご確認ください。分類は題名の語による機械的なものです。あわせて <a href="news">AI・IT・DXニュース</a> もご覧ください。運営：株式会社エクスブリッジ（Kurage App Store）。</p>
+  <p>ニュースの見出しは報道各社が X に投稿したもののとおりで、元の記事へリンクしています。府省の発表の題名・日付・リンクは各府省の新着情報（RSS）のとおりです（デジタル庁・国土交通省・厚生労働省・農林水産省・文部科学省・総務省・内閣府・金融庁・中小企業庁）。内容は必ず公式ページでご確認ください。分類は題名の語による機械的なものです。あわせて <a href="news">AI・IT・DX・防災ニュース</a> もご覧ください。運営：株式会社エクスブリッジ（Kurage App Store）。</p>
 </section>
 </main>
 <?php kapp_footer(); ?>
