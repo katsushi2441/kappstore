@@ -350,3 +350,28 @@ function kapp_news_app_line(array $ids, array $by, string $ref): string
     if (!$links) { return ''; }
     return '<div style="font-size:12.5px;margin-top:2px">関係する当社のシステム：' . implode('　', $links) . '</div>';
 }
+
+/**
+ * ニュースのページの共有ボタン（Xで共有・概要とURLをコピー）。2026-11-08 ユーザー「Xに投稿しやすいように、blogとかと同じようなボタンつけて」。
+ * 決まり：見出しの直下に置く。文面は【システム名】＋概要＋URL（URLだけにしない）。ref は #ref=（? にすると Google が別URLとして拾う）。
+ * X は全角を2文字と数えるので、URL（23）を除いて280に収まるよう概要を切る。
+ */
+function kapp_news_share_box(string $label, string $summary, string $url, string $kind): string
+{
+    $text = '【' . $label . '】' . $summary;
+    while (mb_strwidth($text, 'UTF-8') + 24 > 280 && mb_strlen($text, 'UTF-8') > 20) {
+        $text = mb_substr($text, 0, mb_strlen($text, 'UTF-8') - 2, 'UTF-8') . '…';
+        $text = preg_replace('/…+…$/u', '…', $text);
+    }
+    $x = 'https://x.com/intent/post?text=' . rawurlencode($text) . '&url=' . rawurlencode($url . '#ref=x-share-kapp-' . $kind);
+    $copy = $text . "\n" . $url . '#ref=copy-kapp-' . $kind;
+    static $js = false;
+    $o = '<div class="kn-share" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:4px 0 14px">'
+        . '<a href="' . kapp_h($x) . '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;min-height:38px;padding:7px 16px;border-radius:99px;background:#12202f;color:#fff;font-weight:800;font-size:13px;text-decoration:none">Xで共有</a>'
+        . '<button type="button" class="vb-copy kn-copy" data-copy="' . kapp_h($copy) . '"><span class="vb-copy-label">概要とURLをコピー</span></button></div>';
+    if (!$js) {
+        $js = true;
+        $o .= '<script>document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest(".kn-copy");if(!b)return;var t=b.getAttribute("data-copy"),l=b.querySelector(".vb-copy-label");function ok(){b.setAttribute("data-done","1");if(l){l.textContent="コピーしました";setTimeout(function(){l.textContent="概要とURLをコピー";b.removeAttribute("data-done")},2500)}}if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(t).then(ok)}else{var a=document.createElement("textarea");a.value=t;document.body.appendChild(a);a.select();document.execCommand("copy");a.remove();ok()}});</script>';
+    }
+    return $o;
+}

@@ -13,8 +13,8 @@ kapp_handle_auth_links('seido.php' . ($c !== '' ? '?c=' . rawurlencode($c) : '')
 
 $BASE = 'https://kappstore.exbridge.jp/';
 $CATS = array(
-    'roumu' => array('name' => '労務', 'title' => '労務の制度ニュース｜最低賃金・労働時間・雇用の発表と会社がやること',
-        'lead' => '最低賃金・労働時間・雇用・労働安全衛生など、厚生労働省などの発表のうち会社の労務に関わるものです。',
+    'roumu' => array('name' => '労務', 'title' => '労務の制度ニュース｜最低賃金・年収の壁・労働時間と会社がやること',
+        'lead' => '最低賃金・年収の壁・春闘・育休・労働時間など、会社の労務に関わる報道と、厚生労働省などの発表です。',
         'todo' => array('最低賃金の改定の時期と額を確かめ、時給・月給の最も低い人がそれを下回らないかを見る', '勤怠の記録（出退勤の時刻・残業）を、あとから確かめられる形で残しておく', '指針や公表事案を見て、自社の就業規則・36協定・健康診断の運用と食い違いがないかを確かめる'),
         'apps' => array('0c438fde80e5c346', 'f0f56c6e4da881be', 'b7e010bb0869cbde', 'bb4980bad6219e25')),
     'joho' => array('name' => '情報管理', 'title' => '情報管理の制度ニュース｜不正アクセス・個人情報の注意喚起と会社がやること',
@@ -29,9 +29,9 @@ $CATS = array(
         'lead' => '取適法（旧 下請法）・価格転嫁・取引の適正化についての発表です。',
         'todo' => array('自社が発注側・受注側のどちらで取適法の対象になるかを、資本金と従業員数で確かめる', '発注書（取引条件の明示）・支払期日・手形の扱いが新しい決まりに合っているかを見る', '原材料・人件費の上がった分の価格の交渉を、記録に残る形で行う'),
         'apps' => array('42866a2a798d09eb', '88acc4be142bd444')),
-    'tetsuzuki' => array('name' => '税と手続', 'title' => '税と手続の制度ニュース｜インボイス・電子帳簿・電子申請の発表と会社がやること',
-        'lead' => 'インボイス・電子帳簿保存・電子申請など、会社の税と手続きに関わる発表です。',
-        'todo' => array('請求書・領収書の保存の仕方が、電子帳簿保存法とインボイスの決まりに合っているかを確かめる', '電子申請に要る gBizID などのアカウントを、担当者が変わっても使えるように管理する', '手続きの期限を、制度のカレンダーなどで社内に共有しておく'),
+    'tetsuzuki' => array('name' => '税と手続', 'title' => '税と手続の制度ニュース｜消費税減税・給付付き税額控除・インボイスと会社がやること',
+        'lead' => '消費税減税・給付付き税額控除・インボイス・電子帳簿保存・電子申請など、会社の税と手続きに関わる報道と発表です。',
+        'todo' => array('消費税の税率が変わることが決まったら、レジ・請求書・値札の税率の設定と、切り替える日を確かめる', '請求書・領収書の保存の仕方が、電子帳簿保存法とインボイスの決まりに合っているかを確かめる', '施行日や手続きの期限を、制度のカレンダーなどで社内に共有しておく'),
         'apps' => array('15abb025dc2ee4f6', '5b55bb2c808eead4', 'bb4980bad6219e25')),
 );
 
@@ -92,13 +92,14 @@ $ld = array(
 $ld[] = array('@context' => 'https://schema.org', '@type' => 'FAQPage', 'mainEntity' => array_map(function ($qa) {
     return array('@type' => 'Question', 'name' => $qa[0], 'acceptedAnswer' => array('@type' => 'Answer', 'text' => $qa[1]));
 }, $faq));
-kapp_head($title, $desc, $canonical, false, json_encode($ld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), $BASE . 'assets/og/' . $ogslug . '.png');
+kapp_head($title, $desc, $canonical, false, json_encode($ld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), $BASE . 'assets/og/' . $ogslug . '.png?v=' . (int)@filemtime(__DIR__ . '/assets/og/' . $ogslug . '.png'));  // 画像を作り直したら URL も変わるように（X は同じ URL のカードを覚えて古いまま出す）
 kapp_header('業務の制度ニュース', $logged_in, $user, $is_seller, $is_admin);
 ?>
 <main class="wrap">
 <section>
   <p style="font-size:12.5px"><a href="index.php">Kurage App Store</a> › <?php echo $c !== '' ? '<a href="seido">業務の制度ニュース</a> › ' . kapp_h($CATS[$c]['name']) : '業務の制度ニュース'; ?></p>
   <h1><?php echo kapp_h($h1); ?></h1>
+  <?php echo kapp_news_share_box('Kurage App Store｜' . $h1, $c !== '' ? $CATS[$c]['lead'] : $desc, $canonical, $c !== '' ? 'seido-' . $c : 'seido'); ?>
   <p style="font-size:15px;line-height:1.85;overflow-wrap:anywhere;margin:0 0 6px"><?php echo kapp_h($answer); ?></p>
   <p class="lead" style="overflow-wrap:anywhere"><?php echo kapp_h($c !== '' ? $CATS[$c]['lead'] : $desc); ?>（更新 <?php echo kapp_h($updated); ?>）</p>
   <p style="display:flex;gap:8px;flex-wrap:wrap">

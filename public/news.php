@@ -128,7 +128,7 @@ $ld = array(
 $ld[] = array('@context' => 'https://schema.org', '@type' => 'FAQPage', 'mainEntity' => array_map(function ($qa) {
     return array('@type' => 'Question', 'name' => $qa[0], 'acceptedAnswer' => array('@type' => 'Answer', 'text' => $qa[1]));
 }, $faq));
-kapp_head($title, $desc, $canonical, false, json_encode($ld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), $BASE . 'assets/og/' . $ogslug . '.png');
+kapp_head($title, $desc, $canonical, false, json_encode($ld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), $BASE . 'assets/og/' . $ogslug . '.png?v=' . (int)@filemtime(__DIR__ . '/assets/og/' . $ogslug . '.png'));  // 画像を作り直したら URL も変わるように（X は同じ URL のカードを覚えて古いまま出す）
 kapp_header('AI・IT・DX・防災ニュース', $logged_in, $user, $is_seller, $is_admin);
 
 function kn_topic_label($k, $TOPICS) { return isset($TOPICS[$k]) ? $TOPICS[$k]['name'] : $k; }
@@ -148,6 +148,7 @@ function kn_app_cards($ids, $by, $ref) {
 <section>
   <p style="font-size:12.5px"><a href="index.php">Kurage App Store</a> › <?php echo $crumb !== '' ? '<a href="news">AI・IT・DX・防災ニュース</a> › ' . kapp_h($crumb) : 'AI・IT・DX・防災ニュース'; ?></p>
   <h1><?php echo kapp_h($h1); ?></h1>
+  <?php echo kapp_news_share_box('Kurage App Store｜' . $h1, $t !== '' ? $TOPICS[$t]['lead'] : $desc, $canonical, $t !== '' ? 'news-' . $t : ($d !== '' ? 'news-day' : 'news')); ?>
   <?php if ($d === ''): ?><p style="font-size:15px;line-height:1.85;overflow-wrap:anywhere;margin:0 0 6px"><?php echo kapp_h($answer); ?></p><?php endif; ?>
   <p class="lead" style="overflow-wrap:anywhere"><?php echo kapp_h($t !== '' ? $TOPICS[$t]['lead'] : $desc); ?>（更新 <?php echo kapp_h($updated); ?>）</p>
   <p style="display:flex;gap:8px;flex-wrap:wrap">
