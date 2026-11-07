@@ -7,6 +7,7 @@
  * .exbridge.jp でサブドメイン共有されるので、この配下に X の鍵は要らない。
  */
 date_default_timezone_set('Asia/Tokyo');
+@include __DIR__ . '/st_bot.php';   // ボットだけサーバー側で記録（2026-11-07）
 
 require_once __DIR__ . '/auth_common.php';
 require_once __DIR__ . '/kapp_lib.php';
