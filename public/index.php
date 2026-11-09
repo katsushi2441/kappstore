@@ -204,6 +204,30 @@ kapp_header('業務システムと導入キットのお店', $logged_in, $user, 
   <?php /* 分野から探す（2026-10-01）。分野ページが語の受け皿と内部リンクを兼ねる */
   require_once __DIR__ . '/kapp_categories.php'; ?>
   <?php if ($q === ''): ?>
+  <?php /* 新着ニュース（2026-11-10 ユーザー「kappstoreのトップには、newsのリンクや新着あるの？」→「作って」）。
+           kapp_data/news.json（毎時更新）の新しい5件。見出しは exbridge.jp のニュースのページ（国会の記録つき）へ。
+           関数を足すと kapp_lib.php などと名前がぶつかるおそれがあるので、ここに直接書く。 */
+  $top_news = @json_decode((string)@file_get_contents(__DIR__ . '/kapp_data/news.json'), true);
+  $top_news_items = (is_array($top_news) && !empty($top_news['items'])) ? array_slice($top_news['items'], 0, 5) : array();
+  $top_news_label = array('ai' => 'AI', 'security' => 'セキュリティ', 'dx' => 'DX・クラウド', 'bousai' => '防災');
+  $top_news_by = array(); if ($top_news_items) { foreach (kapp_apps_published() as $a) { $top_news_by[$a['id']] = $a; } }
+  if ($top_news_items): ?>
+  <h2 style="font-size:17px;margin:0 0 6px">新着ニュース <span style="font-size:13px;font-weight:400;color:var(--abyss-soft)">（AI・IT・DX・防災・毎時更新）</span></h2>
+  <div style="margin:0 0 10px">
+  <?php foreach ($top_news_items as $x): $href = $x['ex'] !== '' ? $x['ex'] : $x['url']; ?>
+    <div style="border-top:1px solid var(--panel-line);padding:8px 0;overflow-wrap:anywhere">
+      <div style="font-size:12px;color:#5b6b70"><?php echo kapp_h(date('n月j日', strtotime($x['day'])) . ' ' . $x['time'] . '　' . $x['source']); ?>　<?php foreach ($x['topics'] as $k): if (!isset($top_news_label[$k])) { continue; } ?><a href="news-<?php echo kapp_h($k); ?>" style="font-size:11.5px;border:1px solid var(--panel-line);border-radius:99px;padding:1px 8px;margin-right:4px;text-decoration:none"><?php echo kapp_h($top_news_label[$k]); ?></a><?php endforeach; ?></div>
+      <div style="font-size:15px;font-weight:700;line-height:1.6;margin-top:2px"><?php if ($href === ''): echo kapp_h($x['headline']); elseif ($x['ex'] !== ''): ?><a href="<?php echo kapp_h($href); ?>"><?php echo kapp_h($x['headline']); ?></a><?php else: ?><a href="<?php echo kapp_h($href); ?>" target="_blank" rel="noopener nofollow"><?php echo kapp_h($x['headline']); ?></a><?php endif; ?></div>
+      <?php echo kapp_news_app_line(isset($x['apps']) ? $x['apps'] : array(), $top_news_by, 'top-news'); ?>
+    </div>
+  <?php endforeach; ?>
+  </div>
+  <p style="margin:0 0 26px;font-size:13.5px;line-height:2">
+    <a class="chip" href="news">すべてのニュース</a>
+    <?php foreach ($top_news_label as $k => $lb): ?><a class="chip" href="news-<?php echo kapp_h($k); ?>"><?php echo kapp_h($lb); ?></a> <?php endforeach; ?>
+    <a class="chip" href="seido">業務の制度ニュース</a>
+  </p>
+  <?php endif; ?>
   <h2 style="font-size:17px;margin:0 0 10px">分野から探す</h2>
   <div class="grid" style="margin-bottom:26px">
   <?php foreach (kapp_categories() as $cs => $cc): ?>

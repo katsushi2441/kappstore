@@ -182,7 +182,7 @@ def news_seido(news_items):
         if key in seen:
             continue
         seen.add(key)
-        out.append({'day': x['day'], 'time': x.get('time', ''), 'source': x.get('source', ''), 'headline': x['headline'], 'cats': cats, 'apps': apps_for(x['headline']),
+        out.append({'day': x['day'], 'time': x.get('time', ''), 'source': x.get('source', ''), 'headline': STRIP.sub('', x['headline']).strip() or x['headline'], 'cats': cats, 'apps': apps_for(x['headline']),
                     'url': x.get('newsUrl') or x.get('post') or '',
                     'ex': f"https://exbridge.jp/news/{x['day']}/{x['id']}.html" if x.get('id') else ''})
     out.sort(key=lambda x: (x['day'], x['time']), reverse=True)
@@ -224,7 +224,7 @@ def main():
         seen.add(key)
         items.append({
             'day': x['day'], 'time': x.get('time', ''), 'source': x.get('source', ''),
-            'headline': x['headline'], 'topics': tp, 'apps': apps_for(x['headline'], tp),
+            'headline': STRIP.sub('', x['headline']).strip() or x['headline'], 'topics': tp, 'apps': apps_for(x['headline'], tp),
             'url': x.get('newsUrl') or x.get('post') or '',
             'ex': f"https://exbridge.jp/news/{x['day']}/{x['id']}.html" if x.get('id') else '',
         })
