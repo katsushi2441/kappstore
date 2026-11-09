@@ -222,7 +222,8 @@ kapp_header('業務システムと導入キットのお店', $logged_in, $user, 
     </div>
   <?php endforeach; ?>
   </div>
-  <p style="margin:0 0 26px;font-size:13.5px;line-height:2">
+  <style>.top-news-chips .chip{white-space:nowrap;display:inline-block}</style>
+  <p class="top-news-chips" style="margin:0 0 26px;font-size:13.5px;line-height:2">
     <a class="chip" href="news">すべてのニュース</a>
     <?php foreach ($top_news_label as $k => $lb): ?><a class="chip" href="news-<?php echo kapp_h($k); ?>"><?php echo kapp_h($lb); ?></a> <?php endforeach; ?>
     <a class="chip" href="seido">業務の制度ニュース</a>
