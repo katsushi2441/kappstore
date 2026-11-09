@@ -118,7 +118,7 @@ $ld = array(
           'publisher' => array('@type' => 'Organization', 'name' => '株式会社エクスブリッジ', 'url' => 'https://exbridge.jp/')),
     array('@context' => 'https://schema.org', '@type' => 'ItemList', 'name' => $h1, 'numberOfItems' => count($list),
           'itemListElement' => array_map(function ($x, $i) {
-              return array('@type' => 'ListItem', 'position' => $i + 1, 'name' => $x['headline'], 'url' => $x['url'] !== '' ? $x['url'] : ($x['ex'] !== '' ? $x['ex'] : 'https://kappstore.exbridge.jp/news'));
+              return array('@type' => 'ListItem', 'position' => $i + 1, 'name' => $x['headline'], 'url' => $x['ex'] !== '' ? $x['ex'] : ($x['url'] !== '' ? $x['url'] : 'https://kappstore.exbridge.jp/news'));
           }, array_slice($list, 0, 50), array_keys(array_slice($list, 0, 50)))),
     array('@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => array_values(array_filter(array(
         array('@type' => 'ListItem', 'position' => 1, 'name' => 'Kurage App Store', 'item' => $BASE),
@@ -179,8 +179,9 @@ function kn_app_cards($ids, $by, $ref) {
   <?php endif; ?>
     <article style="border-top:1px solid var(--panel-line);padding:10px 0;overflow-wrap:anywhere">
       <div style="font-size:12px;color:#5b6b70"><?php echo kapp_h($x['time'] . '　' . $x['source']); ?>　<?php foreach ($x['topics'] as $k): ?><a href="news-<?php echo kapp_h($k); ?>" style="font-size:11.5px;border:1px solid var(--panel-line);border-radius:99px;padding:1px 8px;margin-right:4px;text-decoration:none"><?php echo kapp_h(kn_topic_label($k, $TOPICS)); ?></a><?php endforeach; ?></div>
-      <div style="font-size:15px;font-weight:700;line-height:1.6;margin:3px 0"><?php if ($x['url'] !== ''): ?><a href="<?php echo kapp_h($x['url']); ?>" target="_blank" rel="noopener nofollow"><?php echo kapp_h($x['headline']); ?></a><?php else: echo kapp_h($x['headline']); endif; ?></div>
-      <?php if ($x['ex'] !== ''): ?><div style="font-size:12.5px"><a href="<?php echo kapp_h($x['ex']); ?>">このニュースに関係する国会の記録</a></div><?php endif; ?>
+      <?php /* 見出しは exbridge.jp のニュースのページ（見出し＋関係する国会の記録）へ。元の記事は2行目（2026-11-10 ユーザー指示「１をやって」: 自社の中を回るように） */ ?>
+      <div style="font-size:15px;font-weight:700;line-height:1.6;margin:3px 0"><?php if ($x['ex'] !== ''): ?><a href="<?php echo kapp_h($x['ex']); ?>"><?php echo kapp_h($x['headline']); ?></a><?php elseif ($x['url'] !== ''): ?><a href="<?php echo kapp_h($x['url']); ?>" target="_blank" rel="noopener nofollow"><?php echo kapp_h($x['headline']); ?></a><?php else: echo kapp_h($x['headline']); endif; ?></div>
+      <?php if ($x['ex'] !== ''): ?><div style="font-size:12.5px;color:#5b6b70">関係する国会の記録つき<?php if ($x['url'] !== ''): ?>　／　<a href="<?php echo kapp_h($x['url']); ?>" target="_blank" rel="noopener nofollow">元の記事を読む（<?php echo kapp_h($x['source'] !== '' ? $x['source'] : '報道'); ?>）</a><?php endif; ?></div><?php endif; ?>
       <?php echo kapp_news_app_line(isset($x['apps']) ? $x['apps'] : array(), $by, 'news-item'); ?>
     </article>
   <?php endforeach; ?>

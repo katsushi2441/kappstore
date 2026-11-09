@@ -135,8 +135,9 @@ kapp_header('業務の制度ニュース', $logged_in, $user, $is_seller, $is_ad
   <?php foreach ($nshow as $x): ?>
     <article style="border-top:1px solid var(--panel-line);padding:10px 0;overflow-wrap:anywhere">
       <div style="font-size:12px;color:#5b6b70"><?php echo kapp_h($x['day'] . ' ' . $x['time'] . '　' . $x['source']); ?>　<?php foreach ($x['cats'] as $k): if (!isset($CATS[$k])) { continue; } ?><a href="seido-<?php echo kapp_h($k); ?>" style="font-size:11.5px;border:1px solid var(--panel-line);border-radius:99px;padding:1px 8px;margin-right:4px;text-decoration:none"><?php echo kapp_h($CATS[$k]['name']); ?></a><?php endforeach; ?></div>
-      <div style="font-size:15px;font-weight:700;line-height:1.6;margin:3px 0"><?php if ($x['url'] !== ''): ?><a href="<?php echo kapp_h($x['url']); ?>" target="_blank" rel="noopener nofollow"><?php echo kapp_h($x['headline']); ?></a><?php else: echo kapp_h($x['headline']); endif; ?></div>
-      <?php if ($x['ex'] !== ''): ?><div style="font-size:12.5px"><a href="<?php echo kapp_h($x['ex']); ?>">このニュースに関係する国会の記録</a></div><?php endif; ?>
+      <?php /* 見出しは exbridge.jp のニュースのページ（見出し＋関係する国会の記録）へ。元の記事は2行目（2026-11-10 ユーザー指示「１をやって」: 自社の中を回るように） */ ?>
+      <div style="font-size:15px;font-weight:700;line-height:1.6;margin:3px 0"><?php if ($x['ex'] !== ''): ?><a href="<?php echo kapp_h($x['ex']); ?>"><?php echo kapp_h($x['headline']); ?></a><?php elseif ($x['url'] !== ''): ?><a href="<?php echo kapp_h($x['url']); ?>" target="_blank" rel="noopener nofollow"><?php echo kapp_h($x['headline']); ?></a><?php else: echo kapp_h($x['headline']); endif; ?></div>
+      <?php if ($x['ex'] !== ''): ?><div style="font-size:12.5px;color:#5b6b70">関係する国会の記録つき<?php if ($x['url'] !== ''): ?>　／　<a href="<?php echo kapp_h($x['url']); ?>" target="_blank" rel="noopener nofollow">元の記事を読む（<?php echo kapp_h($x['source'] !== '' ? $x['source'] : '報道'); ?>）</a><?php endif; ?></div><?php endif; ?>
       <?php echo kapp_news_app_line(isset($x['apps']) ? $x['apps'] : array(), $by, 'seido-news-item'); ?>
     </article>
   <?php endforeach; ?>
