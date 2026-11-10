@@ -53,7 +53,7 @@ function kapp_categories() {
                          'd88a943736386fb3', '53493d74a09cfd8c', '1e290ba90da9b3e9', '025aa9bee5dd411e', 'b34e36cfaad27a14',
                          '8e76e53cf264cc1c', 'a2ddb1f2961a74d8', '5da3d8efae6ddd62',
                          // 2026-11-03 分野ページに入っていなかった10月以降の出品
-                         '5447675118edd258', '10cb19eab638123f', 'b80a258f26c448d5', 'a2f1706ca3edff6b'),
+                         '5447675118edd258', '10cb19eab638123f', 'b80a258f26c448d5', 'a2f1706ca3edff6b', '693d908eee26177a'),
     ),
     'fudosan' => array(
         'name'  => '不動産・土地・都市計画',
