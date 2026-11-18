@@ -71,6 +71,10 @@ $product_ld = array(
 // 商品データから正確なFAQを組む（可視のFAQ節と一致させる＝ガイドライン準拠）。
 if ($dev) { unset($product_ld['offers']); }   // 価格は未定。偽の価格を構造化データに書かない
 $faq_items = array();
+// 「◯◯システム 買い切り」で探す人に届ける問い（2026-11-18 ユーザー指示）。題名の軸はオンプレミスのまま、FAQ の先頭と見出しで拾う
+require_once __DIR__ . '/kapp_kaikiri.php';
+$kaikiri_qa = kapp_kaikiri_qa($app, $p_head['total']);
+if ($kaikiri_qa) { $faq_items[] = $kaikiri_qa; }
 // 「どんなときに使うか」。人が検索するのは商品名ではなく困りごとなので、
 // その言葉が本文に1度も無いと検索にも引っかからず、AIも用途を答えられない。
 // 用途の一覧は kapp_usecases.php に1か所だけ持つ（llms.txtと同じもの）。
@@ -228,6 +232,7 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
   <?php /* 「○○とは、〜です」の定義文。AI検索はこの形の1文を引用するため、
            要約の先頭文から機械的に組む（kgeo監査の definitions が0点だった対策）。 */ ?>
   <p class="lead" style="overflow-wrap:anywhere"><?php echo nl2br(kapp_h($app['summary'])); ?></p>
+  <?php if (!$dev && $kaikiri_qa): ?><h2 style="font-size:16px;margin:6px 0 10px">買い切りの<?php echo kapp_h(kapp_kaikiri_term($app['id'])); ?>（月額なし・オンプレミス）</h2><?php endif; ?>
 
 <?php if (isset($app['status']) && $app['status'] !== 'published'): ?>
   <p class="ok">この出品は<b>下書き</b>です。公開するまで一覧には表示されません。</p>
