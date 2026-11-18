@@ -39,8 +39,8 @@ $short = kapp_short_name($app);
 // 価格・購入・ダウンロードを出さず、問い合わせへ案内する（2026-10-01 ユーザー決定: 需要が見えてから開発する）
 $dev = !empty($app['dev']);
 // contact.php は ?subject= で相談内容の欄を埋める（どの商品からの相談かが残る。ref は simpletrack で数える）
-$contact_url = 'https://exbridge.jp/contact.php?ref=kappstore-dev-' . rawurlencode($app['id'])
-             . '&subject=' . rawurlencode('「' . $app['name'] . '」の導入について相談したい') . '#form';
+// 計測の ref は #ref= に置く決まり（?ref= は Google・Bing が別URLとして拾う。2026-11-19）。#form へ飛ばすので ref は付けない
+$contact_url = 'https://exbridge.jp/contact.php?subject=' . rawurlencode('「' . $app['name'] . '」の導入について相談したい') . '#form';
 $seller = kapp_find_seller($app['seller']);
 $owned = $logged_in && ($p['total'] === 0 ? false : kapp_has_paid($user, $app['id']));
 $canonical = 'https://kappstore.exbridge.jp/app.php?id=' . rawurlencode($app['id']);
@@ -271,13 +271,13 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
       <p style="font-size:13.5px;margin-top:6px">
         本体 <?php echo number_format($p['amount']); ?>円 ＋ 消費税 <?php echo number_format($p['tax']); ?>円</p>
       <p style="font-size:12.5px;color:var(--abyss-soft);margin-top:8px">価格はデジタルコンテンツ（ソフトウェア一式：ソースコード・同梱データ・手順書）の商品代金です。ソフトウェアは<?php echo kapp_h(!empty($app['license']) ? $app['license'] : 'MIT'); ?>ライセンスなので、ライセンス料・使用料ではありません。</p>
-      <p style="font-size:13px;margin-top:10px;padding:10px 12px;background:#fff;border:1.5px dashed var(--gold-line);border-radius:10px">🎁 <b>キャンペーン（期限未定）</b>：<a href="https://exbridge.jp/ai-it-komon.html?ref=kappstore-campaign-<?php echo kapp_h($app['id']); ?>#price">AI-IT顧問契約</a>（愛知県内・月15時間）の期間中に構築できる商品は、商品代金なしで当社が構築します。</p>
+      <p style="font-size:13px;margin-top:10px;padding:10px 12px;background:#fff;border:1.5px dashed var(--gold-line);border-radius:10px">🎁 <b>キャンペーン（期限未定）</b>：<a href="https://exbridge.jp/ai-it-komon.html#price">AI-IT顧問契約</a>（愛知県内・月15時間）の期間中に構築できる商品は、商品代金なしで当社が構築します。</p>
     <?php endif; ?>
     <?php /* 2026-10-31 ユーザー指示: 税別10万円以上の購入には5時間以内の導入支援・カスタマイズをリモートで付ける。全商品ページに目立つように（対象商品は「この商品は対象です」） */ ?>
     <p style="font-size:14px;margin-top:12px;padding:12px 14px;background:#e9f6ee;border:2px solid #2f8f5b;border-radius:10px;line-height:1.7">🤝 <b>税別10万円以上のご購入には、5時間以内の導入支援・カスタマイズサポート（リモート）が付きます。</b><?php if (!$dev && $p['amount'] >= 100000): ?> <b style="color:#1f6b42">この商品は対象です。</b><?php endif; ?>
       御社サーバーへの設置・初期設定・自社の業務に合わせた小さな変更を、当社のエンジニアが画面を共有しながら一緒に進めます。<b>導入が不安な方は、購入前にご相談ください。</b>
-      <a href="https://exbridge.jp/contact.php?ref=kappstore-support-<?php echo kapp_h($app['id']); ?>" style="font-weight:800;white-space:nowrap">事前に相談する →</a></p>
-    <p style="font-size:13px;margin-top:10px;padding:10px 12px;background:#f1f7fb;border:1.5px solid #bcd4e6;border-radius:10px">🛠 <b>5時間を超える導入支援・カスタマイズは顧問契約で</b>：<a href="https://exbridge.jp/ai-it-komon.html?ref=kappstore-komon-<?php echo kapp_h($app['id']); ?>">AI-IT顧問</a>か<a href="https://exbridge.jp/ai-sns-komon.html?ref=kappstore-komon-<?php echo kapp_h($app['id']); ?>">AI-SNS顧問</a>（月15時間）の契約中は、この商品の御社サーバーへの設置・設定、自社仕様への変更、運用後の手直しを当社が顧問の時間の中で行います。</p>
+      <a href="https://exbridge.jp/contact.php#ref=kappstore-support-<?php echo kapp_h($app['id']); ?>" style="font-weight:800;white-space:nowrap">事前に相談する →</a></p>
+    <p style="font-size:13px;margin-top:10px;padding:10px 12px;background:#f1f7fb;border:1.5px solid #bcd4e6;border-radius:10px">🛠 <b>5時間を超える導入支援・カスタマイズは顧問契約で</b>：<a href="https://exbridge.jp/ai-it-komon.html#ref=kappstore-komon-<?php echo kapp_h($app['id']); ?>">AI-IT顧問</a>か<a href="https://exbridge.jp/ai-sns-komon.html#ref=kappstore-komon-<?php echo kapp_h($app['id']); ?>">AI-SNS顧問</a>（月15時間）の契約中は、この商品の御社サーバーへの設置・設定、自社仕様への変更、運用後の手直しを当社が顧問の時間の中で行います。</p>
 
     <p style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
       <?php if ($dev): ?>
@@ -323,7 +323,7 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
          「できます」より「こう使った」のほうが伝わる。例が増えたらここに足す。 */
       $app_examples = array(
         '9701841975d2ed6a' => array(
-          'url'  => 'https://kurage.exbridge.jp/kshuisho-example.html?ref=kappstore-app-9701841975d2ed6a',
+          'url'  => 'https://kurage.exbridge.jp/kshuisho-example.html#ref=kappstore-app-9701841975d2ed6a',
           'text' => 'この道具で、まだ聞かれていない論点を見つけて質問主意書を起案した例',
         ),
       );
@@ -351,8 +351,9 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
         'd88a943736386fb3' => '見つかった合意点ごとに、議会や自治体が「その後どう扱ったか」を書いて返す「進捗」の欄を足す。',
       );
       $vc_idea = (!$vc_case && isset($vc_ideas[$app['id']])) ? $vc_ideas[$app['id']] : null;
-      $vc_url  = 'https://kurage.exbridge.jp/vibe-customize.html?ref=kappstore-app-'
-                 . rawurlencode($app['id']) . ($vc_case ? $vc_case['anchor'] : ($vc_idea ? '#scope' : ''));
+      $vc_frag = $vc_case ? $vc_case['anchor'] : ($vc_idea ? '#scope' : '');
+      $vc_url  = 'https://kurage.exbridge.jp/vibe-customize.html'
+                 . ($vc_frag !== '' ? $vc_frag : '#ref=kappstore-app-' . rawurlencode($app['id']));
       ?>
       <?php if ($vc_case): ?>
         <p class="vcc-b" style="margin-bottom:10px">▸ <?php echo kapp_h($vc_case['text']); ?></p>
@@ -377,7 +378,7 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
         導入のときに自社仕様への改修（バイブカスタマイズ・税別10万円）も決まれば、その<b>30%（3万円）</b>が上乗せになります。
         この商品は業種や業務に合わせて手を入れて使うことが多いので、あわせてご提案いただけます。
         士業・コンサルタント・システム販売の方に。</p>
-      <a class="btn ghost pc-btn" href="https://kurage.exbridge.jp/reseller.html?ref=kapp-partner-<?php echo kapp_h($app['id']); ?>"
+      <a class="btn ghost pc-btn" href="https://kurage.exbridge.jp/reseller.html#ref=kapp-partner-<?php echo kapp_h($app['id']); ?>"
          target="_blank" rel="noopener">販売代理店・紹介パートナーの条件を見る</a>
     </div>
     <?php endif; ?>
@@ -413,7 +414,7 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
     <h2><?php echo kapp_h(kapp_short_name($app)); ?>とは</h2>
     <p style="font-size:14px;overflow-wrap:anywhere"><b><?php echo kapp_h(kapp_short_name($app)); ?>とは、</b><?php echo kapp_h(kapp_definition_sentence($app)); ?></p>
 <?php if (!empty($answers['guide'])): /* 同じ悩みの解説ページへ（kapp_answers.php）。解説→商品の一方向だったリンクを両方向に */ ?>
-    <p style="font-size:13.5px;margin-top:8px;overflow-wrap:anywhere">📖 くわしい解説：<a href="<?php echo kapp_h($answers['guide'][1]); ?>?ref=kappstore-guide-<?php echo kapp_h($app['id']); ?>"><?php echo kapp_h($answers['guide'][0]); ?></a></p>
+    <p style="font-size:13.5px;margin-top:8px;overflow-wrap:anywhere">📖 くわしい解説：<a href="<?php echo kapp_h($answers['guide'][1]); ?>#ref=kappstore-guide-<?php echo kapp_h($app['id']); ?>"><?php echo kapp_h($answers['guide'][0]); ?></a></p>
 <?php endif; ?>
 <?php if (!empty($app['body'])): ?>
     <?php /* 商品説明はMarkdownで書かれている。段落・見出し・表を含むので p ではなく div で受ける
@@ -438,16 +439,16 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
       <?php endif; ?>
       <?php if ($p['total'] > 0): ?>
       <tr><th>🎁 AI-IT顧問契約で無料</th>
-        <td>キャンペーン（期限未定）。愛知県内の<a href="https://exbridge.jp/ai-it-komon.html?ref=kappstore-campaign-<?php echo kapp_h($app['id']); ?>#price">AI-IT顧問契約</a>（月15時間・税別150,000円）の期間中に構築できる商品は、商品代金なしで当社が構築・設定します。</td></tr>
+        <td>キャンペーン（期限未定）。愛知県内の<a href="https://exbridge.jp/ai-it-komon.html#price">AI-IT顧問契約</a>（月15時間・税別150,000円）の期間中に構築できる商品は、商品代金なしで当社が構築・設定します。</td></tr>
       <?php endif; ?>
       <tr><th>🛠 顧問契約で導入支援・カスタマイズ</th>
-        <td><a href="https://exbridge.jp/ai-it-komon.html?ref=kappstore-table-komon-<?php echo kapp_h($app['id']); ?>">AI-IT顧問</a>（社内の業務システム・サーバー向け）または<a href="https://exbridge.jp/ai-sns-komon.html?ref=kappstore-table-komon-<?php echo kapp_h($app['id']); ?>">AI-SNS顧問</a>（ホームページとXの運用向け）。どちらも月15時間で、契約中はこの商品の設置・設定、自社の業務に合わせた変更、運用後の手直しを当社が行います。契約中は Pro の機能も使えます。</td></tr>
+        <td><a href="https://exbridge.jp/ai-it-komon.html#ref=kappstore-table-komon-<?php echo kapp_h($app['id']); ?>">AI-IT顧問</a>（社内の業務システム・サーバー向け）または<a href="https://exbridge.jp/ai-sns-komon.html#ref=kappstore-table-komon-<?php echo kapp_h($app['id']); ?>">AI-SNS顧問</a>（ホームページとXの運用向け）。どちらも月15時間で、契約中はこの商品の設置・設定、自社の業務に合わせた変更、運用後の手直しを当社が行います。契約中は Pro の機能も使えます。</td></tr>
       <tr><th><?php echo $has_guide ? '③' : '②'; ?>この商品を自社仕様に</th>
           <td>「うちの業種・業務に合わせてほしい」方向け。<b>バイブカスタマイズ</b>（110,000円税込）で、この商品を土台に当社が変更します。動くデモを確認してからのお支払いです。<br>
-            <a href="https://kurage.exbridge.jp/vibe-customize.html?ref=kappstore-table-<?php echo kapp_h($app['id']); ?>" target="_blank" rel="noopener">バイブカスタマイズを見る</a></td></tr>
+            <a href="https://kurage.exbridge.jp/vibe-customize.html#ref=kappstore-table-<?php echo kapp_h($app['id']); ?>" target="_blank" rel="noopener">バイブカスタマイズを見る</a></td></tr>
         <tr><th><?php echo $has_guide ? '④' : '③'; ?>ゼロから作る</th>
           <td>近い商品が無い、または業務そのものが特殊な方向け。設計書から作る<b>バイブプロトタイプ制作</b>（330,000円税込）です。<br>
-            <a href="https://kurage.exbridge.jp/vibe-prototype.html?ref=kappstore" target="_blank" rel="noopener">バイブプロトタイプ制作を見る</a></td></tr>
+            <a href="https://kurage.exbridge.jp/vibe-prototype.html#ref=kappstore" target="_blank" rel="noopener">バイブプロトタイプ制作を見る</a></td></tr>
     </table>
     </div>
   </div>

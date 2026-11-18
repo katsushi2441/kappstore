@@ -298,14 +298,14 @@ function kapp_exb_about() {
 
 function kapp_footer() {
     echo kapp_exb_about() . '<footer class="site"><div class="wrap">'
-       . 'Kurage App Store — <a href="https://exbridge.jp/">株式会社エクスブリッジ</a>（<a href="https://exbridge.jp/leaflet.html?ref=kappstore-leaflet">会社案内</a>）<br>'
+       . 'Kurage App Store — <a href="https://exbridge.jp/">株式会社エクスブリッジ</a>（<a href="https://exbridge.jp/leaflet.html#ref=kappstore-leaflet">会社案内</a>）<br>'
        . '<a href="https://kurage.exbridge.jp/terms.html">利用規約</a> · '
        . '<a href="https://kurage.exbridge.jp/tokusho.php">特定商取引法に基づく表記</a> · '
        . '<a href="https://kurage.exbridge.jp/reseller.html">販売代理店募集</a> · '
        . '<a href="https://exbridge.jp/outsourcing/">業務のAI自動化</a> · '
-       . '<a href="https://exbridge.jp/system-development-cost.html?ref=kappstore-cost">業務システムの受託開発（名古屋）</a> · '
+       . '<a href="https://exbridge.jp/system-development-cost.html#ref=kappstore-cost">業務システムの受託開発（名古屋）</a> · '
        . '<a href="https://kurage.exbridge.jp/bousai-giin.html">議員・事務所むけ防災</a> · '
-       . '<a href="https://exbridge.jp/politech/?ref=kappstore-politech">住民の困りごと181語から探す</a> · '
+       . '<a href="https://exbridge.jp/politech/#ref=kappstore-politech">住民の困りごと181語から探す</a> · '
        . '<a href="https://kurage.exbridge.jp/">Kurage シリーズ</a> · '
        . '<a href="https://exbridge.jp/contact.php">お問い合わせ</a>'
        . '</div></footer>'

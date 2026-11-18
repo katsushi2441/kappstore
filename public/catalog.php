@@ -37,7 +37,7 @@ foreach (kapp_apps_published() as $app) {
         'license'     => !empty($app['dev']) ? null : 'MIT',
         'includes'    => !empty($app['dev']) ? array() : array('source_code', 'claude_code_manual', 'install_guide'),
         'requires'    => !empty($app['dev']) ? null : 'PHP rental server (no DB, no Composer, no npm)',
-        'contact_url' => !empty($app['dev']) ? 'https://exbridge.jp/contact.php?ref=kappstore-dev-' . rawurlencode($app['id']) : null,
+        'contact_url' => !empty($app['dev']) ? 'https://exbridge.jp/contact.php#ref=kappstore-dev-' . rawurlencode($app['id']) : null,
         'published_at'=> date('c', isset($app['created_at']) ? (int)$app['created_at'] : 0),
         'updated_at'  => date('c', isset($app['updated_at']) ? (int)$app['updated_at']
                                    : (isset($app['created_at']) ? (int)$app['created_at'] : 0)),

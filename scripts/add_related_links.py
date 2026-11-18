@@ -75,9 +75,9 @@ def section(slug, theme, ids, names):
         if i not in names:
             continue
         nm, what = APPS[i]
-        lines.append(f'- [{names[i]}]({STORE}{i}&ref=kit-{slug}) — {what}')
+        lines.append(f'- [{names[i]}]({STORE}{i}#ref=kit-{slug}) — {what}')
     lines.append('')
-    lines.append('名古屋市内の事業者・事務所は [AI-IT顧問契約](https://exbridge.jp/ai-it-komon.html?ref=kit-' + slug + ')（キャンペーン期間中はKurage App Storeの商品代金が無料）で設置まで任せられます。')
+    lines.append('名古屋市内の事業者・事務所は [AI-IT顧問契約](https://exbridge.jp/ai-it-komon.html#ref=kit-' + slug + ')（キャンペーン期間中はKurage App Storeの商品代金が無料）で設置まで任せられます。')
     return '\n'.join(lines)
 
 
