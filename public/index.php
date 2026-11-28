@@ -128,7 +128,7 @@ kapp_header('業務システムと導入キットのお店', $logged_in, $user, 
     </p>
     <div class="campaign" style="background:var(--gold-bg);border:1.5px dashed var(--gold-line);border-radius:14px;padding:14px 18px;margin:0 0 18px;font-size:14px;line-height:1.7">
       🎁 <b>キャンペーン（期限未定）：AI-IT顧問契約を結ぶと、このお店のデジタルコンテンツ商品代金が無料。</b>
-      愛知県内・月15時間・税別15万円の顧問契約の期間中に構築できる商品は、商品代金なしで当社が構築・設定します（ソースコードごと御社の資産）。
+      愛知県内・月16時間・税別16万円の顧問契約の期間中に構築できる商品は、商品代金なしで当社が構築・設定します（ソースコードごと御社の資産）。
       <a href="https://exbridge.jp/ai-it-komon.html#price" style="font-weight:800;white-space:nowrap">AI-IT顧問契約の詳細 →</a>
     </div>
     <?php /* 2026-10-31 ユーザー指示: 税別10万円以上の購入には5時間以内の導入支援・カスタマイズをリモートで付ける。トップと各商品ページに目立つように */ ?>
@@ -141,9 +141,19 @@ kapp_header('業務システムと導入キットのお店', $logged_in, $user, 
     <div class="komon-note" style="background:#f1f7fb;border:1.5px solid #bcd4e6;border-radius:14px;padding:14px 18px;margin:0 0 18px;font-size:14px;line-height:1.7">
       🛠 <b>5時間を超える導入支援とカスタマイズは、顧問契約で。</b>
       このお店の商品は、<b>AI-IT顧問</b>（社内の業務システム・サーバー向け）か<b>AI-SNS顧問</b>（ホームページとXの運用向け）の契約を結ぶと、
-      御社のサーバーへの設置・設定、自社の業務に合わせた変更（カスタマイズ）、運用が始まってからの手直しを、<b>当社が月15時間の顧問の時間の中で行います</b>。
+      御社のサーバーへの設置・設定、自社の業務に合わせた変更（カスタマイズ）、運用が始まってからの手直しを、<b>当社が月16時間の顧問の時間の中で行います</b>。
       契約中は Pro の機能（例：Kurage Security Check Pro）も使えます。
       <span style="white-space:nowrap"><a href="https://exbridge.jp/ai-it-komon.html#ref=kappstore-komon" style="font-weight:800">AI-IT顧問 →</a>　<a href="https://exbridge.jp/ai-sns-komon.html#ref=kappstore-komon" style="font-weight:800">AI-SNS顧問 →</a></span>
+    </div>
+    <?php /* 2026-11-28 ユーザー指示「kappstore にも AIシステム基盤の PDF を」。このお店の業務システムは AIシステム基盤の部品になる */ ?>
+    <div class="aikiban" style="display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start;margin:0 0 18px;padding:16px;border:2px solid #0a8f85;border-radius:14px;background:#f2fbf9">
+      <a href="https://exbridge.jp/pdf/ai-system-kiban.pdf#ref=kappstore-kiban" target="_blank" rel="noopener" style="flex:0 0 140px;display:block;border:1px solid #d5dee8;border-radius:8px;overflow:hidden;background:#fff"><img src="https://exbridge.jp/pdf/ai-system-kiban.png" alt="AIシステム基盤の説明資料（A4・1枚）" width="992" height="1404" style="width:100%;height:auto;display:block"></a>
+      <div style="flex:1 1 280px;min-width:0">
+        <p style="margin:0 0 4px;font-size:12px;font-weight:800;letter-spacing:.08em;color:#0a8f85">ご提案</p>
+        <p style="margin:0 0 8px;font-size:19px;font-weight:800;line-height:1.45">AIシステム基盤を、AI-IT顧問契約で作りませんか</p>
+        <p style="margin:0 0 12px;font-size:14px;line-height:1.85">Copilot・Gemini・ChatGPT を入れただけでは、業務は自動化されません。AIが受注・メール・会計などの業務システムを直接読んで、書いて、操作できる土台が要ります。このお店の業務システムは、AIが操作できる形で作ってあるので、その土台の部品になります。AI-IT顧問契約の中で、御社の業務に合わせて組み上げます。</p>
+        <p style="margin:0"><a href="https://exbridge.jp/pdf/ai-system-kiban.pdf#ref=kappstore-kiban" target="_blank" rel="noopener" style="display:inline-block;margin:0 8px 8px 0;padding:10px 14px;border-radius:10px;background:#0a8f85;color:#fff;font-weight:700;text-decoration:none">資料をPDFで開く（A4・1枚）</a><a href="https://exbridge.jp/ai-it-komon.html#ref=kappstore-kiban" style="display:inline-block;padding:8px 12px;border-radius:10px;border:2px solid #0a8f85;color:#0a8f85;background:#fff;font-weight:700;text-decoration:none">AI-IT顧問契約を見る</a></p>
+      </div>
     </div>
     <div class="pillars">
       <div class="pillar">

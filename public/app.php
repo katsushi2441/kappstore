@@ -116,7 +116,7 @@ $faq_items[] = array('導入支援はありますか？',
     ((int)$p_head['amount'] >= 100000 ? 'あります。この商品は税別10万円以上なので、' : '税別10万円以上の商品をご購入の場合、')
     . '5時間以内の導入支援・カスタマイズサポートをリモートで行います。御社サーバーへの設置・初期設定・自社の業務に合わせた小さな変更を、当社のエンジニアが画面を共有しながら一緒に進めます。導入が不安な方は、購入前に https://exbridge.jp/contact.php からご相談ください。5時間を超える支援は顧問契約で承ります。');
 $faq_items[] = array('AI-IT顧問契約を結ぶと無料になりますか？',
-    'なります（キャンペーン・期限未定）。愛知県内のAI-IT顧問契約（月15時間・税別150,000円）の期間中に構築できる商品は、デジタルコンテンツの商品代金をいただかず、当社が構築・設定します。ソースコードごと御社の資産として残ります。詳細は https://exbridge.jp/ai-it-komon.html をご覧ください。');
+    'なります（キャンペーン・期限未定）。愛知県内のAI-IT顧問契約（月16時間・税別160,000円）の期間中に構築できる商品は、デジタルコンテンツの商品代金をいただかず、当社が構築・設定します。ソースコードごと御社の資産として残ります。詳細は https://exbridge.jp/ai-it-komon.html をご覧ください。');
 }
 if ($dev) {
     // 開発中の商品は、ライセンス・設置・月額の定型FAQが当てはまらない。台帳の faq（[質問, 答え] の配列）と、開発状況の1問だけにする
@@ -271,13 +271,13 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
       <p style="font-size:13.5px;margin-top:6px">
         本体 <?php echo number_format($p['amount']); ?>円 ＋ 消費税 <?php echo number_format($p['tax']); ?>円</p>
       <p style="font-size:12.5px;color:var(--abyss-soft);margin-top:8px">価格はデジタルコンテンツ（ソフトウェア一式：ソースコード・同梱データ・手順書）の商品代金です。ソフトウェアは<?php echo kapp_h(!empty($app['license']) ? $app['license'] : 'MIT'); ?>ライセンスなので、ライセンス料・使用料ではありません。</p>
-      <p style="font-size:13px;margin-top:10px;padding:10px 12px;background:#fff;border:1.5px dashed var(--gold-line);border-radius:10px">🎁 <b>キャンペーン（期限未定）</b>：<a href="https://exbridge.jp/ai-it-komon.html#price">AI-IT顧問契約</a>（愛知県内・月15時間）の期間中に構築できる商品は、商品代金なしで当社が構築します。</p>
+      <p style="font-size:13px;margin-top:10px;padding:10px 12px;background:#fff;border:1.5px dashed var(--gold-line);border-radius:10px">🎁 <b>キャンペーン（期限未定）</b>：<a href="https://exbridge.jp/ai-it-komon.html#price">AI-IT顧問契約</a>（愛知県内・月16時間）の期間中に構築できる商品は、商品代金なしで当社が構築します。</p>
     <?php endif; ?>
     <?php /* 2026-10-31 ユーザー指示: 税別10万円以上の購入には5時間以内の導入支援・カスタマイズをリモートで付ける。全商品ページに目立つように（対象商品は「この商品は対象です」） */ ?>
     <p style="font-size:14px;margin-top:12px;padding:12px 14px;background:#e9f6ee;border:2px solid #2f8f5b;border-radius:10px;line-height:1.7">🤝 <b>税別10万円以上のご購入には、5時間以内の導入支援・カスタマイズサポート（リモート）が付きます。</b><?php if (!$dev && $p['amount'] >= 100000): ?> <b style="color:#1f6b42">この商品は対象です。</b><?php endif; ?>
       御社サーバーへの設置・初期設定・自社の業務に合わせた小さな変更を、当社のエンジニアが画面を共有しながら一緒に進めます。<b>導入が不安な方は、購入前にご相談ください。</b>
       <a href="https://exbridge.jp/contact.php#ref=kappstore-support-<?php echo kapp_h($app['id']); ?>" style="font-weight:800;white-space:nowrap">事前に相談する →</a></p>
-    <p style="font-size:13px;margin-top:10px;padding:10px 12px;background:#f1f7fb;border:1.5px solid #bcd4e6;border-radius:10px">🛠 <b>5時間を超える導入支援・カスタマイズは顧問契約で</b>：<a href="https://exbridge.jp/ai-it-komon.html#ref=kappstore-komon-<?php echo kapp_h($app['id']); ?>">AI-IT顧問</a>か<a href="https://exbridge.jp/ai-sns-komon.html#ref=kappstore-komon-<?php echo kapp_h($app['id']); ?>">AI-SNS顧問</a>（月15時間）の契約中は、この商品の御社サーバーへの設置・設定、自社仕様への変更、運用後の手直しを当社が顧問の時間の中で行います。</p>
+    <p style="font-size:13px;margin-top:10px;padding:10px 12px;background:#f1f7fb;border:1.5px solid #bcd4e6;border-radius:10px">🛠 <b>5時間を超える導入支援・カスタマイズは顧問契約で</b>：<a href="https://exbridge.jp/ai-it-komon.html#ref=kappstore-komon-<?php echo kapp_h($app['id']); ?>">AI-IT顧問</a>か<a href="https://exbridge.jp/ai-sns-komon.html#ref=kappstore-komon-<?php echo kapp_h($app['id']); ?>">AI-SNS顧問</a>（月16時間）の契約中は、この商品の御社サーバーへの設置・設定、自社仕様への変更、運用後の手直しを当社が顧問の時間の中で行います。</p>
 
     <p style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
       <?php if ($dev): ?>
@@ -439,10 +439,10 @@ kapp_header('アプリ詳細', $logged_in, $user, $is_seller, $is_admin);
       <?php endif; ?>
       <?php if ($p['total'] > 0): ?>
       <tr><th>🎁 AI-IT顧問契約で無料</th>
-        <td>キャンペーン（期限未定）。愛知県内の<a href="https://exbridge.jp/ai-it-komon.html#price">AI-IT顧問契約</a>（月15時間・税別150,000円）の期間中に構築できる商品は、商品代金なしで当社が構築・設定します。</td></tr>
+        <td>キャンペーン（期限未定）。愛知県内の<a href="https://exbridge.jp/ai-it-komon.html#price">AI-IT顧問契約</a>（月16時間・税別160,000円）の期間中に構築できる商品は、商品代金なしで当社が構築・設定します。</td></tr>
       <?php endif; ?>
       <tr><th>🛠 顧問契約で導入支援・カスタマイズ</th>
-        <td><a href="https://exbridge.jp/ai-it-komon.html#ref=kappstore-table-komon-<?php echo kapp_h($app['id']); ?>">AI-IT顧問</a>（社内の業務システム・サーバー向け）または<a href="https://exbridge.jp/ai-sns-komon.html#ref=kappstore-table-komon-<?php echo kapp_h($app['id']); ?>">AI-SNS顧問</a>（ホームページとXの運用向け）。どちらも月15時間で、契約中はこの商品の設置・設定、自社の業務に合わせた変更、運用後の手直しを当社が行います。契約中は Pro の機能も使えます。</td></tr>
+        <td><a href="https://exbridge.jp/ai-it-komon.html#ref=kappstore-table-komon-<?php echo kapp_h($app['id']); ?>">AI-IT顧問</a>（社内の業務システム・サーバー向け）または<a href="https://exbridge.jp/ai-sns-komon.html#ref=kappstore-table-komon-<?php echo kapp_h($app['id']); ?>">AI-SNS顧問</a>（ホームページとXの運用向け）。どちらも月16時間で、契約中はこの商品の設置・設定、自社の業務に合わせた変更、運用後の手直しを当社が行います。契約中は Pro の機能も使えます。</td></tr>
       <tr><th><?php echo $has_guide ? '③' : '②'; ?>この商品を自社仕様に</th>
           <td>「うちの業種・業務に合わせてほしい」方向け。<b>バイブカスタマイズ</b>（110,000円税込）で、この商品を土台に当社が変更します。動くデモを確認してからのお支払いです。<br>
             <a href="https://kurage.exbridge.jp/vibe-customize.html#ref=kappstore-table-<?php echo kapp_h($app['id']); ?>" target="_blank" rel="noopener">バイブカスタマイズを見る</a></td></tr>
